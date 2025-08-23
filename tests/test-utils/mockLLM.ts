@@ -3,19 +3,28 @@
  * Provides predetermined responses for agent tests
  */
 
-import { BaseLLM } from '../../src/llm/base';
-import { LLMMessage, LLMResponse } from '../../src/llm/messages';
+import { AbstractChatModel } from '../../src/llm/base';
+import { BaseMessage } from '../../src/llm/messages';
+import { ChatInvokeCompletion, createCompletion } from '../../src/llm/views';
+import { z } from 'zod';
 
-export class MockLLM extends BaseLLM {
+export class MockLLM extends AbstractChatModel {
 	private responses: string[];
 	private currentIndex: number = 0;
 
 	constructor(responses: string[]) {
-		super();
+		super('mock-model');
 		this.responses = responses;
 	}
 
-	async run(messages: LLMMessage[]): Promise<LLMResponse> {
+	get provider(): string {
+		return 'mock';
+	}
+
+	async ainvoke<T = string>(
+		messages: BaseMessage[],
+		outputFormat?: z.ZodSchema<T>
+	): Promise<ChatInvokeCompletion<T>> {
 		if (this.currentIndex >= this.responses.length) {
 			throw new Error('No more mock responses available');
 		}
@@ -23,37 +32,43 @@ export class MockLLM extends BaseLLM {
 		const response = this.responses[this.currentIndex];
 		this.currentIndex++;
 
-		return {
-			content: response,
+		// Parse the response if an output format is provided
+		let parsedContent: T | string = response;
+		if (outputFormat) {
+			try {
+				const jsonData = JSON.parse(response);
+				parsedContent = outputFormat.parse(jsonData);
+			} catch (error) {
+				// If parsing fails, return the raw response
+				parsedContent = response as T;
+			}
+		}
+
+		return createCompletion({
+			content: parsedContent,
 			usage: {
-				inputTokens: 0,
-				outputTokens: 0,
-				totalTokens: 0,
+				prompt_tokens: 0,
+				completion_tokens: 0,
+				total_tokens: 0,
+			},
+		});
+	}
+
+	// Helper method to get raw responses for backwards compatibility
+	async run(messages: BaseMessage[]): Promise<{ content: string; usage: any }> {
+		const result = await this.ainvoke(messages);
+		return {
+			content: typeof result.content === 'string' ? result.content : JSON.stringify(result.content),
+			usage: {
+				inputTokens: result.usage?.prompt_tokens || 0,
+				outputTokens: result.usage?.completion_tokens || 0,
+				totalTokens: result.usage?.total_tokens || 0,
 			},
 		};
 	}
 
-	async generateStructuredOutput<T>(
-		messages: LLMMessage[],
-		schema: any
-	): Promise<T> {
-		const response = await this.run(messages);
-		
-		// Try to parse the response as JSON
-		try {
-			return JSON.parse(response.content);
-		} catch (error) {
-			throw new Error(`Failed to parse mock response as JSON: ${response.content}`);
-		}
-	}
-
-	// Override the format method to return the response as-is
-	format(messages: LLMMessage[]): any {
-		return messages;
-	}
-
 	// Override the countTokens method
-	countTokens(messages: LLMMessage[]): number {
+	countTokens(messages: BaseMessage[]): number {
 		// Simple token count estimation
 		return messages.reduce((total, msg) => {
 			const content = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
