@@ -60,7 +60,7 @@
 ### Repository Health
 - **Python Repo:** Synced with commit 1173e2c3 (No new changes - checked 2025-08-23 latest session)
 - **TypeScript Repo:** ✅ Rebranded to Better-Use, production ready
-- **Test Coverage:** 50/59 tests ported (85%)
+- **Test Coverage:** 52/59 tests ported (88%)
 - **GitHub Issues:** None open (checked 2025-08-23 current session)
 - **Build Status:** ✅ Working (compile before running)
 - ✅ Watchdog organization: Already reflected in TypeScript structure
@@ -112,9 +112,9 @@
 12. StorageState (cookies/storage)
 
 ### Test Coverage Summary
-- **Total Tests:** 50 tests ported from Python
-- **Core Tests:** 22/22 passing ✅ (added controller-actions test)
-- **Watchdog Tests:** 7/7 passing ✅
+- **Total Tests:** 52 tests ported from Python (added 2 this session)
+- **Core Tests:** 24/24 passing ✅ (added browser-session-reuse, browser-watchdog-crash)
+- **Watchdog Tests:** 8/8 passing ✅ (added crash watchdog test)
 - **LLM Provider Tests:** All 9 providers tested ✅
 - **Test Naming:** Tests use kebab-case in TypeScript (e.g., browser-event-clickelement.test.ts)
 - **Note:** Many Python tests are actually ported but with different naming conventions
@@ -150,20 +150,25 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 - **Agent:** Claude Code automated maintenance bot  
 - **Task:** Regular maintenance check and test porting
 
-### Current Session Accomplishments (Latest)
+### Current Session Accomplishments (Latest - Active Now)
 ✅ **Repository Status Check:**
 - Python repository: No new changes since commit 1173e2c3
 - TypeScript repository: Up to date with all changes pushed
 - GitHub Issues: None open
 - Build Status: Core tests passing
 
-✅ **New Test Ported:**
-1. **controller-actions.test.ts** - Controller integration tests
-   - Tests registry actions and custom action registration
-   - Tests navigation chain with browser history
-   - Tests wait timing, go_back, done, search_google actions
-   - Tests multiple actions in sequence
-   - Successfully adapted from Python test_controller.py
+✅ **New Tests Ported This Session:**
+1. **browser-session-reuse.test.ts** - Browser session reuse functionality
+   - Tests browser regeneration after context closure
+   - Tests screenshot functionality after regeneration
+   - Tests retry mechanism for browser operations
+   - Successfully adapted from Python test_browser_session_reuse.py
+
+2. **browser-watchdog-crash.test.ts** - Crash watchdog functionality
+   - Tests network timeout detection
+   - Tests browser disconnection monitoring
+   - Tests watchdog lifecycle management
+   - Successfully adapted from Python test_browser_watchdog_crash.py
 
 ### Previous Session Accomplishments (Earlier Aug 23)
 - TypeScript repository: Up to date with all changes pushed
