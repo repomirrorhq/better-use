@@ -16,13 +16,13 @@ import { BaseTelemetryEvent, TelemetryConfig, TelemetryEvent } from './types';
  * like PostHog, Mixpanel, or custom analytics endpoints.
  */
 export class TelemetryService extends EventEmitter {
-  private config: TelemetryConfig;
+  private config: TelemetryConfig & { userIdPath?: string };
   private userId: string | null = null;
   private sessionId: string;
   private eventQueue: TelemetryEvent[] = [];
   private flushTimer: NodeJS.Timeout | null = null;
 
-  constructor(config: Partial<TelemetryConfig> = {}) {
+  constructor(config: Partial<TelemetryConfig & { userIdPath?: string }> = {}) {
     super();
     
     this.config = {
@@ -41,6 +41,27 @@ export class TelemetryService extends EventEmitter {
       this.initializeUserId();
       this.startFlushTimer();
     }
+  }
+
+  /**
+   * Check if telemetry is enabled
+   */
+  isEnabled(): boolean {
+    return this.config.enabled;
+  }
+
+  /**
+   * Check if debug mode is enabled
+   */
+  isDebugEnabled(): boolean {
+    return this.config.debug;
+  }
+
+  /**
+   * Get the configured endpoint
+   */
+  getEndpoint(): string | undefined {
+    return this.config.endpoint;
   }
 
   /**
@@ -136,8 +157,14 @@ export class TelemetryService extends EventEmitter {
    */
   private async initializeUserId(): Promise<void> {
     try {
-      const configDir = path.join(os.homedir(), '.config', 'browser-use-ts');
-      const userIdFile = path.join(configDir, 'device_id');
+      let userIdFile: string;
+      
+      if (this.config.userIdPath) {
+        userIdFile = this.config.userIdPath;
+      } else {
+        const configDir = path.join(os.homedir(), '.config', 'browser-use-ts');
+        userIdFile = path.join(configDir, 'device_id');
+      }
 
       try {
         this.userId = await fs.readFile(userIdFile, 'utf-8');
@@ -146,7 +173,8 @@ export class TelemetryService extends EventEmitter {
         this.userId = uuidv4();
         
         // Save to disk
-        await fs.mkdir(configDir, { recursive: true });
+        const dir = path.dirname(userIdFile);
+        await fs.mkdir(dir, { recursive: true });
         await fs.writeFile(userIdFile, this.userId, 'utf-8');
       }
     } catch (error) {
