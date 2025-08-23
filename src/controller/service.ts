@@ -81,6 +81,13 @@ export class Controller<Context = any> {
     this.registerDefaultActions(config.outputModel);
   }
 
+  /**
+   * Get the registry for accessing action models
+   */
+  get actionRegistry(): Registry<Context> {
+    return this.registry;
+  }
+
   private registerDefaultActions(outputModel?: z.ZodType<any>) {
     this.registerDoneAction(outputModel);
 

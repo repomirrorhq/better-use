@@ -249,6 +249,39 @@ Based on the current repository state, the TypeScript port appears to have subst
 4. Check for any Python repository updates that need porting
 5. Code quality improvements and optimization
 
+## Current Priority Issues
+
+### 🚨 Agent CLI Issue - Test Search Loop
+**Status:** Active Issue  
+**Problem:** The agent when run via CLI only performs "test search" in a loop, not actually processing real tasks or user input.
+
+**Details:**
+- Agent hardcoded to search Google with query "test search"
+- Located in `/src/agent/service.ts` around line 314
+- Need to implement proper task processing instead of test placeholder
+- Should accept user input and process actual tasks dynamically
+
+**Action Required:**
+1. Search codebase for TODO comments and address them systematically
+2. Replace hardcoded "test search" with proper LLM response processing
+3. Fix agent to handle real user tasks instead of running test scenarios
+4. Implement proper CLI task input handling
+
+**TODO Comments Found:** 22 TODO items across the codebase that need attention:
+
+**High Priority (Agent/CLI functionality):**
+- `/src/agent/service.ts:303` - Add proper structured output with action schemas
+- `/src/agent/service.ts:307` - Parse actual LLM response into structured actions
+- `/src/agent/service.ts:272-273` - Check for new downloads, set up action models
+
+**Medium Priority (Core Features):**
+- `/src/browser/session.ts:731,779,784,826` - Implement selector mapping, keys, scrolling, file upload
+- `/src/controller/service.ts:428,569` - Dropdown options fallback, file input finding logic
+- `/src/dom/service.ts:128,578` - Persistent websocket, DOM tree serializer
+
+**Low Priority (Optimization/Enhancement):**  
+- Various storage state, cloud events, and token tracking TODOs
+
 ### Session Tasks
 1. **✅ Check GitHub Issues** - No new user reports found
 2. **✅ Test Coverage** - Fixed failing watchdog creation tests

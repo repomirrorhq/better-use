@@ -7,12 +7,14 @@
 
 import { v7 as uuid7 } from 'uuid';
 import { EventEmitter } from 'events';
+import { z } from 'zod';
 import { 
   ActionResult,
   AgentHistory,
   AgentHistoryList,
   AgentHistoryListHelper,
   AgentOutput,
+  AgentOutputSchema,
   AgentSettings,
   AgentState,
   AgentStateSchema,
@@ -71,6 +73,11 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
   public context?: TContext;
   public sensitiveData?: SensitiveData;
   
+  // Action models for structured output
+  public ActionModel?: z.ZodType<any>;
+  public AgentOutputSchema?: z.ZodType<AgentOutput>;
+  public controller: Controller;
+  
   // Runtime state
   private history: AgentHistory[] = [];
   private stepStartTime: number = 0;
@@ -101,6 +108,9 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.tokenCost = new TokenCost(this.settings.calculate_cost);
     this.tokenCost.registerLlm(this.llm);
     
+    // Initialize controller for action execution
+    this.controller = new Controller();
+    
     // Initialize screenshot service and filesystem
     if (options.agentDirectory) {
       this.screenshotService = new ScreenshotService(options.agentDirectory);
@@ -108,6 +118,9 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       console.debug(`📸 Screenshot service initialized in: ${path.join(options.agentDirectory, 'screenshots')}`);
       console.debug(`💾 File system initialized in: ${this.fileSystem.getDir()}`);
     }
+    
+    // Set up action models for structured output
+    this.setupActionModels();
     
     // Initialize message manager
     const systemMessage = this.createSystemMessage();
@@ -123,6 +136,23 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       visionDetailLevel: this.settings.vision_detail_level,
       includeToolCallExamples: this.settings.include_tool_call_examples,
       includeRecentEvents: this.settings.include_recent_events ?? false,
+    });
+  }
+
+  /**
+   * Set up action models for structured output from LLM
+   */
+  private setupActionModels(): void {
+    // Create action model with all available browser actions
+    this.ActionModel = this.controller.actionRegistry.createActionModel();
+    
+    // Create agent output schema with dynamic action model
+    this.AgentOutputSchema = z.object({
+      thinking: z.string().nullable(),
+      evaluation_previous_goal: z.string().nullable(),
+      memory: z.string().nullable(),
+      next_goal: z.string().nullable(),
+      action: z.array(this.ActionModel).min(1, 'At least one action is required')
     });
   }
 
@@ -269,8 +299,10 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       this.logger.debug('📸 Got browser state WITHOUT screenshot');
     }
     
-    // TODO: Check for new downloads
-    // TODO: Set up action models and page actions
+    // Check for new downloads after getting browser state
+    if (this.browserSession?.downloadedFiles) {
+      this.logger.debug(`📥 Found ${this.browserSession.downloadedFiles.length} downloaded files`);
+    }
     
     return browserStateSummary;
   }
@@ -299,27 +331,24 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.logger.debug(`📨 Sending ${messages.length} messages to LLM`);
     
     try {
-      // Make actual LLM call - for now using simple text completion
-      // TODO: Add proper structured output with action schemas
-      const response = await this.llm.ainvoke(messages);
+      // Make actual LLM call with structured output
+      if (!this.AgentOutputSchema) {
+        throw new Error('AgentOutputSchema not initialized. Call setupActionModels() first.');
+      }
       
-      // For now, create a simple action to test functionality
-      // TODO: Parse actual LLM response into structured actions
-      const agentOutput = {
-        thinking: this.settings.use_thinking ? 'Attempting to navigate to Google to begin the task.' : null,
-        evaluation_previous_goal: this.state.n_steps > 0 ? 'Previous step completed' : null,
-        memory: `Currently on: ${logPrettyUrl(browserStateSummary.url)}. Task: ${this.task}`,
-        next_goal: 'Navigate to Google to start task',
-        action: [{
-          searchGoogle: {
-            query: 'test search'
-          }
-        }]
-      };
+      const response = await this.llm.ainvoke(messages, this.AgentOutputSchema);
+      
+      // Parse the structured LLM response
+      const agentOutput = response.completion as AgentOutput;
+      
+      // Limit actions to max_actions_per_step if needed
+      if (agentOutput.action.length > this.settings.max_actions_per_step) {
+        agentOutput.action = agentOutput.action.slice(0, this.settings.max_actions_per_step);
+      }
       
       this.state.last_model_output = agentOutput;
-      this.logger.debug('✅ Got LLM response');
-      this.logger.debug(`🎯 Created ${agentOutput.action.length} action(s) for testing`);
+      this.logger.debug('✅ Got LLM structured response');
+      this.logger.debug(`🎯 Got ${agentOutput.action.length} action(s) from LLM`);
       
     } catch (error) {
       this.logger.error('❌ LLM call failed:', error);
@@ -355,16 +384,13 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     
     const results: ActionResult[] = [];
     
-    // Create controller for action execution
-    const controller = new Controller();
-    
     // Execute each action through the controller
     for (const action of this.state.last_model_output.action) {
       this.logger.debug(`🎯 Executing action: ${JSON.stringify(action)}`);
       
       try {
         // Execute the action using the Controller's act method
-        const result = await controller.act(action, this.browserSession!, {
+        const result = await this.controller.act(action, this.browserSession!, {
           pageExtractionLlm: this.llm,
           fileSystem: this.fileSystem,
           sensitiveData: this.sensitiveData || {},

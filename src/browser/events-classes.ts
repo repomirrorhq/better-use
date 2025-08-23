@@ -5,13 +5,13 @@
  */
 
 import { 
-  TabCreatedEvent, 
-  BrowserStateRequestEvent, 
-  ScreenshotEvent, 
-  BrowserErrorEvent,
-  BrowserLaunchEvent,
-  BrowserKillEvent,
+  BrowserErrorEvent, 
+  BrowserKillEvent, 
+  BrowserLaunchEvent, 
+  BrowserStateRequestEvent,
   BrowserStopEvent,
+  ScreenshotEvent,
+  TabCreatedEvent,
   TargetID 
 } from './events';
 
