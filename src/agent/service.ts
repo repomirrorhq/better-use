@@ -34,6 +34,7 @@ import { logPrettyUrl, sleep } from '../utils';
 import { ScreenshotService } from '../screenshots';
 import { getLogger } from '../logging';
 import * as path from 'path';
+import { FileSystem } from '../filesystem';
 
 // Dynamic logger is defined as a getter in Agent class
 
@@ -60,6 +61,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
   public browserSession?: BrowserSession;
   public messageManager: MessageManager;
   public screenshotService?: ScreenshotService;
+  public fileSystem?: FileSystem;
   
   // Context and callbacks
   public context?: TContext;
@@ -91,10 +93,12 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.context = options.context;
     this.sensitiveData = options.sensitiveData;
     
-    // Initialize screenshot service
+    // Initialize screenshot service and filesystem
     if (options.agentDirectory) {
       this.screenshotService = new ScreenshotService(options.agentDirectory);
+      this.fileSystem = new FileSystem(options.agentDirectory);
       console.debug(`📸 Screenshot service initialized in: ${path.join(options.agentDirectory, 'screenshots')}`);
+      console.debug(`💾 File system initialized in: ${this.fileSystem.getDir()}`);
     }
     
     // Initialize message manager
@@ -102,7 +106,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.messageManager = new MessageManager({
       task: this.task,
       systemMessage,
-      fileSystem: null, // TODO: Implement FileSystem
+      fileSystem: this.fileSystem,
       state: this.state.message_manager_state,
       useThinking: this.settings.use_thinking,
       includeAttributes: this.settings.include_attributes || [],
@@ -358,9 +362,9 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
         // Execute the action using the Controller's act method
         const result = await controller.act(action, this.browserSession!, {
           pageExtractionLlm: this.llm,
-          fileSystem: null, // TODO: Implement FileSystem
+          fileSystem: this.fileSystem,
           sensitiveData: this.sensitiveData || {},
-          availableFilePaths: [], // TODO: Get available file paths
+          availableFilePaths: this.fileSystem ? this.fileSystem.listFiles() : [],
           context: this.context,
         });
         
