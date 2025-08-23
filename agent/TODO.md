@@ -186,3 +186,47 @@ The TypeScript port now has all core browser automation functionality working an
 ## 🎯 PROJECT STATUS: PRODUCTION READY
 
 The TypeScript port has achieved **complete feature parity** with the Python version. All core functionality, watchdogs, and LLM providers are fully operational. The project is production-ready with comprehensive test coverage and no known issues.
+
+---
+
+## 🐛 Known Issues
+
+### Dynamic Import Path Resolution Issue
+**Location:** `/src/browser/session.ts:123-124`  
+**Priority:** HIGH - Blocks ts-node execution  
+**Added:** 2025-08-23
+
+**Problem:**
+- Dynamic imports use `.js` extension (required by TypeScript `moduleResolution: node16`)
+- When running with `ts-node src/cli.ts`, the runtime looks for `.js` files in source directory
+- Source directory only contains `.ts` files, causing module not found errors
+
+**Error:**
+```
+Cannot find module '/Users/yonom/GitHub/browser-use-ts/src/browser/watchdogs/defaultaction.js'
+```
+
+**Current Code:**
+```typescript
+const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction.js');
+const { ScreenshotWatchdog } = await import('./watchdogs/screenshot.js');
+```
+
+**Solutions to Consider:**
+1. **Use static imports** (Preferred): Replace dynamic imports with static imports at the top of the file
+2. **Conditional paths**: Check if running in ts-node vs compiled mode and adjust extension
+3. **Build before run**: Always compile to dist/ and run from there, never use ts-node directly
+4. **Adjust tsconfig**: Modify module resolution settings (may break other things)
+
+**Workaround:** Run compiled version instead: `npm run build && node dist/cli.js`
+
+---
+
+## 📅 Latest Maintenance Check (Aug 23, 2025)
+
+### Repository Status
+- **Python Repository:** Up to date at commit 1173e2c3 (no new changes to port)
+- **TypeScript Repository:** All updates committed and pushed
+- **GitHub Issues:** None open (all 4 previous issues resolved)
+- **Pull Requests:** None pending
+- **Build Status:** Working (use compiled version to avoid ts-node import issues)
