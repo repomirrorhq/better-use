@@ -997,36 +997,64 @@ If you called extract_structured_data in the last step and the result was not go
   }
 
   private registerWriteFileAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Write file action not yet implemented' });
+    const actionFunction = async (
+      params: { 
+        fileName: string; 
+        content: string; 
+        append?: boolean;
+        trailingNewline?: boolean;
+        leadingNewline?: boolean;
+      }, 
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const fileSystem = specialParams.fileSystem as FileSystem;
+      return this.writeFile(params, { fileSystem });
     };
+    
     this.registry.actions['writeFile'] = {
       name: 'writeFile',
-      description: 'Write file to filesystem (not yet implemented)',
+      description: 'Write or append content to file_name in file system. Allowed extensions are .md, .txt, .json, .csv, .pdf. For .pdf files, write the content in markdown format and it will automatically be converted to a properly formatted PDF document.',
       function: actionFunction,
-      paramSchema: z.object({ fileName: z.string(), content: z.string(), append: z.boolean().default(false) }),
+      paramSchema: z.object({ 
+        fileName: z.string(), 
+        content: z.string(), 
+        append: z.boolean().default(false),
+        trailingNewline: z.boolean().default(true),
+        leadingNewline: z.boolean().default(false),
+      }),
     };
   }
 
   private registerReplaceFileStrAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Replace file string action not yet implemented' });
+    const actionFunction = async (
+      params: { fileName: string; oldStr: string; newStr: string }, 
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const fileSystem = specialParams.fileSystem as FileSystem;
+      return this.replaceFileStr(params, { fileSystem });
     };
+    
     this.registry.actions['replaceFileStr'] = {
       name: 'replaceFileStr',
-      description: 'Replace string in file (not yet implemented)',
+      description: 'Replace old_str with new_str in file_name. old_str must exactly match the string to replace in original text. Recommended tool to mark completed items in todo.md or change specific contents in a file.',
       function: actionFunction,
       paramSchema: z.object({ fileName: z.string(), oldStr: z.string(), newStr: z.string() }),
     };
   }
 
   private registerReadFileAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Read file action not yet implemented' });
+    const actionFunction = async (
+      params: { fileName: string }, 
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const fileSystem = specialParams.fileSystem as FileSystem;
+      const availableFilePaths = specialParams.availableFilePaths as string[] || [];
+      return this.readFile(params, { fileSystem, availableFilePaths });
     };
+    
     this.registry.actions['readFile'] = {
       name: 'readFile',
-      description: 'Read file from filesystem (not yet implemented)',
+      description: 'Read file_name from file system',
       function: actionFunction,
       paramSchema: z.object({ fileName: z.string() }),
     };
@@ -1306,6 +1334,122 @@ Provide the extracted information in a clear, structured format.`;
       const cleanMsg = extractLlmErrorMessage(error as Error);
       return new ActionResult({ 
         error: `Failed to extract structured data: ${cleanMsg}` 
+      });
+    }
+  }
+
+  private async writeFile(
+    params: { 
+      fileName: string; 
+      content: string; 
+      append?: boolean;
+      trailingNewline?: boolean;
+      leadingNewline?: boolean;
+    },
+    { fileSystem }: { fileSystem: FileSystem }
+  ): Promise<ActionResult> {
+    try {
+      let { content } = params;
+      const { append = false, trailingNewline = true, leadingNewline = false } = params;
+
+      if (trailingNewline) {
+        content += '\n';
+      }
+      if (leadingNewline) {
+        content = '\n' + content;
+      }
+
+      let result: string;
+      if (append) {
+        result = await fileSystem.appendFile(params.fileName, content);
+      } else {
+        result = await fileSystem.writeFile(params.fileName, content);
+      }
+
+      console.log(`💾 ${result}`);
+      return new ActionResult({
+        extractedContent: result,
+        includeInMemory: true,
+        longTermMemory: result,
+      });
+    } catch (error) {
+      console.error(`Failed to write file: ${(error as Error).constructor.name}: ${error}`);
+      const cleanMsg = extractLlmErrorMessage(error as Error);
+      return new ActionResult({ 
+        error: `Failed to write file ${params.fileName}: ${cleanMsg}` 
+      });
+    }
+  }
+
+  private async replaceFileStr(
+    params: { fileName: string; oldStr: string; newStr: string },
+    { fileSystem }: { fileSystem: FileSystem }
+  ): Promise<ActionResult> {
+    try {
+      const result = await fileSystem.replaceFileStr(params.fileName, params.oldStr, params.newStr);
+      console.log(`💾 ${result}`);
+      return new ActionResult({
+        extractedContent: result,
+        includeInMemory: true,
+        longTermMemory: result,
+      });
+    } catch (error) {
+      console.error(`Failed to replace file string: ${(error as Error).constructor.name}: ${error}`);
+      const cleanMsg = extractLlmErrorMessage(error as Error);
+      return new ActionResult({ 
+        error: `Failed to replace string in file ${params.fileName}: ${cleanMsg}` 
+      });
+    }
+  }
+
+  private async readFile(
+    params: { fileName: string },
+    { fileSystem, availableFilePaths }: { fileSystem: FileSystem; availableFilePaths: string[] }
+  ): Promise<ActionResult> {
+    try {
+      let result: string;
+      
+      if (availableFilePaths && availableFilePaths.includes(params.fileName)) {
+        result = await fileSystem.readFile(params.fileName, true);
+      } else {
+        result = await fileSystem.readFile(params.fileName);
+      }
+
+      const MAX_MEMORY_SIZE = 1000;
+      let memory: string;
+      
+      if (result.length > MAX_MEMORY_SIZE) {
+        const lines = result.split('\n');
+        let display = '';
+        let linesCount = 0;
+        
+        for (const line of lines) {
+          if (display.length + line.length < MAX_MEMORY_SIZE) {
+            display += line + '\n';
+            linesCount++;
+          } else {
+            break;
+          }
+        }
+        
+        const remainingLines = lines.length - linesCount;
+        memory = remainingLines > 0 ? `${display}${remainingLines} more lines...` : display;
+      } else {
+        memory = result;
+      }
+
+      console.log(`💾 ${memory}`);
+      return new ActionResult({
+        extractedContent: result,
+        includeInMemory: true,
+        longTermMemory: memory,
+        includeExtractedContentOnlyOnce: true,
+      });
+    } catch (error) {
+      console.error(`Failed to read file: ${(error as Error).constructor.name}: ${error}`);
+      const cleanMsg = extractLlmErrorMessage(error as Error);
+      return new ActionResult({ 
+        error: `Failed to read file ${params.fileName}: ${cleanMsg}` 
       });
     }
   }
