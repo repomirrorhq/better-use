@@ -37,7 +37,7 @@ import { getLogger } from '../logging';
 import * as path from 'path';
 import { FileSystem } from '../filesystem';
 import { TokenCost } from '../tokens';
-import { Controller } from '../controller/service.js';
+import { Controller } from '../controller/service';
 
 // Dynamic logger is defined as a getter in Agent class
 
@@ -311,7 +311,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
         memory: `Currently on: ${logPrettyUrl(browserStateSummary.url)}. Task: ${this.task}`,
         next_goal: 'Navigate to Google to start task',
         action: [{
-          search_google: {
+          searchGoogle: {
             query: 'test search'
           }
         }]
