@@ -32,7 +32,7 @@ describe('Browser Session Proxy Tests', () => {
       },
     });
     
-    const session = new BrowserSession(profile);
+    const session = new BrowserSession({ profile });
 
     // Verify the session has the profile with proxy configuration
     expect(session.browserProfile).toBe(profile);

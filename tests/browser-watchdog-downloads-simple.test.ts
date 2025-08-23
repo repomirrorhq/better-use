@@ -92,13 +92,13 @@ describe('Browser Downloads Watchdog Simple Tests', () => {
     fs.mkdirSync(downloadsPath);
 
     try {
-      const browserSession = new BrowserSession(
-        new BrowserProfile({
+      const browserSession = new BrowserSession({
+        profile: new BrowserProfile({
           headless: true,
-          downloadsPath: downloadsPath,
-          userDataDir: null,
+          downloads_path: downloadsPath,
+          user_data_dir: undefined,
         })
-      );
+      });
 
       await browserSession.start();
 

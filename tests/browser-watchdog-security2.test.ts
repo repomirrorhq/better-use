@@ -11,7 +11,7 @@ describe('URL Allowlist Security Tests', () => {
         headless: true,
         user_data_dir: undefined,
       });
-      const browserSession = new BrowserSession(browserProfile);
+      const browserSession = new BrowserSession({ profile: browserProfile });
       const watchdog = new SecurityWatchdog(browserSession);
 
       // Security vulnerability test cases
@@ -34,7 +34,7 @@ describe('URL Allowlist Security Tests', () => {
         headless: true,
         user_data_dir: undefined,
       });
-      let browserSession = new BrowserSession(browserProfile);
+      let browserSession = new BrowserSession({ profile: browserProfile });
       let watchdog = new SecurityWatchdog(browserSession);
 
       // Should match subdomains
@@ -60,7 +60,7 @@ describe('URL Allowlist Security Tests', () => {
         headless: true,
         user_data_dir: undefined,
       });
-      browserSession = new BrowserSession(browserProfile);
+      browserSession = new BrowserSession({ profile: browserProfile });
       watchdog = new SecurityWatchdog(browserSession);
 
       // Should match domains ending with google.com
@@ -101,7 +101,7 @@ describe('URL Allowlist Security Tests', () => {
         headless: true,
         user_data_dir: undefined,
       });
-      let browserSession = new BrowserSession(browserProfile);
+      let browserSession = new BrowserSession({ profile: browserProfile });
       let watchdog = new SecurityWatchdog(browserSession);
 
       // Verify that 'wiki*' pattern doesn't match domains that merely contain 'wiki' in the middle
@@ -118,7 +118,7 @@ describe('URL Allowlist Security Tests', () => {
         headless: true,
         user_data_dir: undefined,
       });
-      browserSession = new BrowserSession(browserProfile);
+      browserSession = new BrowserSession({ profile: browserProfile });
       watchdog = new SecurityWatchdog(browserSession);
 
       // Should match legitimate Google domains
