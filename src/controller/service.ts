@@ -486,27 +486,120 @@ export class Controller<Context = any> {
   }
 
   private registerSwitchTabAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Switch tab action not yet implemented' });
+    const actionFunction = async (
+      params: z.infer<typeof SwitchTabActionSchema>,
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      return this.switchTab(params, { browserSession });
     };
+
     this.registry.actions['switchTab'] = {
       name: 'switchTab',
-      description: 'Switch to different tab (not yet implemented)',
+      description: 'Switch tab',
       function: actionFunction,
       paramSchema: SwitchTabActionSchema,
     };
   }
 
+  private async switchTab(
+    params: z.infer<typeof SwitchTabActionSchema>,
+    { browserSession }: { browserSession: BrowserSession }
+  ): Promise<ActionResult> {
+    try {
+      let targetId: string;
+      
+      if (params.tabId !== undefined) {
+        targetId = await browserSession.getTargetIdFromTabId(params.tabId);
+      } else if (params.url !== undefined) {
+        targetId = await browserSession.getTargetIdFromUrl(params.url);
+      } else {
+        targetId = await browserSession.getMostRecentlyOpenedTargetId();
+      }
+
+      const event = browserSession.eventBus.dispatch(new SwitchTabEvent({ targetId }));
+      await event;
+      const newTargetId = await event.eventResult();
+      
+      if (!newTargetId) {
+        throw new Error('SwitchTabEvent did not return a TargetID for the new tab that was switched to');
+      }
+      
+      const memory = `Switched to Tab with ID ${newTargetId.slice(-4)}`;
+      console.log(`🔄 ${memory}`);
+      
+      return new ActionResult({
+        extractedContent: memory,
+        includeInMemory: true,
+        longTermMemory: memory,
+      });
+    } catch (e) {
+      console.error(`Failed to switch tab: ${(e as Error).constructor.name}: ${e}`);
+      const cleanMsg = extractLlmErrorMessage(e as Error);
+      return new ActionResult({ 
+        error: `Failed to switch to tab ${params.tabId || params.url}: ${cleanMsg}` 
+      });
+    }
+  }
+
   private registerCloseTabAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Close tab action not yet implemented' });
+    const actionFunction = async (
+      params: z.infer<typeof CloseTabActionSchema>,
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      return this.closeTab(params, { browserSession });
     };
+
     this.registry.actions['closeTab'] = {
       name: 'closeTab',
-      description: 'Close tab (not yet implemented)',
+      description: 'Close an existing tab',
       function: actionFunction,
       paramSchema: CloseTabActionSchema,
     };
+  }
+
+  private async closeTab(
+    params: z.infer<typeof CloseTabActionSchema>,
+    { browserSession }: { browserSession: BrowserSession }
+  ): Promise<ActionResult> {
+    try {
+      const targetId = await browserSession.getTargetIdFromTabId(params.tabId);
+      
+      // Get tab URL for display purposes before closing
+      const cdpSession = await browserSession.getOrCreateCdpSession();
+      const targetInfo = await cdpSession.cdpClient.send.Target.getTargetInfo({
+        targetId: targetId
+      }, cdpSession.sessionId);
+      const tabUrl = targetInfo.targetInfo.url;
+
+      const event = browserSession.eventBus.dispatch(new CloseTabEvent({ targetId }));
+      await event;
+      await event.eventResult();
+      
+      // Helper function for pretty URL display (simplified version)
+      const prettyUrl = (url: string) => {
+        try {
+          const urlObj = new URL(url);
+          return urlObj.hostname + urlObj.pathname;
+        } catch {
+          return url;
+        }
+      };
+      
+      const memory = `Closed tab # ${params.tabId} (${prettyUrl(tabUrl)})`;
+      console.log(`🗑️ ${memory}`);
+      
+      return new ActionResult({
+        extractedContent: memory,
+        includeInMemory: true,
+        longTermMemory: memory,
+      });
+    } catch (e) {
+      console.error(`Failed to close tab: ${e}`);
+      const cleanMsg = extractLlmErrorMessage(e as Error);
+      return new ActionResult({ error: `Failed to close tab ${params.tabId}: ${cleanMsg}` });
+    }
   }
 
   private registerExtractStructuredDataAction() {
