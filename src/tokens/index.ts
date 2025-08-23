@@ -23,7 +23,7 @@ import {
   createUsageSummary,
 } from './views';
 import { BaseChatModel } from '../llm/base';
-import { ChatInvokeUsage, ChatInvokeResponse } from '../llm/views';
+import { ChatInvokeUsage, ChatInvokeCompletion } from '../llm/views';
 
 const logger = console; // Simple logger for now
 const costLogger = console; // Cost logging
@@ -302,7 +302,7 @@ export class TokenCost {
     // Always get cost breakdown for token details (even if not showing costs)
     const usageWithTotal = {
       ...usage.usage,
-      total_tokens: usage.usage.total_tokens || (usage.usage.prompt_tokens + usage.usage.completion_tokens)
+      total_tokens: (usage.usage as any).total_tokens ?? (usage.usage.prompt_tokens + usage.usage.completion_tokens)
     };
     const cost = await this.calculateCost(model, usageWithTotal);
 
@@ -400,7 +400,7 @@ export class TokenCost {
     const trackedAinvoke = async function(
       messages: any[], 
       outputFormat?: any
-    ): Promise<ChatInvokeResponse> {
+    ): Promise<ChatInvokeCompletion> {
       // Call the original method
       const result = await originalAinvoke(messages, outputFormat);
 
@@ -419,7 +419,7 @@ export class TokenCost {
     };
 
     // Replace the method with our tracked version
-    llm.ainvoke = trackedAinvoke;
+    (llm as any).ainvoke = trackedAinvoke;
 
     return llm;
   }
@@ -494,7 +494,7 @@ export class TokenCost {
         // Calculate cost record by record
         const usageWithTotal = {
           ...entry.usage,
-          total_tokens: entry.usage.total_tokens || (entry.usage.prompt_tokens + entry.usage.completion_tokens)
+          total_tokens: (entry.usage as any).total_tokens ?? (entry.usage.prompt_tokens + entry.usage.completion_tokens)
         };
         const cost = await this.calculateCost(entry.model, usageWithTotal);
         if (cost) {
@@ -612,7 +612,7 @@ export class TokenCost {
           if (entry.model === modelName) {
             const usageWithTotal = {
               ...entry.usage,
-              total_tokens: entry.usage.total_tokens || (entry.usage.prompt_tokens + entry.usage.completion_tokens)
+              total_tokens: (entry.usage as any).total_tokens ?? (entry.usage.prompt_tokens + entry.usage.completion_tokens)
             };
             const cost = await this.calculateCost(entry.model, usageWithTotal);
             if (cost) {

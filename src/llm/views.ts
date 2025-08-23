@@ -10,7 +10,7 @@ export const ChatInvokeUsageSchema = z.object({
   prompt_cache_creation_tokens: z.number().optional().describe('Anthropic only: tokens used to create cache'),
   prompt_image_tokens: z.number().optional().describe('Google only: tokens in images'),
   completion_tokens: z.number().describe('The number of tokens in the completion'),
-  total_tokens: z.number().describe('The total number of tokens in the response'),
+  total_tokens: z.number().optional().describe('The total number of tokens in the response'),
 });
 
 export type ChatInvokeUsage = z.infer<typeof ChatInvokeUsageSchema>;
