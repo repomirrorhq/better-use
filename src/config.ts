@@ -284,6 +284,10 @@ export class Config {
     return this._getEnvConfig().BROWSER_USE_LOGGING_LEVEL;
   }
 
+  get CDP_LOGGING_LEVEL(): string {
+    return this._getEnvConfig().CDP_LOGGING_LEVEL;
+  }
+
   get ANONYMIZED_TELEMETRY(): boolean {
     return this._getEnvConfig().ANONYMIZED_TELEMETRY;
   }

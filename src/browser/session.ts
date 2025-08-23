@@ -17,6 +17,7 @@ import {
 import { BrowserException } from '../exceptions';
 import { sleep } from '../utils';
 import { CONFIG } from '../config';
+import { getLogger } from '../logging';
 
 export interface BrowserSessionConfig {
   profile?: BrowserProfile;
@@ -31,7 +32,7 @@ export class BrowserSession extends EventEmitter {
   private currentPageId: string | null = null;
   private profile: BrowserProfile;
   private isStarted = false;
-  private logger = console; // TODO: Use proper logger
+  private logger = getLogger('browser_use.browser.session');
 
   // Public properties for compatibility with controller
   public readonly id: string;

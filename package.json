@@ -43,6 +43,7 @@
     "@aws-sdk/client-bedrock-runtime": "^3.699.0",
     "@google-ai/generativelanguage": "^2.8.0",
     "@google/generative-ai": "^0.24.1",
+    "@types/winston": "^2.4.4",
     "axios": "^1.7.9",
     "chalk": "^5.6.0",
     "commander": "^14.0.0",
@@ -58,6 +59,7 @@
     "openai": "^4.77.3",
     "playwright": "^1.49.1",
     "uuid": "^10.0.0",
+    "winston": "^3.17.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
