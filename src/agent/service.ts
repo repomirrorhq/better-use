@@ -32,9 +32,10 @@ import { BrowserSession } from '../browser/session';
 import { BrowserStateSummary } from '../browser/views';
 import { logPrettyUrl, sleep } from '../utils';
 import { ScreenshotService } from '../screenshots';
+import { getLogger } from '../logging';
 import * as path from 'path';
 
-const logger = console; // Simple logger for now
+// Dynamic logger is defined as a getter in Agent class
 
 export type Context = any; // Generic context type
 export type AgentStructuredOutput = any; // Generic structured output type
@@ -93,7 +94,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     // Initialize screenshot service
     if (options.agentDirectory) {
       this.screenshotService = new ScreenshotService(options.agentDirectory);
-      logger.debug(`📸 Screenshot service initialized in: ${path.join(options.agentDirectory, 'screenshots')}`);
+      console.debug(`📸 Screenshot service initialized in: ${path.join(options.agentDirectory, 'screenshots')}`);
     }
     
     // Initialize message manager
@@ -111,6 +112,15 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       includeToolCallExamples: this.settings.include_tool_call_examples,
       includeRecentEvents: false, // TODO: Implement recent events
     });
+  }
+
+  /**
+   * Get instance-specific logger with task ID and session info
+   */
+  get logger() {
+    const browserSessionId = this.browserSession?.id || '----';
+    const currentTargetId = this.browserSession?.agentFocus?.targetId?.slice(-2) || '--';
+    return getLogger(`browser_use.Agent🅰 ${this.taskId.slice(-4)} ⇢ 🅑 ${browserSessionId.slice(-4)} 🅣 ${currentTargetId}`);
   }
   
   /**
@@ -141,8 +151,8 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     onStepStart?: AgentHookFunc<this>,
     onStepEnd?: AgentHookFunc<this>
   ): Promise<AgentHistoryListHelper> {
-    logger.info(`🤖 Starting agent run - Task: ${this.task}`);
-    logger.debug(`🔧 Agent Session ID: ${this.sessionId.slice(-4)}, Task ID: ${this.taskId.slice(-4)}`);
+    this.logger.info(`🤖 Starting agent run - Task: ${this.task}`);
+    this.logger.debug(`🔧 Agent setup: Agent Session ID ${this.sessionId.slice(-4)}, Task ID ${this.taskId.slice(-4)}, Browser Session ID ${this.browserSession?.id.slice(-4) || 'None'}`);
     
     // Initialize timing
     this.sessionStartTime = Date.now();
@@ -178,7 +188,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
         
         // Check for consecutive failures
         if (this.state.consecutive_failures >= this.settings.max_failures) {
-          logger.error(`❌ Max failures (${this.settings.max_failures}) reached. Stopping.`);
+          this.logger.error(`❌ Max failures (${this.settings.max_failures}) reached. Stopping.`);
           break;
         }
       }
@@ -190,17 +200,17 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       });
       
       if (this.isDone()) {
-        logger.info('✅ Agent completed successfully');
+        this.logger.info('✅ Agent completed successfully');
       } else if (this.state.n_steps >= maxSteps) {
-        logger.warn(`⚠️ Agent reached max steps (${maxSteps})`);
+        this.logger.warn(`⚠️ Agent reached max steps (${maxSteps})`);
       } else if (this.state.stopped) {
-        logger.info('🛑 Agent was stopped');
+        this.logger.info('🛑 Agent was stopped');
       }
       
       return historyList;
       
     } catch (error) {
-      logger.error('❌ Agent run failed:', error);
+      this.logger.error('❌ Agent run failed:', error);
       throw error;
     }
   }
@@ -212,7 +222,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.stepStartTime = Date.now();
     
     try {
-      logger.info(`\n🔄 Step ${this.state.n_steps + 1}${stepInfo ? `/${stepInfo.max_steps}` : ''}`);
+      this.logger.info(`\n🔄 Step ${this.state.n_steps + 1}${stepInfo ? `/${stepInfo.max_steps}` : ''}`);
       
       // Phase 1: Prepare context
       const browserStateSummary = await this.prepareContext(stepInfo);
@@ -239,7 +249,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       throw new Error('BrowserSession is not set up');
     }
     
-    logger.debug(`🌐 Step ${this.state.n_steps + 1}: Getting browser state...`);
+    this.logger.debug(`🌐 Step ${this.state.n_steps + 1}: Getting browser state...`);
     
     // Get browser state with screenshot
     // TODO: Implement getBrowserStateSummary method in BrowserSession
@@ -267,9 +277,9 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     };
     
     if (browserStateSummary.screenshot) {
-      logger.debug(`📸 Got browser state WITH screenshot`);
+      this.logger.debug(`📸 Got browser state WITH screenshot`);
     } else {
-      logger.debug('📸 Got browser state WITHOUT screenshot');
+      this.logger.debug('📸 Got browser state WITHOUT screenshot');
     }
     
     // TODO: Check for new downloads
@@ -285,7 +295,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     browserStateSummary: BrowserStateSummary,
     stepInfo?: AgentStepInfo
   ): Promise<void> {
-    logger.debug('🤔 Generating LLM response...');
+    this.logger.debug('🤔 Generating LLM response...');
     
     // Create state messages
     await this.messageManager.createStateMessages({
@@ -299,7 +309,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     
     // Get messages and make LLM call
     const messages = this.messageManager.getMessages();
-    logger.debug(`📨 Sending ${messages.length} messages to LLM`);
+    this.logger.debug(`📨 Sending ${messages.length} messages to LLM`);
     
     try {
       // TODO: Implement proper LLM call with structured output
@@ -313,12 +323,12 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       };
       
       this.state.last_model_output = response;
-      logger.debug('✅ Got LLM response');
+      this.logger.debug('✅ Got LLM response');
       
       // TODO: Log response details
       
     } catch (error) {
-      logger.error('❌ LLM call failed:', error);
+      this.logger.error('❌ LLM call failed:', error);
       throw error;
     }
   }
@@ -328,17 +338,17 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
    */
   private async executeActions(): Promise<void> {
     if (!this.state.last_model_output?.action) {
-      logger.warn('⚠️ No actions to execute');
+      this.logger.warn('⚠️ No actions to execute');
       return;
     }
     
-    logger.debug(`🎬 Executing ${this.state.last_model_output.action.length} action(s)...`);
+    this.logger.debug(`🎬 Executing ${this.state.last_model_output.action.length} action(s)...`);
     
     const results: ActionResult[] = [];
     
     // TODO: Implement actual action execution
     for (const action of this.state.last_model_output.action) {
-      logger.debug(`🎯 Executing action: ${JSON.stringify(action)}`);
+      this.logger.debug(`🎯 Executing action: ${JSON.stringify(action)}`);
       
       // Mock result for now
       const result = createActionResult({
@@ -350,7 +360,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     }
     
     this.state.last_result = results;
-    logger.debug(`✅ Completed ${results.length} action(s)`);
+    this.logger.debug(`✅ Completed ${results.length} action(s)`);
   }
   
   /**
@@ -371,18 +381,18 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     // Store screenshot if available
     let screenshotPath: string | null = null;
     if (browserStateSummary.screenshot && this.screenshotService) {
-      logger.debug(
+      this.logger.debug(
         `📸 Storing screenshot for step ${this.state.n_steps}, screenshot length: ${browserStateSummary.screenshot.length}`
       );
       screenshotPath = await this.screenshotService.storeScreenshot(
         browserStateSummary.screenshot, 
         this.state.n_steps
       );
-      logger.debug(`📸 Screenshot stored at: ${screenshotPath}`);
+      this.logger.debug(`📸 Screenshot stored at: ${screenshotPath}`);
     } else if (browserStateSummary.screenshot && !this.screenshotService) {
-      logger.debug('📸 Screenshot available but ScreenshotService not initialized');
+      this.logger.debug('📸 Screenshot available but ScreenshotService not initialized');
     } else {
-      logger.debug(`📸 No screenshot in browser_state_summary for step ${this.state.n_steps}`);
+      this.logger.debug(`📸 No screenshot in browser_state_summary for step ${this.state.n_steps}`);
     }
     
     // Create browser state history
@@ -437,7 +447,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     
     // Wait before retry if configured
     if (this.settings.retry_delay > 0) {
-      logger.debug(`⏳ Waiting ${this.settings.retry_delay}s before retry...`);
+      this.logger.debug(`⏳ Waiting ${this.settings.retry_delay}s before retry...`);
       await sleep(this.settings.retry_delay * 1000);
     }
   }

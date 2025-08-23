@@ -32,12 +32,13 @@ export class BrowserSession extends EventEmitter {
   private currentPageId: string | null = null;
   private profile: BrowserProfile;
   private isStarted = false;
-  private logger = getLogger('browser_use.browser.session');
+  private _loggedUniqueSessionIds = new Set<string>();
 
   // Public properties for compatibility with controller
   public readonly id: string;
   public agentFocus: { targetId: string } | null = null;
   public eventBus = this; // Use EventEmitter as event bus
+  public cdpUrl?: string;
 
   constructor(config: BrowserSessionConfig = {}) {
     super();
@@ -46,6 +47,62 @@ export class BrowserSession extends EventEmitter {
     if (config.headless !== undefined) {
       this.profile.update({ headless: config.headless });
     }
+  }
+
+  // ============================================================================
+  // Logging & String Representation
+  // ============================================================================
+
+  /**
+   * Get dynamic logger with session and target ID for consistent logging
+   */
+  get logger() {
+    return getLogger(`browser_use.${this.toString()}`);
+  }
+
+  /**
+   * Get human-friendly semi-unique identifier for differentiating different BrowserSession instances in logs
+   */
+  private get _idForLogs(): string {
+    let strId = this.id.slice(-4); // default to last 4 chars of truly random uuid
+    const portMatch = (this.cdpUrl || 'no-cdp').match(/:(\d+)/);
+    const portNumber = portMatch ? portMatch[1] : null;
+    
+    if (portNumber) {
+      const portIsRandom = !portNumber.startsWith('922');
+      const portIsUniqueEnough = !this._loggedUniqueSessionIds.has(portNumber);
+      
+      if (portIsRandom && portIsUniqueEnough) {
+        // if cdp port is random/unique enough to identify this session, use it as our id in logs
+        this._loggedUniqueSessionIds.add(portNumber);
+        strId = portNumber;
+      }
+    }
+    
+    return strId;
+  }
+
+  /**
+   * Get formatted target ID for logs
+   */
+  private get _targetIdForLogs(): string {
+    const red = '\x1b[91m';
+    const reset = '\x1b[0m';
+    return this.agentFocus?.targetId?.slice(-2) || `${red}--${reset}`;
+  }
+
+  /**
+   * String representation for logs
+   */
+  toString(): string {
+    return `BrowserSession🅑 ${this._idForLogs} 🅣 ${this._targetIdForLogs}`;
+  }
+
+  /**
+   * Get browser profile accessor for compatibility
+   */
+  get browserProfile() {
+    return this.profile;
   }
 
   // ============================================================================
@@ -622,10 +679,6 @@ export class BrowserSession extends EventEmitter {
     return this.getOrCreateCdpSession();
   }
 
-  // Add browserProfile getter for watchdogs
-  get browserProfile(): BrowserProfile {
-    return this.profile;
-  }
 
   /**
    * Get list of downloaded files

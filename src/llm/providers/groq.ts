@@ -15,6 +15,7 @@ import { BaseMessage } from '../messages';
 import { ChatInvokeCompletion, ChatInvokeUsage, createCompletion } from '../views';
 import { ModelProviderError, ModelRateLimitError } from '../../exceptions';
 import { SchemaOptimizer } from '../schema';
+import { tryParseGroqFailedGeneration } from './groq/parser';
 
 export type GroqVerifiedModels = 
   | 'meta-llama/llama-4-maverick-17b-128e-instruct'
@@ -321,8 +322,7 @@ export class ChatGroq extends AbstractChatModel {
       // Handle API errors for structured output with fallback parsing
       if (outputFormat && (error as any).status && (error as any).body?.error?.failed_generation) {
         try {
-          const failedGeneration = (error as any).body.error.failed_generation;
-          const parsedContent = this.parseFailedGeneration(failedGeneration, outputFormat);
+          const parsedContent = tryParseGroqFailedGeneration(error as any, outputFormat);
           return createCompletion(parsedContent as T, { usage: undefined });
         } catch (parseError) {
           // If parsing fails, throw original error

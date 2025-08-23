@@ -7,6 +7,7 @@ export * from './messages';
 export * from './views';
 export * from './schema';
 export * from './providers/openai';
+export * from './providers/openaiLike';
 export * from './providers/anthropic';
 export * from './providers/google';
 export * from './providers/aws';
