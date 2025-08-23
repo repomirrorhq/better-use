@@ -158,7 +158,7 @@ export class BrowserProfile {
       ...CHROME_ARGS_AUTOMATION,
       ...CHROME_ARGS_PERFORMANCE,
       `--remote-debugging-port=${this.debugPort}`,
-      `--user-data-dir=${this.userDataDir}`,
+      // Note: --user-data-dir is handled by Playwright's userDataDir parameter
       `--disable-component-extensions-with-background-pages`,
       `--disable-background-networking`,
       `--disable-component-update`,

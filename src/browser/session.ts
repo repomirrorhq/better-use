@@ -16,6 +16,7 @@ import {
 } from './events';
 import { BrowserException } from '../exceptions';
 import { sleep } from '../utils';
+import { CONFIG } from '../config';
 
 export interface BrowserSessionConfig {
   profile?: BrowserProfile;
@@ -53,23 +54,41 @@ export class BrowserSession extends EventEmitter {
       this.logger.debug('Starting browser session...');
       
       // Launch Chromium with profile settings
-      this.browser = await chromium.launch({
+      const launchOptions: any = {
         headless: this.profile.headless,
         args: this.profile.getChromeArgs(),
         timeout: this.profile.timeout,
         // executablePath: this.profile.chromeExecutablePath, // TODO: Add support
-      });
+      };
 
-      // Create browser context
-      this.context = await this.browser.newContext({
-        viewport: {
-          width: this.profile.viewportWidth,
-          height: this.profile.viewportHeight,
-        },
-        deviceScaleFactor: this.profile.deviceScaleFactor,
-        // userAgent: '...', // TODO: Add custom user agent support
-        ignoreHTTPSErrors: this.profile.toJSON().ignore_certificate_errors,
-      });
+      // Only add userDataDir if it's explicitly set (not the default)
+      if (this.profile.userDataDir && this.profile.userDataDir !== CONFIG.BROWSER_USE_DEFAULT_USER_DATA_DIR) {
+        // Use launchPersistentContext for persistent user data
+        this.context = await chromium.launchPersistentContext(this.profile.userDataDir, {
+          ...launchOptions,
+          viewport: {
+            width: this.profile.viewportWidth,
+            height: this.profile.viewportHeight,
+          },
+          deviceScaleFactor: this.profile.deviceScaleFactor,
+          ignoreHTTPSErrors: this.profile.toJSON().ignore_certificate_errors,
+        });
+        // For persistent context, browser handle is the context
+        this.browser = this.context as any;
+      } else {
+        this.browser = await chromium.launch(launchOptions);
+        
+        // Create browser context
+        this.context = await this.browser.newContext({
+          viewport: {
+            width: this.profile.viewportWidth,
+            height: this.profile.viewportHeight,
+          },
+          deviceScaleFactor: this.profile.deviceScaleFactor,
+          // userAgent: '...', // TODO: Add custom user agent support
+          ignoreHTTPSErrors: this.profile.toJSON().ignore_certificate_errors,
+        });
+      }
 
       // Set up proxy if configured
       if (this.profile.proxy) {
