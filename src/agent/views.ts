@@ -23,7 +23,7 @@ export const AgentSettingsSchema = z.object({
   generate_gif: z.union([z.boolean(), z.string()]).default(false),
   override_system_message: z.string().nullable().default(null),
   extend_system_message: z.string().nullable().default(null),
-  include_attributes: z.array(z.string()).nullable().default(DEFAULT_INCLUDE_ATTRIBUTES),
+  include_attributes: z.array(z.string()).nullable().default(() => [...DEFAULT_INCLUDE_ATTRIBUTES]),
   max_actions_per_step: z.number().int().default(10),
   use_thinking: z.boolean().default(true),
   flash_mode: z.boolean().default(false), // If enabled, disables evaluation_previous_goal and next_goal, and sets use_thinking = false
@@ -166,9 +166,7 @@ export const StepMetadataSchema = z.object({
   step_number: z.number().int(),
 });
 
-export type StepMetadata = z.infer<typeof StepMetadataSchema> & {
-  get durationSeconds(): number;
-};
+export type StepMetadata = z.infer<typeof StepMetadataSchema>;
 
 // Agent Brain schema
 export const AgentBrainSchema = z.object({
@@ -568,7 +566,7 @@ export function createStepMetadata(
   step_end_time: number,
   step_number: number
 ): StepMetadata {
-  return new StepMetadataHelper({
+  return StepMetadataSchema.parse({
     step_start_time,
     step_end_time,
     step_number,
