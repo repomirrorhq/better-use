@@ -507,40 +507,58 @@ export class Controller<Context = any> {
     }
   ): Promise<ActionResult> {
     try {
-      // Basic file path validation (simplified version)
+      let resolvedPath = params.path;
+
+      // Enhanced file path validation with FileSystem integration
       if (!availableFilePaths.includes(params.path)) {
         // Check if it's a downloaded file
         const downloadedFiles = await browserSession.getDownloadedFiles();
         if (!downloadedFiles.includes(params.path)) {
-          // TODO: Add FileSystem integration when implemented
+          // Check if it's a file managed by the FileSystem service
           if (fileSystem) {
-            console.log('FileSystem integration needed for complete upload file functionality');
+            const fileObj = fileSystem.getFile(params.path);
+            if (fileObj) {
+              // File is managed by FileSystem, construct the full path
+              const fs = await import('path');
+              resolvedPath = fs.join(fileSystem.getDir(), params.path);
+            } else {
+              throw new Error(
+                `File path ${params.path} is not available. Must be in available_file_paths, downloaded_files, or a file managed by file_system.`
+              );
+            }
+          } else {
+            throw new Error(
+              `File path ${params.path} is not available. Must be in available_file_paths or downloaded_files.`
+            );
           }
-          throw new Error(
-            `File path ${params.path} is not available. Must be in available_file_paths or downloaded_files.`
-          );
         }
       }
 
-      // Check if file exists (basic Node.js fs check)
+      // Check if file exists
       const fs = await import('fs');
-      if (!fs.existsSync(params.path)) {
-        throw new Error(`File ${params.path} does not exist`);
+      if (!fs.existsSync(resolvedPath)) {
+        throw new Error(`File ${resolvedPath} does not exist`);
       }
 
       // Get the element from the selector map
-      const node = await browserSession.getElementByIndex(params.index);
-      if (node === null) {
-        throw new Error(`Element with index ${params.index} not found in DOM`);
+      const selectorMap = await browserSession.getSelectorMap();
+      if (!(params.index in selectorMap)) {
+        throw new Error(`Element with index ${params.index} not found in selector map`);
+      }
+      
+      const node = selectorMap[params.index];
+
+      // Enhanced file input finding logic
+      const fileInputNode = await this.findFileInputNearElement(browserSession, node, selectorMap);
+      
+      if (!fileInputNode) {
+        throw new Error('No file upload element found on the page');
       }
 
-      // TODO: Implement sophisticated file input finding logic from Python version
-      // For now, assume the element is the file input or dispatch to let the event handler figure it out
-
-      // Dispatch upload file event
+      // Dispatch upload file event with the resolved file input node
       const event = browserSession.eventBus.dispatch(new UploadFileEvent({
-        node,
-        filePath: params.path,
+        node: fileInputNode,
+        filePath: resolvedPath,
       }));
       await event;
       await event.eventResult();
@@ -1452,5 +1470,105 @@ Provide the extracted information in a clear, structured format.`;
         error: `Failed to read file ${params.fileName}: ${cleanMsg}` 
       });
     }
+  }
+
+  private async findFileInputNearElement(
+    browserSession: BrowserSession,
+    node: EnhancedDOMTreeNode,
+    selectorMap: Record<number, EnhancedDOMTreeNode>
+  ): Promise<EnhancedDOMTreeNode | null> {
+    const maxHeight = 3;
+    const maxDescendantDepth = 3;
+
+    // Helper function to find file input in descendants
+    const findFileInputInDescendants = (
+      n: EnhancedDOMTreeNode, 
+      depth: number
+    ): EnhancedDOMTreeNode | null => {
+      if (depth < 0) return null;
+      
+      if (browserSession.isFileInput(n)) {
+        return n;
+      }
+      
+      for (const child of n.childrenNodes || []) {
+        const result = findFileInputInDescendants(child, depth - 1);
+        if (result) return result;
+      }
+      
+      return null;
+    };
+
+    // Try to find a file input element near the selected element
+    let current: EnhancedDOMTreeNode | null = node;
+    
+    for (let i = 0; i <= maxHeight && current; i++) {
+      // Check the current node itself
+      if (browserSession.isFileInput(current)) {
+        return current;
+      }
+      
+      // Check all descendants of the current node
+      const result = findFileInputInDescendants(current, maxDescendantDepth);
+      if (result) return result;
+      
+      // Check all siblings and their descendants
+      if (current.parentNode) {
+        for (const sibling of current.parentNode.childrenNodes || []) {
+          if (sibling === current) continue;
+          
+          if (browserSession.isFileInput(sibling)) {
+            return sibling;
+          }
+          
+          const siblingResult = findFileInputInDescendants(sibling, maxDescendantDepth);
+          if (siblingResult) return siblingResult;
+        }
+      }
+      
+      current = current.parentNode;
+    }
+
+    // If not found near the selected element, fallback to finding closest file input to scroll position
+    console.log(
+      `No file upload element found near index ${node.nodeId || 'unknown'}, searching for closest file input to scroll position`
+    );
+
+    // Get current scroll position
+    let currentScrollY = 0;
+    try {
+      const cdpSession = await browserSession.getOrCreateCdpSession();
+      const scrollInfo = await cdpSession.cdpClient.send.Runtime.evaluate({
+        expression: 'window.scrollY || window.pageYOffset || 0'
+      }, cdpSession.sessionId);
+      currentScrollY = scrollInfo.result?.value || 0;
+    } catch {
+      // Use default scroll position
+    }
+
+    // Find all file inputs in the selector map and pick the closest one to scroll position
+    let closestFileInput: EnhancedDOMTreeNode | null = null;
+    let minDistance = Infinity;
+
+    for (const element of Object.values(selectorMap)) {
+      if (browserSession.isFileInput(element)) {
+        // Get element's Y position
+        if (element.absolutePosition) {
+          const elementY = element.absolutePosition.y;
+          const distance = Math.abs(elementY - currentScrollY);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestFileInput = element;
+          }
+        }
+      }
+    }
+
+    if (closestFileInput) {
+      console.log(`Found file input closest to scroll position (distance: ${minDistance}px)`);
+      return closestFileInput;
+    }
+
+    return null;
   }
 }
