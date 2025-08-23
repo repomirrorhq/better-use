@@ -20,6 +20,7 @@ import {
   createEnhancedAXNode
 } from './views';
 import { REQUIRED_COMPUTED_STYLES, buildSnapshotLookup } from './enhanced_snapshot';
+import { DOMTreeSerializer } from './serializer/serializer';
 import { v7 as uuidv7 } from 'uuid';
 
 // CDP types (these would ideally come from a CDP types package)
@@ -146,9 +147,33 @@ export class DomService {
    * Get the target info for a specific page.
    */
   private async getTargetsForPage(targetId?: string): Promise<CurrentPageTargets> {
-    // This would need to be implemented using the actual CDP client
-    // For now, returning a mock structure
-    throw new Error('getTargetsForPage not implemented - needs CDP client integration');
+    // Basic implementation using the browser session's current page information
+    // This provides minimal functionality for element targeting
+    try {
+      const currentPage = this.browserSession.getCurrentPage();
+      
+      // For now, return a simplified structure focusing on the main page
+      // In a full implementation, this would enumerate all targets including iframes
+      return {
+        page_session: {
+          targetId: targetId || this.browserSession.currentPageId || 'main',
+          url: await this.browserSession.getCurrentPageUrl(),
+          title: await this.browserSession.getCurrentPageTitle()
+        },
+        iframe_sessions: [] // Empty for now - would need CDP integration for iframe detection
+      };
+    } catch (error) {
+      this.logger.debug(`Could not get targets for page: ${error}`);
+      // Return minimal fallback structure
+      return {
+        page_session: {
+          targetId: targetId || 'main',
+          url: 'about:blank',
+          title: 'Unknown Page'
+        },
+        iframe_sessions: []
+      };
+    }
   }
 
   /**
@@ -575,15 +600,12 @@ export class DomService {
 
     const start = Date.now();
     
-    // TODO: Implement DOM tree serializer
-    // const serializedDOMState = DOMTreeSerializer.serialize(enhancedDOMTree, previousCachedState);
-    const serializedDOMState: SerializedDOMState = {
-      _root: null,
-      selector_map: new Map(),
-    };
+    // Use the DOM tree serializer to convert the enhanced DOM tree into a serialized format
+    const serializer = new DOMTreeSerializer(enhancedDOMTree, previousCachedState);
+    const [serializedDOMState, timingInfo] = serializer.serializeAccessibleElements();
 
     const end = Date.now();
-    const serializeTotalTiming = { serialize_dom_tree_total: end - start };
+    const serializeTotalTiming = { serialize_dom_tree_total: end - start, ...timingInfo };
 
     // Combine all timing info
     const allTiming = { ...serializeTotalTiming };
