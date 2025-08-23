@@ -19,6 +19,8 @@ import { sleep } from '../utils';
 import { CONFIG } from '../config';
 import { getLogger } from '../logging';
 import { createSerializedDOMStateWithLLMRepresentation } from '../dom/serializer/serializer';
+import { DefaultActionWatchdog } from './watchdogs/defaultaction';
+import { ScreenshotWatchdog } from './watchdogs/screenshot';
 
 export interface BrowserSessionConfig {
   profile?: BrowserProfile;
@@ -116,13 +118,6 @@ export class BrowserSession extends EventEmitter {
     }
 
     try {
-      // TODO: Avoid using dynamic imports where possible - causes issues with ts-node
-      // The .js extension is required by TypeScript moduleResolution: node16 but breaks
-      // when running with ts-node since source files are .ts not .js
-      // Consider refactoring to use static imports at the top of the file instead
-      const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction.js');
-      const { ScreenshotWatchdog } = await import('./watchdogs/screenshot.js');
-      
       // Initialize DefaultActionWatchdog - handles scroll, click, type, etc.
       const defaultActionWatchdog = new DefaultActionWatchdog(this, {
         enabled: true,
