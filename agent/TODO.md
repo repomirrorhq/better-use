@@ -47,10 +47,12 @@
 
 ## 🔧 Next Priority: Remaining Core Features
 
-### Issue #5: Browser Session Core Features Missing
-- **Selector Mapping:** `/src/browser/session.ts:802` - Proper selector mapping not implemented
-- **Page Dimensions:** `/src/browser/session.ts:429` - Can't get actual page dimensions  
-- **Highlight Removal:** `/src/browser/session.ts:1088` - Highlight removal logic missing
+### ✅ Issue #5: Browser Session Core Features - FIXED
+**Resolution:** Implemented all missing browser session features
+**Fixed:** 2025-08-23 (commit bad7559)
+- **Selector Mapping:** Proper selector map caching and retrieval from DOM watchdog
+- **Page Dimensions:** Get actual page dimensions using document.scrollWidth/scrollHeight  
+- **Highlight Removal:** Complete highlight removal logic with thorough cleanup
 
 ### Issue #6: DOM Service Performance Problems  
 - **WebSocket Persistence:** `/src/dom/service.ts:128` - New websocket connection PER STEP (performance issue)
@@ -203,7 +205,13 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 
 ---
 
-## 📅 Latest Maintenance Check (Aug 23, 2025)
+## 📅 Latest Maintenance Session (Aug 23, 2025 - Active)
+
+### Recent Fixes Completed
+- ✅ **Dynamic Import Issue:** Fixed ts-node compatibility (commit c8ce25b)
+- ✅ **Browser Session Features:** Implemented selector mapping, page dimensions, highlight removal (commit bad7559)
+
+## 📅 Previous Maintenance Check (Aug 23, 2025)
 
 ### Repository Status
 - **Python Repository:** Up to date at commit 1173e2c3 (no new changes to port)
