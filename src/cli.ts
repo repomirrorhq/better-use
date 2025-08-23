@@ -15,6 +15,7 @@ import { ChatAnthropic } from './llm/providers/anthropic';
 import { ChatGoogle } from './llm/providers/google';
 import { ChatAWSBedrock } from './llm/providers/aws';
 import { ChatAzureOpenAI } from './llm/providers/azure';
+import { ChatDeeseek } from './llm/providers/deepseek';
 import { getBrowserUseVersion } from './utils';
 
 const program = new Command();
@@ -32,7 +33,7 @@ ${chalk.gray('Browser automation powered by AI - TypeScript Edition')}
 `;
 
 interface CLIConfig {
-  provider: 'openai' | 'anthropic' | 'google' | 'aws' | 'azure';
+  provider: 'openai' | 'anthropic' | 'google' | 'aws' | 'azure' | 'deepseek';
   model: string;
   apiKey?: string;
   temperature: number;
@@ -75,6 +76,12 @@ function createLLMProvider(config: CLIConfig) {
         api_key: config.apiKey || process.env.AZURE_OPENAI_API_KEY,
         azure_endpoint: process.env.AZURE_OPENAI_ENDPOINT,
         azure_deployment: process.env.AZURE_OPENAI_DEPLOYMENT,
+        temperature: config.temperature,
+      });
+    case 'deepseek':
+      return new ChatDeeseek({
+        model: config.model,
+        api_key: config.apiKey || process.env.DEEPSEEK_API_KEY,
         temperature: config.temperature,
       });
     default:
@@ -217,7 +224,7 @@ program
 program
   .command('run')
   .description('Run browser automation in interactive mode')
-  .option('-p, --provider <provider>', 'LLM provider (openai, anthropic, google, aws, azure)', 'openai')
+  .option('-p, --provider <provider>', 'LLM provider (openai, anthropic, google, aws, azure, deepseek)', 'openai')
   .option('-m, --model <model>', 'Model name', 'gpt-4o')
   .option('-k, --api-key <key>', 'API key (can also use environment variables)')
   .option('-t, --temperature <temp>', 'Temperature for LLM', parseFloat, 0.2)
@@ -238,7 +245,7 @@ program
 program
   .command('exec <task>')
   .description('Execute a single browser automation task')
-  .option('-p, --provider <provider>', 'LLM provider (openai, anthropic, google, aws, azure)', 'openai')
+  .option('-p, --provider <provider>', 'LLM provider (openai, anthropic, google, aws, azure, deepseek)', 'openai')
   .option('-m, --model <model>', 'Model name', 'gpt-4o')
   .option('-k, --api-key <key>', 'API key (can also use environment variables)')
   .option('-t, --temperature <temp>', 'Temperature for LLM', parseFloat, 0.2)
