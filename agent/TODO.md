@@ -207,6 +207,10 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 
 ## 📅 Latest Maintenance Session (Aug 23, 2025 - Active)
 
+### Session Start: New Maintenance Check
+- **Time:** Current session
+- **Tasks:** Checking for Python updates, reviewing issues, continuing port
+
 ### Recent Fixes Completed
 - ✅ **Dynamic Import Issue:** Fixed ts-node compatibility (commit c8ce25b)
 - ✅ **Browser Session Features:** Implemented selector mapping, page dimensions, highlight removal (commit bad7559)
@@ -219,3 +223,33 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 - **GitHub Issues:** None open (all 4 previous issues resolved)
 - **Pull Requests:** None pending
 - **Build Status:** Working (use compiled version to avoid ts-node import issues)
+
+---
+
+## 🚀 Future Enhancements
+
+### TODO: Create TypeScript Fork of CDP-Use
+**Priority:** Medium - Enhanced CDP functionality
+**Added:** 2025-08-23
+
+**Description:**
+Create a TypeScript port/fork of the CDP-Use library to provide native TypeScript support for Chrome DevTools Protocol operations.
+
+**Tasks:**
+1. **Clone CDP-Use repository** - Pull the latest CDP-Use Python codebase
+2. **Analyze architecture** - Understand the CDP-Use structure and API design
+3. **Create TypeScript fork** - Set up new repository "cdp-use-ts" 
+4. **Port core functionality** - Convert Python CDP operations to TypeScript
+5. **Add type definitions** - Create comprehensive TypeScript types for CDP
+6. **Integrate with browser-use-ts** - Replace current CDP wrapper with cdp-use-ts
+7. **Add tests** - Ensure full test coverage for CDP operations
+8. **Document API** - Create TypeScript-specific documentation
+
+**Benefits:**
+- Native TypeScript CDP support with full type safety
+- Better integration with browser-use-ts
+- Improved developer experience with auto-completion
+- Reduced runtime errors through compile-time type checking
+- Potential performance improvements over Python-to-JS bridge
+
+**Repository:** `cdp-use-ts` (to be created)
