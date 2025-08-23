@@ -8,7 +8,7 @@
 
 import { BaseWatchdog } from './base';
 import { BrowserSession } from '../session';
-import { TabCreatedEvent, BrowserStateRequestEvent, ScreenshotEvent, BrowserErrorEvent } from '../events';
+import { TabCreatedEvent, BrowserStateRequestEvent, ScreenshotEvent, BrowserErrorEvent } from '../events-classes';
 import { BrowserStateSummary, PageInfo, createPageInfo, createBrowserStateSummary } from '../views';
 import { DomService } from '../../dom/service';
 import { SerializedDOMState, EnhancedDOMTreeNode } from '../../dom/views';

@@ -6,7 +6,7 @@
 
 import { BaseWatchdog } from './base';
 import { BrowserSession } from '../session';
-import { ScreenshotEvent } from '../events';
+import { ScreenshotEvent } from '../events-classes';
 import { BrowserException } from '../../exceptions';
 import { getLogger } from '../../logging';
 

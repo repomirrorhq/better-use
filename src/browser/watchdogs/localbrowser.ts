@@ -7,7 +7,7 @@
 
 import { BaseWatchdog } from './base';
 import { BrowserSession } from '../session';
-import { BrowserLaunchEvent, BrowserKillEvent, BrowserStopEvent } from '../events';
+import { BrowserLaunchEvent, BrowserKillEvent, BrowserStopEvent } from '../events-classes';
 import { getLogger } from '../../logging';
 import * as fs from 'fs/promises';
 import * as path from 'path';
