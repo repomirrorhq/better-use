@@ -14,6 +14,7 @@ export * from './providers/azure';
 export * from './providers/deepseek';
 export * from './providers/groq';
 export * from './providers/ollama';
+export * from './providers/openrouter';
 
 // Re-export commonly used types
 export type { 
