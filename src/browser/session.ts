@@ -846,9 +846,10 @@ export class BrowserSession extends EventEmitter {
     throw new Error('No pages available');
   }
 
-  async sendKeys(event: { keys: string }): Promise<void> {
-    // TODO: Implement sending keys
-    console.log(`⌨️ Sending keys: "${event.keys}"`);
+  async sendKeys(event: { keys: string; event_timeout?: number }): Promise<void> {
+    // The actual sendKeys implementation is handled by the DefaultActionWatchdog
+    // This method just logs for debugging, the real work happens in the watchdog
+    this.logger.debug(`⌨️ Processing sendKeys event: "${event.keys}"`);
   }
 
   async scrollEvent(event: { direction: string; amount: number; node?: any; event_timeout?: number }): Promise<void> {
@@ -894,9 +895,11 @@ export class BrowserSession extends EventEmitter {
     }
   }
 
-  async uploadFile(event: { index: number; path: string }): Promise<void> {
-    // TODO: Implement file upload
-    console.log(`📁 Uploading file "${event.path}" to element ${event.index}`);
+  async uploadFile(event: { node: any; file_path: string; event_timeout?: number }): Promise<void> {
+    // The actual file upload implementation is handled by the DefaultActionWatchdog
+    // This method just logs for debugging, the real work happens in the watchdog
+    const elementIndex = event.node.element_index || 'unknown';
+    this.logger.debug(`📁 Processing file upload event: "${event.file_path}" to element ${elementIndex}`);
   }
 
   /**
