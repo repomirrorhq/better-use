@@ -11,9 +11,9 @@ import {
   createUserMessage
 } from '../llm/messages';
 import type { 
-  BrowserStateSummary, 
   AgentStepInfo 
 } from './views';
+import type { BrowserStateSummary } from '../browser/views';
 import type { FileSystem } from '../filesystem/index';
 
 // Get the current file's directory
@@ -140,7 +140,7 @@ export class AgentMessagePrompt {
   }
 
   private getBrowserStateDescription(): string {
-    const elementsText = this.browserState.domState.llmRepresentation(
+    const elementsText = this.browserState.dom_state.llmRepresentation(
       this.includeAttributes
     );
 
@@ -154,44 +154,46 @@ export class AgentMessagePrompt {
       truncatedElements = elementsText;
     }
 
-    const hasContentAbove = (this.browserState.pixelsAbove ?? 0) > 0;
-    const hasContentBelow = (this.browserState.pixelsBelow ?? 0) > 0;
+    const pixelsAbove = this.browserState.page_info?.scroll_y ?? 0;
+    const pixelsBelow = Math.max(0, (this.browserState.page_info?.page_height ?? 0) - (this.browserState.page_info?.scroll_y ?? 0) - (this.browserState.page_info?.viewport_height ?? 0));
+    const hasContentAbove = pixelsAbove > 0;
+    const hasContentBelow = pixelsBelow > 0;
 
     // Enhanced page information for the model
     let pageInfoText = '';
-    if (this.browserState.pageInfo) {
-      const pi = this.browserState.pageInfo;
-      // Compute page statistics dynamically
-      const pagesAbove = pi.viewportHeight > 0 ? pi.pixelsAbove / pi.viewportHeight : 0;
-      const pagesBelow = pi.viewportHeight > 0 ? pi.pixelsBelow / pi.viewportHeight : 0;
-      const totalPages = pi.viewportHeight > 0 ? pi.pageHeight / pi.viewportHeight : 0;
-      const currentPagePosition = Math.max(pi.pageHeight - pi.viewportHeight, 1) > 0 
-        ? pi.scrollY / Math.max(pi.pageHeight - pi.viewportHeight, 1) 
+    if (this.browserState.page_info) {
+      const pi = this.browserState.page_info;
+      // Compute page statistics dynamically  
+      const pagesAbove = pi.viewport_height > 0 ? pi.scroll_y / pi.viewport_height : 0;
+      const pagesBelow = pi.viewport_height > 0 ? (pi.page_height - pi.scroll_y - pi.viewport_height) / pi.viewport_height : 0;
+      const totalPages = pi.viewport_height > 0 ? pi.page_height / pi.viewport_height : 0;
+      const currentPagePosition = Math.max(pi.page_height - pi.viewport_height, 1) > 0 
+        ? pi.scroll_y / Math.max(pi.page_height - pi.viewport_height, 1) 
         : 0;
-      pageInfoText = `Page info: ${pi.viewportWidth}x${pi.viewportHeight}px viewport, ${pi.pageWidth}x${pi.pageHeight}px total page size, ${pagesAbove.toFixed(1)} pages above, ${pagesBelow.toFixed(1)} pages below, ${totalPages.toFixed(1)} total pages, at ${Math.round(currentPagePosition * 100)}% of page`;
+      pageInfoText = `Page info: ${pi.viewport_width}x${pi.viewport_height}px viewport, ${pi.page_width}x${pi.page_height}px total page size, ${pagesAbove.toFixed(1)} pages above, ${pagesBelow.toFixed(1)} pages below, ${totalPages.toFixed(1)} total pages, at ${Math.round(currentPagePosition * 100)}% of page`;
     }
 
     let finalElementsText: string;
     if (truncatedElements !== '') {
       if (hasContentAbove) {
-        if (this.browserState.pageInfo) {
-          const pi = this.browserState.pageInfo;
-          const pagesAbove = pi.viewportHeight > 0 ? pi.pixelsAbove / pi.viewportHeight : 0;
-          finalElementsText = `... ${this.browserState.pixelsAbove} pixels above (${pagesAbove.toFixed(1)} pages) - scroll to see more or extract structured data if you are looking for specific information ...\n${truncatedElements}`;
+        if (this.browserState.page_info) {
+          const pi = this.browserState.page_info;
+          const pagesAbove = pi.viewport_height > 0 ? pi.scroll_y / pi.viewport_height : 0;
+          finalElementsText = `... ${pixelsAbove} pixels above (${pagesAbove.toFixed(1)} pages) - scroll to see more or extract structured data if you are looking for specific information ...\n${truncatedElements}`;
         } else {
-          finalElementsText = `... ${this.browserState.pixelsAbove} pixels above - scroll to see more or extract structured data if you are looking for specific information ...\n${truncatedElements}`;
+          finalElementsText = `... ${pixelsAbove} pixels above - scroll to see more or extract structured data if you are looking for specific information ...\n${truncatedElements}`;
         }
       } else {
         finalElementsText = `[Start of page]\n${truncatedElements}`;
       }
       
       if (hasContentBelow) {
-        if (this.browserState.pageInfo) {
-          const pi = this.browserState.pageInfo;
-          const pagesBelow = pi.viewportHeight > 0 ? pi.pixelsBelow / pi.viewportHeight : 0;
-          finalElementsText = `${finalElementsText}\n... ${this.browserState.pixelsBelow} pixels below (${pagesBelow.toFixed(1)} pages) - scroll to see more or extract structured data if you are looking for specific information ...`;
+        if (this.browserState.page_info) {
+          const pi = this.browserState.page_info;
+          const pagesBelow = pi.viewport_height > 0 ? pixelsBelow / pi.viewport_height : 0;
+          finalElementsText = `${finalElementsText}\n... ${pixelsBelow} pixels below (${pagesBelow.toFixed(1)} pages) - scroll to see more or extract structured data if you are looking for specific information ...`;
         } else {
-          finalElementsText = `${finalElementsText}\n... ${this.browserState.pixelsBelow} pixels below - scroll to see more or extract structured data if you are looking for specific information ...`;
+          finalElementsText = `${finalElementsText}\n... ${pixelsBelow} pixels below - scroll to see more or extract structured data if you are looking for specific information ...`;
         }
       } else {
         finalElementsText = `${finalElementsText}\n[End of page]`;
@@ -206,7 +208,7 @@ export class AgentMessagePrompt {
     // Find tabs that match both URL and title to identify current tab more reliably
     for (const tab of this.browserState.tabs) {
       if (tab.url === this.browserState.url && tab.title === this.browserState.title) {
-        currentTabCandidates.push(tab.targetId);
+        currentTabCandidates.push(tab.target_id);
       }
     }
 
@@ -215,7 +217,7 @@ export class AgentMessagePrompt {
     const currentTargetId = currentTabCandidates.length === 1 ? currentTabCandidates[0] : null;
 
     for (const tab of this.browserState.tabs) {
-      tabsText += `Tab ${tab.targetId.slice(-4)}: ${tab.url} - ${tab.title.substring(0, 30)}\n`;
+      tabsText += `Tab ${tab.target_id.slice(-4)}: ${tab.url} - ${tab.title.substring(0, 30)}\n`;
     }
 
     const currentTabText = currentTargetId !== null ? `Current tab: ${currentTargetId.slice(-4)}` : '';
@@ -228,8 +230,8 @@ export class AgentMessagePrompt {
 
     // Add recent events if available and requested
     let recentEventsText = '';
-    if (this.includeRecentEvents && this.browserState.recentEvents) {
-      recentEventsText = `Recent browser events: ${this.browserState.recentEvents}\n`;
+    if (this.includeRecentEvents && this.browserState.recent_events) {
+      recentEventsText = `Recent browser events: ${this.browserState.recent_events}\n`;
     }
 
     const browserState = `${currentTabText}
@@ -245,7 +247,7 @@ ${finalElementsText}
   private getAgentStateDescription(): string {
     let stepInfoDescription = '';
     if (this.stepInfo) {
-      stepInfoDescription = `Step ${this.stepInfo.stepNumber + 1} of ${this.stepInfo.maxSteps} max possible steps\n`;
+      stepInfoDescription = `Step ${this.stepInfo.step_number + 1} of ${this.stepInfo.max_steps} max possible steps\n`;
     }
     const timeStr = new Date().toISOString().slice(0, 16).replace('T', ' ');
     stepInfoDescription += `Current date and time: ${timeStr}`;
@@ -289,7 +291,7 @@ ${finalTodoContents}
     if (
       this.isNewTabPage(this.browserState.url) &&
       this.stepInfo !== undefined &&
-      this.stepInfo.stepNumber === 0 &&
+      this.stepInfo.step_number === 0 &&
       this.browserState.tabs.length === 1
     ) {
       useVision = false;

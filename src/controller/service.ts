@@ -1491,7 +1491,7 @@ Provide the extracted information in a clear, structured format.`;
         return n;
       }
       
-      for (const child of n.childrenNodes || []) {
+      for (const child of n.children_nodes || []) {
         const result = findFileInputInDescendants(child, depth - 1);
         if (result) return result;
       }
