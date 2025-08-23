@@ -4,7 +4,7 @@
 
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
-import { SyncConfig, SyncItem, SyncOperation, SyncStatus, SyncDataType } from './types';
+import { SyncConfig, SyncDataType, SyncItem, SyncOperation, SyncStatus } from './types';
 import { AuthService } from './auth';
 
 /**

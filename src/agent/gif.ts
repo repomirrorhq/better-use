@@ -9,7 +9,7 @@
  * - Configurable duration, font sizes, logos
  */
 
-import { Canvas, createCanvas, CanvasRenderingContext2D, loadImage, registerFont } from 'canvas';
+import { Canvas, CanvasRenderingContext2D, createCanvas, loadImage, registerFont } from 'canvas';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';

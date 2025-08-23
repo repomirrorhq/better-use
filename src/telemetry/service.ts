@@ -7,7 +7,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
-import { TelemetryConfig, TelemetryEvent, BaseTelemetryEvent } from './types';
+import { BaseTelemetryEvent, TelemetryConfig, TelemetryEvent } from './types';
 
 /**
  * Simple in-memory telemetry service for browser-use TypeScript

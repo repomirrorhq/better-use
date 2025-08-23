@@ -8,8 +8,8 @@
 import { z } from 'zod';
 import { v7 as uuid7 } from 'uuid';
 import { BaseMessage, BaseMessageSchema } from '../llm/messages';
-import { DEFAULT_INCLUDE_ATTRIBUTES, DOMInteractedElementSchema, type DOMInteractedElement } from '../dom/views';
-import { TabInfoSchema, type TabInfo } from '../browser/views';
+import { DEFAULT_INCLUDE_ATTRIBUTES, type DOMInteractedElement, DOMInteractedElementSchema } from '../dom/views';
+import { type TabInfo, TabInfoSchema } from '../browser/views';
 
 // Agent Settings schema
 export const AgentSettingsSchema = z.object({

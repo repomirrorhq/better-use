@@ -5,9 +5,9 @@
  * MCP tools are dynamically discovered and registered as browser-use actions.
  */
 
-import { spawn, ChildProcess } from 'child_process';
+import { ChildProcess, spawn } from 'child_process';
 import { EventEmitter } from 'events';
-import { MCPServerConfig, MCPClientConfig, MCPTool, MCPToolResult } from './types';
+import { MCPClientConfig, MCPServerConfig, MCPTool, MCPToolResult } from './types';
 
 /**
  * Basic MCP Client implementation for TypeScript
@@ -158,7 +158,7 @@ export class MCPClient extends EventEmitter {
       buffer += data.toString();
       
       // Process complete JSON-RPC messages
-      let lines = buffer.split('\n');
+      const lines = buffer.split('\n');
       buffer = lines.pop() || '';
 
       for (const line of lines) {

@@ -7,19 +7,19 @@
 
 import { BrowserSession } from '../browser/session';
 import { 
-  EnhancedDOMTreeNode, 
-  EnhancedAXNode, 
-  EnhancedSnapshotNode,
   CurrentPageTargets, 
-  TargetAllTrees,
+  DOMRect, 
+  DOMTreeNodeUtils,
+  EnhancedAXNode, 
+  EnhancedDOMTreeNode,
+  EnhancedSnapshotNode,
   NodeType,
-  DOMRect,
   SerializedDOMState,
+  TargetAllTrees,
   createDOMRect,
-  createEnhancedAXNode,
-  DOMTreeNodeUtils
+  createEnhancedAXNode
 } from './views';
-import { buildSnapshotLookup, REQUIRED_COMPUTED_STYLES } from './enhanced_snapshot';
+import { REQUIRED_COMPUTED_STYLES, buildSnapshotLookup } from './enhanced_snapshot';
 import { v7 as uuidv7 } from 'uuid';
 
 // CDP types (these would ideally come from a CDP types package)
@@ -357,7 +357,7 @@ export class DomService {
     const enhancedAXNode = axNode ? this.buildEnhancedAXNode(axNode) : null;
 
     // Process attributes
-    let attributes: Record<string, string> = {};
+    const attributes: Record<string, string> = {};
     if (node.attributes) {
       for (let i = 0; i < node.attributes.length; i += 2) {
         attributes[node.attributes[i]] = node.attributes[i + 1] || '';

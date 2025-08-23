@@ -377,7 +377,7 @@ export class DOMTreeNodeUtils {
    * Get element position among siblings with same tag name
    */
   private static getElementPosition(element: EnhancedDOMTreeNode): number {
-    if (!element.parent_node || !element.parent_node.children_nodes) {
+    if (!element.parent_node?.children_nodes) {
       return 0;
     }
 

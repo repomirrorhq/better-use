@@ -3,9 +3,9 @@
  */
 
 import { 
+  AgentCompleteEvent, 
   AgentStartEvent, 
   AgentStepEvent, 
-  AgentCompleteEvent, 
   BrowserActionEvent, 
   LLMCallEvent, 
   MCPClientEvent 

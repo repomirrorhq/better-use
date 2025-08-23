@@ -2,17 +2,17 @@
  * Browser session management with Playwright integration
  */
 
-import { chromium, Browser, BrowserContext, Page, ChromiumBrowser } from 'playwright';
+import { Browser, BrowserContext, ChromiumBrowser, Page, chromium } from 'playwright';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { BrowserProfile } from './profile';
-import { BrowserStateSummary, TabInfo, PageInfo, createBrowserStateSummary, createTabInfo, createPageInfo } from './views';
+import { BrowserStateSummary, PageInfo, TabInfo, createBrowserStateSummary, createPageInfo, createTabInfo } from './views';
 import { 
-  NavigateToUrlEvent, 
   ClickElementEvent, 
-  TypeTextEvent, 
-  ScreenshotEvent,
-  TargetID 
+  NavigateToUrlEvent, 
+  ScreenshotEvent, 
+  TargetID,
+  TypeTextEvent 
 } from './events';
 import { BrowserException } from '../exceptions';
 import { sleep } from '../utils';

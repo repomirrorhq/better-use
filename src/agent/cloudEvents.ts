@@ -108,7 +108,7 @@ export type CreateAgentStepEvent = z.infer<typeof CreateAgentStepEventSchema>;
  * Validator for screenshot URL/base64 content size
  */
 export function validateScreenshotSize(content: string | undefined): string | undefined {
-  if (!content || !content.startsWith('data:')) {
+  if (!content?.startsWith('data:')) {
     return content;
   }
   

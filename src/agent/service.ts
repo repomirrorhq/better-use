@@ -8,21 +8,21 @@
 import { v7 as uuid7 } from 'uuid';
 import { EventEmitter } from 'events';
 import { 
-  AgentSettings,
-  AgentState,
-  AgentStateSchema,
-  AgentOutput,
   ActionResult,
-  AgentStepInfo,
   AgentHistory,
   AgentHistoryList,
   AgentHistoryListHelper,
+  AgentOutput,
+  AgentSettings,
+  AgentState,
+  AgentStateSchema,
+  AgentStepInfo,
+  BrowserStateHistory,
   StepMetadata,
   StepMetadataHelper,
-  BrowserStateHistory,
+  createActionResult,
   createAgentSettings,
   createAgentState,
-  createActionResult,
   createAgentStepInfo,
 } from './views';
 import { MessageManager, type SensitiveData } from './messageManager/index';

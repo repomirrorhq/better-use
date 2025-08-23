@@ -10,20 +10,20 @@ import * as path from 'path';
 import * as os from 'os';
 import axios from 'axios';
 import { 
-  TokenUsageEntry,
-  TokenCostCalculated,
-  TokenCostCalculatedHelper,
+  CachedPricingData,
   ModelPricing,
   ModelUsageStats,
   ModelUsageTokens,
+  TokenCostCalculated,
+  TokenCostCalculatedHelper,
+  TokenUsageEntry,
   UsageSummary,
-  CachedPricingData,
-  createTokenUsageEntry,
   createModelUsageStats,
+  createTokenUsageEntry,
   createUsageSummary,
 } from './views';
 import { BaseChatModel } from '../llm/base';
-import { ChatInvokeUsage, ChatInvokeCompletion } from '../llm/views';
+import { ChatInvokeCompletion, ChatInvokeUsage } from '../llm/views';
 
 const logger = console; // Simple logger for now
 const costLogger = console; // Cost logging
@@ -344,7 +344,7 @@ export class TokenCost {
 
       if (usage.prompt_cached_tokens) {
         const cachedTokensFmt = this.formatTokens(usage.prompt_cached_tokens);
-        if (this.include_cost && cost && cost.prompt_read_cached_cost) {
+        if (this.include_cost && cost?.prompt_read_cached_cost) {
           parts.push(`💾 ${C_BLUE}${cachedTokensFmt} ($${cost.prompt_read_cached_cost.toFixed(4)})${C_RESET}`);
         } else {
           parts.push(`💾 ${C_BLUE}${cachedTokensFmt}${C_RESET}`);
@@ -353,7 +353,7 @@ export class TokenCost {
 
       if (usage.prompt_cache_creation_tokens) {
         const creationTokensFmt = this.formatTokens(usage.prompt_cache_creation_tokens);
-        if (this.include_cost && cost && cost.prompt_cache_creation_cost) {
+        if (this.include_cost && cost?.prompt_cache_creation_cost) {
           parts.push(`🔧 ${C_BLUE}${creationTokensFmt} ($${cost.prompt_cache_creation_cost.toFixed(4)})${C_RESET}`);
         } else {
           parts.push(`🔧 ${C_BLUE}${creationTokensFmt}${C_RESET}`);

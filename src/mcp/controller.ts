@@ -6,7 +6,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { z, ZodSchema } from 'zod';
+import { ZodSchema, z } from 'zod';
 import { Registry } from '../controller/registry/service';
 import { ActionResult } from '../agent/views';
 

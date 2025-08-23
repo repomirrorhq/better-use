@@ -81,7 +81,7 @@ export class AuthService {
    */
   async refreshToken(): Promise<AuthInfo | null> {
     const authInfo = await this.getAuthInfo();
-    if (!authInfo || !authInfo.refreshToken) {
+    if (!authInfo?.refreshToken) {
       return null;
     }
 
