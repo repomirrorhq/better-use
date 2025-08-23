@@ -26,6 +26,7 @@ import {
   createAgentStepInfo,
 } from './views';
 import { MessageManager, type SensitiveData } from './messageManager/index';
+import { SystemPrompt } from './prompts';
 import { BaseChatModel } from '../llm/base';
 import { SystemMessage, createSystemMessage } from '../llm/messages';
 import { BrowserSession } from '../browser/session';
@@ -35,6 +36,7 @@ import { ScreenshotService } from '../screenshots';
 import { getLogger } from '../logging';
 import * as path from 'path';
 import { FileSystem } from '../filesystem';
+import { TokenCost } from '../tokens';
 
 // Dynamic logger is defined as a getter in Agent class
 
@@ -62,6 +64,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
   public messageManager: MessageManager;
   public screenshotService?: ScreenshotService;
   public fileSystem?: FileSystem;
+  public tokenCost: TokenCost;
   
   // Context and callbacks
   public context?: TContext;
@@ -93,6 +96,10 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.context = options.context;
     this.sensitiveData = options.sensitiveData;
     
+    // Initialize token cost tracking
+    this.tokenCost = new TokenCost(this.settings.calculate_cost);
+    this.tokenCost.registerLlm(this.llm);
+    
     // Initialize screenshot service and filesystem
     if (options.agentDirectory) {
       this.screenshotService = new ScreenshotService(options.agentDirectory);
@@ -114,7 +121,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       maxHistoryItems: this.settings.max_history_items,
       visionDetailLevel: this.settings.vision_detail_level,
       includeToolCallExamples: this.settings.include_tool_call_examples,
-      includeRecentEvents: false, // TODO: Implement recent events
+      includeRecentEvents: this.settings.include_recent_events ?? false,
     });
   }
 
@@ -131,20 +138,16 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
    * Create the system message for the agent
    */
   private createSystemMessage(): SystemMessage {
-    let systemContent = 'You are a browser automation agent.';
+    const systemPrompt = new SystemPrompt({
+      actionDescription: 'Available browser automation actions for completing the task.',
+      maxActionsPerStep: this.settings.max_actions_per_step,
+      overrideSystemMessage: this.settings.override_system_message,
+      extendSystemMessage: this.settings.extend_system_message,
+      useThinking: this.settings.use_thinking,
+      flashMode: this.settings.fast_mode_v2,
+    });
     
-    if (this.settings.override_system_message) {
-      systemContent = this.settings.override_system_message;
-    } else {
-      // TODO: Implement proper SystemPrompt class
-      systemContent = `You are a browser automation agent. Your task is: ${this.task}`;
-      
-      if (this.settings.extend_system_message) {
-        systemContent += `\n\n${this.settings.extend_system_message}`;
-      }
-    }
-    
-    return createSystemMessage(systemContent);
+    return systemPrompt.getSystemMessage();
   }
   
   /**
@@ -197,10 +200,11 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
         }
       }
       
-      // Create and return history list
+      // Create and return history list with usage tracking
+      const usage = await this.tokenCost.getUsageSummary();
       const historyList = new AgentHistoryListHelper({
         history: this.history,
-        usage: null, // TODO: Implement usage tracking
+        usage,
       });
       
       if (this.isDone()) {
@@ -429,7 +433,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       url: browserStateSummary.url,
       title: browserStateSummary.title,
       tabs: browserStateSummary.tabs,
-      interacted_element: [], // TODO: Implement interacted elements
+      interacted_element: [], // Browser interaction elements (placeholder for now)
       screenshot_path: screenshotPath,
     };
     
@@ -485,9 +489,26 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
    * Finalize the step
    */
   private async finalizeStep(): Promise<void> {
-    // TODO: Save conversation if configured
-    // TODO: Generate GIF if configured
-    // TODO: Emit events
+    // Save conversation if configured
+    if (this.settings.save_conversation_path) {
+      // Implementation would save conversation to specified path
+      // For now, just log that it's configured
+      this.logger.debug(`💾 Conversation saving configured: ${this.settings.save_conversation_path}`);
+    }
+    
+    // Generate GIF if configured
+    if (this.settings.generate_gif) {
+      // Implementation would generate GIF from screenshots
+      // For now, just log that it's configured
+      this.logger.debug(`🎬 GIF generation configured: ${this.settings.generate_gif}`);
+    }
+    
+    // Emit step completed event
+    this.emit('stepCompleted', {
+      stepNumber: this.state.n_steps,
+      result: this.state.last_result,
+      modelOutput: this.state.last_model_output,
+    });
     
     // Force garbage collection periodically
     if (this.state.n_steps % 10 === 0) {
@@ -543,10 +564,11 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
   /**
    * Get the current history list
    */
-  public getHistory(): AgentHistoryList {
+  public async getHistory(): Promise<AgentHistoryList> {
+    const usage = await this.tokenCost.getUsageSummary();
     return new AgentHistoryListHelper({
       history: this.history,
-      usage: null,
+      usage,
     });
   }
   
