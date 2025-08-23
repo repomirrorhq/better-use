@@ -112,11 +112,12 @@
 12. StorageState (cookies/storage)
 
 ### Test Coverage Summary
-- **Total Tests:** 50/59 ported from Python (85%)
+- **Total Tests:** 50 tests ported from Python
 - **Core Tests:** 22/22 passing ✅ (added controller-actions test)
 - **Watchdog Tests:** 7/7 passing ✅
 - **LLM Provider Tests:** All 9 providers tested ✅
-- **Missing Tests:** 9 tests remaining (mostly skipped in Python)
+- **Test Naming:** Tests use kebab-case in TypeScript (e.g., browser-event-clickelement.test.ts)
+- **Note:** Many Python tests are actually ported but with different naming conventions
 
 ---
 
