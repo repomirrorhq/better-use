@@ -52,13 +52,15 @@ describe('Token Cost Service Tests', () => {
       // Directory might not exist, ignore error
     }
 
-    // Override XDG_CACHE_HOME for testing
-    process.env.XDG_CACHE_HOME = path.dirname(testCacheDir);
+    // Override XDG_CACHE_HOME for testing - ensure it points to a clean directory
+    const tempDir = path.join(os.tmpdir(), 'browser-use-test-xdg-' + Math.random().toString(36).substring(7));
+    process.env.XDG_CACHE_HOME = tempDir;
     
     tokenCost = new TokenCost(false); // Start without cost calculation
     
-    // Clear axios mocks
+    // Clear and reset axios mocks
     mockedAxios.get.mockClear();
+    mockedAxios.get.mockReset();
   });
 
   afterEach(async () => {
@@ -270,13 +272,13 @@ describe('Token Cost Service Tests', () => {
       expect(cost).not.toBeNull();
       
       // New prompt cost should be for uncached tokens only (1000 - 300 = 700)
-      expect(cost!.new_prompt_cost).toBe(0.7); // 700 * 0.001
-      expect(cost!.prompt_read_cached_cost).toBe(0.03); // 300 * 0.0001
-      expect(cost!.prompt_cache_creation_cost).toBe(0.05); // 100 * 0.0005
-      expect(cost!.completion_cost).toBe(1.0); // 500 * 0.002
+      expect(cost!.new_prompt_cost).toBeCloseTo(0.7, 4); // 700 * 0.001
+      expect(cost!.prompt_read_cached_cost).toBeCloseTo(0.03, 4); // 300 * 0.0001
+      expect(cost!.prompt_cache_creation_cost).toBeCloseTo(0.05, 4); // 100 * 0.0005
+      expect(cost!.completion_cost).toBeCloseTo(1.0, 4); // 500 * 0.002
       
       // Total should include all costs
-      expect(cost!.total_cost).toBe(1.78); // 0.7 + 0.03 + 0.05 + 1.0
+      expect(cost!.total_cost).toBeCloseTo(1.78, 4); // 0.7 + 0.03 + 0.05 + 1.0
     });
 
     it('should return null for unknown models', async () => {
@@ -297,6 +299,9 @@ describe('Token Cost Service Tests', () => {
 
   describe('Usage Summary', () => {
     beforeEach(async () => {
+      // Ensure we have a clean service for these tests
+      tokenCost = new TokenCost(false);
+      
       // Add some test usage data
       const usage1: ChatInvokeUsage = { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 };
       const usage2: ChatInvokeUsage = { prompt_tokens: 200, completion_tokens: 100, total_tokens: 300 };
@@ -347,10 +352,16 @@ describe('Token Cost Service Tests', () => {
     });
 
     it('should filter summary by time', async () => {
+      // Wait a bit to ensure the beforeEach entries have a timestamp
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
+      // Set cutoff time after the beforeEach entries
       const cutoffTime = new Date();
       
+      // Wait again to ensure the new entry will have a later timestamp
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
       // Add more recent usage
-      await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
       const recentUsage: ChatInvokeUsage = { prompt_tokens: 500, completion_tokens: 250, total_tokens: 750 };
       tokenCost.addUsage('model-3', recentUsage);
 
