@@ -46,7 +46,7 @@ export class SecurityWatchdog extends BaseWatchdog {
 
   async on_NavigateToUrlEvent(event: NavigateToUrlEvent): Promise<void> {
     // Security check BEFORE navigation
-    if (!this.isUrlAllowed(event.url)) {
+    if (!this._isUrlAllowed(event.url)) {
       console.warn(`⛔️ Blocking navigation to disallowed URL: ${event.url}`);
       
       const errorEvent = {
@@ -67,7 +67,7 @@ export class SecurityWatchdog extends BaseWatchdog {
 
   async on_NavigationCompleteEvent(event: NavigationCompleteEvent): Promise<void> {
     // Check if the navigated URL is allowed (in case of redirects)
-    if (!this.isUrlAllowed(event.url)) {
+    if (!this._isUrlAllowed(event.url)) {
       console.warn(`⛔️ Navigation to non-allowed URL detected: ${event.url}`);
 
       // Dispatch browser error
@@ -95,7 +95,7 @@ export class SecurityWatchdog extends BaseWatchdog {
   }
 
   async on_TabCreatedEvent(event: TabCreatedEvent): Promise<void> {
-    if (!this.isUrlAllowed(event.url)) {
+    if (!this._isUrlAllowed(event.url)) {
       console.warn(`⛔️ New tab created with disallowed URL: ${event.url}`);
 
       // Dispatch error and try to close the tab
@@ -134,10 +134,11 @@ export class SecurityWatchdog extends BaseWatchdog {
 
   /**
    * Check if a URL is allowed based on the allowed_domains configuration.
+   * Made public for testing - matches Python's _is_url_allowed
    */
-  private isUrlAllowed(url: string): boolean {
+  public _isUrlAllowed(url: string): boolean {
     // Get allowed domains from browser profile or config
-    const allowedDomains = this.config.allowedDomains;
+    const allowedDomains = this.config.allowedDomains || this.browserSession.browserProfile.allowedDomains;
     
     // If no allowed_domains specified, allow all URLs
     if (!allowedDomains || allowedDomains.length === 0) {
