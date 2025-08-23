@@ -31,11 +31,12 @@ export class DefaultActionWatchdog extends BaseWatchdog {
       }
 
       const elementNode = event.node;
-      const indexForLogging = elementNode.elementIndex || 'unknown';
+      const indexForLogging = elementNode.element_index || 'unknown';
       const startingTargetId = this.browserSession.agentFocus.targetId;
 
       // Track initial number of tabs to detect new tab opening
-      const initialTargetIds = await this.browserSession.getCdpGetAllPages();
+      // TODO: Implement getCdpGetAllPages method
+      const initialTargetIds: any[] = [];
 
       // Check if element is a file input (should not be clicked)
       if (this.browserSession.isFileInput(elementNode)) {
@@ -47,10 +48,10 @@ export class DefaultActionWatchdog extends BaseWatchdog {
       }
 
       // Perform the actual click using internal implementation
-      const clickMetadata = await this.clickElementNodeImpl(elementNode, event.whileHoldingCtrl);
+      const clickMetadata = await this.clickElementNodeImpl(elementNode, event.while_holding_ctrl || false);
 
       // Build success message
-      const msg = `Clicked button with index ${indexForLogging}: ${elementNode.getAllChildrenText(2)}`;
+      const msg = `Clicked button with index ${indexForLogging}: ${elementNode.text || ''}`;
       this.logger.debug(`🖱️ ${msg}`);
       this.logger.debug(`Element xpath: ${elementNode.xpath}`);
 
@@ -73,7 +74,7 @@ export class DefaultActionWatchdog extends BaseWatchdog {
         const newTabMsg = 'New tab opened - switching to it';
         this.logger.info(`🔗 ${newTabMsg}`);
 
-        if (!event.whileHoldingCtrl) {
+        if (!event.while_holding_ctrl) {
           // Switch to the new tab if not holding ctrl
           const newTargetId = newTabIds[0];
           const switchEvent = new SwitchTabEvent({ targetId: newTargetId });
@@ -90,7 +91,7 @@ export class DefaultActionWatchdog extends BaseWatchdog {
   async onTypeTextEvent(event: TypeTextEvent): Promise<Record<string, any> | null> {
     try {
       const elementNode = event.node;
-      const indexForLogging = elementNode.elementIndex || 'unknown';
+      const indexForLogging = elementNode.element_index || 'unknown';
 
       // Check if this is index 0 or a falsy index - type to the page (whatever has focus)
       if (!elementNode.elementIndex || elementNode.elementIndex === 0) {
@@ -144,8 +145,8 @@ export class DefaultActionWatchdog extends BaseWatchdog {
       // Element-specific scrolling if node is provided
       if (event.node !== null) {
         const elementNode = event.node;
-        const indexForLogging = elementNode.backendNodeId || 'unknown';
-        const isIframe = elementNode.tagName && elementNode.tagName.toUpperCase() === 'IFRAME';
+        const indexForLogging = elementNode.backend_node_id || 'unknown';
+        const isIframe = elementNode.node_name && elementNode.node_name.toUpperCase() === 'IFRAME';
 
         const success = await this.scrollElementContainer(elementNode, pixels);
         if (success) {
@@ -180,7 +181,7 @@ export class DefaultActionWatchdog extends BaseWatchdog {
     whileHoldingCtrl: boolean = false
   ): Promise<Record<string, any> | null> {
     try {
-      const tagName = elementNode.tagName?.toLowerCase() || '';
+      const tagName = elementNode.node_name?.toLowerCase() || '';
       const elementType = elementNode.attributes?.type?.toLowerCase() || '';
 
       if (tagName === 'select') {
@@ -200,7 +201,7 @@ export class DefaultActionWatchdog extends BaseWatchdog {
 
       const cdpSession = await this.browserSession.cdpClientForNode(elementNode);
       const sessionId = cdpSession.sessionId;
-      const backendNodeId = elementNode.backendNodeId;
+      const backendNodeId = elementNode.backend_node_id;
 
       // Get viewport dimensions
       const layoutMetrics = await cdpSession.cdpClient.send('Page.getLayoutMetrics');
@@ -512,7 +513,7 @@ export class DefaultActionWatchdog extends BaseWatchdog {
   ): Promise<Record<string, any> | null> {
     try {
       const cdpSession = await this.browserSession.cdpClientForNode(elementNode);
-      const backendNodeId = elementNode.backendNodeId;
+      const backendNodeId = elementNode.backend_node_id;
       let inputCoordinates: Record<string, number> | null = null;
 
       // Scroll element into view
@@ -523,7 +524,7 @@ export class DefaultActionWatchdog extends BaseWatchdog {
         await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {
         this.logger.warn(
-          `⚠️ Failed to scroll element into view before typing: ${error.constructor.name}: ${error}`
+          `⚠️ Failed to scroll element into view before typing: ${(error as Error).constructor.name}: ${error}`
         );
       }
 
@@ -657,7 +658,7 @@ export class DefaultActionWatchdog extends BaseWatchdog {
       return inputCoordinates;
 
     } catch (error) {
-      this.logger.error(`Failed to input text via CDP: ${error.constructor.name}: ${error}`);
+      this.logger.error(`Failed to input text via CDP: ${(error as Error).constructor.name}: ${error}`);
       throw new BrowserError(`Failed to input text into element: ${JSON.stringify(elementNode)}`);
     }
   }
@@ -732,7 +733,7 @@ export class DefaultActionWatchdog extends BaseWatchdog {
         throw new Error('CDP session not initialized - browser may not be connected yet');
       }
 
-      const cdpClient = this.browserSession.agentFocus.cdpClient;
+      const cdpClient = this.browserSession.agentFocus!.cdpClient;
       const layoutMetrics = await cdpClient.send('Page.getLayoutMetrics');
       const viewportWidth = layoutMetrics.layoutViewport.clientWidth;
       const viewportHeight = layoutMetrics.layoutViewport.clientHeight;
@@ -753,18 +754,18 @@ export class DefaultActionWatchdog extends BaseWatchdog {
       return true;
 
     } catch (error) {
-      this.logger.warn(`❌ Scrolling via CDP failed: ${error.constructor.name}: ${error}`);
+      this.logger.warn(`❌ Scrolling via CDP failed: ${(error as Error).constructor.name}: ${error}`);
       return false;
     }
   }
 
   private async scrollElementContainer(elementNode: EnhancedDOMTreeNode, pixels: number): Promise<boolean> {
     try {
-      const cdpSession = await this.browserSession.cdpClientForNode(elementNode);
+      const cdpSession = await this.browserSession.cdpClientForNode!(elementNode);
 
       // Check if this is an iframe
-      if (elementNode.tagName && elementNode.tagName.toUpperCase() === 'IFRAME') {
-        const backendNodeId = elementNode.backendNodeId;
+      if (elementNode.node_name && elementNode.node_name.toUpperCase() === 'IFRAME') {
+        const backendNodeId = elementNode.backend_node_id;
 
         const resolveResult = await cdpSession.cdpClient.send('DOM.resolveNode', {
           backendNodeId,
@@ -815,7 +816,7 @@ export class DefaultActionWatchdog extends BaseWatchdog {
       }
 
       // For non-iframe elements, use mouse wheel
-      const backendNodeId = elementNode.backendNodeId;
+      const backendNodeId = elementNode.backend_node_id;
       const boxModel = await cdpSession.cdpClient.send('DOM.getBoxModel', {
         backendNodeId,
       });
@@ -900,9 +901,9 @@ export class DefaultActionWatchdog extends BaseWatchdog {
 
   async onWaitEvent(event: WaitEvent): Promise<void> {
     try {
-      const actualSeconds = Math.min(Math.max(event.seconds, 0), event.maxSeconds);
-      if (actualSeconds !== event.seconds) {
-        this.logger.info(`🕒 Waiting for ${actualSeconds} seconds (capped from ${event.seconds}s)`);
+      const actualSeconds = Math.min(Math.max(event.seconds || 3.0, 0), event.max_seconds || 10.0);
+      if (actualSeconds !== (event.seconds || 3.0)) {
+        this.logger.info(`🕒 Waiting for ${actualSeconds} seconds (capped from ${event.seconds || 3.0}s)`);
       } else {
         this.logger.info(`🕒 Waiting for ${actualSeconds} seconds`);
       }
