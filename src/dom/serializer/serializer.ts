@@ -291,13 +291,22 @@ export class DOMTreeSerializer {
       if (isInteractiveAssign && isVisible) {
         node.interactive_index = this.interactiveCounter;
         node.original_node.element_index = this.interactiveCounter;
-        this.selectorMap.set(this.interactiveCounter, node.original_node);
+        // Set in selector map (handle both Map and Record types)
+        if (this.selectorMap instanceof Map) {
+          this.selectorMap.set(this.interactiveCounter, node.original_node);
+        } else {
+          this.selectorMap[this.interactiveCounter] = node.original_node;
+        }
         this.interactiveCounter++;
 
         // Check if node is new
         if (this.previousCachedSelectorMap) {
+          // Handle both Map and Record types for previous cache
+          const previousValues = this.previousCachedSelectorMap instanceof Map
+            ? Array.from(this.previousCachedSelectorMap.values())
+            : Object.values(this.previousCachedSelectorMap);
           const previousBackendNodeIds = new Set(
-            Array.from(this.previousCachedSelectorMap.values()).map(n => n.backend_node_id)
+            previousValues.map((n: any) => n.backend_node_id)
           );
           if (!previousBackendNodeIds.has(node.original_node.backend_node_id)) {
             node.is_new = true;

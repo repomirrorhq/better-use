@@ -42,7 +42,12 @@ interface HighlightElement {
 export function convertSelectorMapToHighlightFormat(selectorMap: DOMSelectorMap): HighlightElement[] {
   const elements: HighlightElement[] = [];
 
-  for (const [interactiveIndex, node] of selectorMap.entries()) {
+  // Handle both Map and Record types for DOMSelectorMap
+  const entries = selectorMap instanceof Map 
+    ? Array.from(selectorMap.entries())
+    : Object.entries(selectorMap).map(([k, v]) => [parseInt(k), v] as [number, any]);
+  
+  for (const [interactiveIndex, node] of entries) {
     // Get bounding box - prioritize absolute position if available
     let bbox: ElementBounds | null = null;
     
@@ -122,7 +127,11 @@ export async function injectHighlightingScript(
   domService: DomService, 
   interactiveElements: DOMSelectorMap
 ): Promise<void> {
-  if (!interactiveElements || interactiveElements.size === 0) {
+  const hasElements = interactiveElements instanceof Map 
+    ? interactiveElements.size > 0
+    : Object.keys(interactiveElements).length > 0;
+    
+  if (!interactiveElements || !hasElements) {
     console.debug('⚠️ No interactive elements to highlight');
     return;
   }
