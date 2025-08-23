@@ -9,6 +9,7 @@ export * from './schema';
 export * from './providers/openai';
 export * from './providers/anthropic';
 export * from './providers/google';
+export * from './providers/aws';
 
 // Re-export commonly used types
 export type { 
