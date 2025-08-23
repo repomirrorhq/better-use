@@ -22,12 +22,14 @@ export const AgentSettingsSchema = z.object({
   retry_delay: z.number().int().default(10),
   validate_output: z.boolean().default(false),
   generate_gif: z.union([z.boolean(), z.string()]).default(false),
-  override_system_message: z.string().nullable().default(null),
-  extend_system_message: z.string().nullable().default(null),
+  override_system_message: z.string().optional(),
+  extend_system_message: z.string().optional(),
   include_attributes: z.array(z.string()).nullable().default(() => [...DEFAULT_INCLUDE_ATTRIBUTES]),
   max_actions_per_step: z.number().int().default(10),
   use_thinking: z.boolean().default(true),
   flash_mode: z.boolean().default(false), // If enabled, disables evaluation_previous_goal and next_goal, and sets use_thinking = false
+  fast_mode_v2: z.boolean().default(false), // New fast mode setting
+  include_recent_events: z.boolean().default(false), // Include recent events in context
   max_history_items: z.number().int().nullable().default(null),
   
   // LLM settings

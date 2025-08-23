@@ -300,7 +300,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     try {
       // Make actual LLM call - for now using simple text completion
       // TODO: Add proper structured output with action schemas
-      const response = await this.llm.chatCompletion(messages);
+      const response = await this.llm.ainvoke(messages);
       
       // For now, create a simple action to test functionality
       // TODO: Parse actual LLM response into structured actions
