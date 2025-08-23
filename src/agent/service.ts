@@ -277,6 +277,11 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       },
       recent_events: null,
       timestamp: Date.now(),
+      // Required fields for interface compliance
+      pixels_above: 0,
+      pixels_below: 360,
+      browser_errors: [],
+      is_pdf_viewer: false,
       isPdfViewer: false,
     };
     

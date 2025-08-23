@@ -30,7 +30,7 @@ export class BrowserSession extends EventEmitter {
   private context: BrowserContext | null = null;
   private pages: Map<string, Page> = new Map();
   private currentPageId: string | null = null;
-  private profile: BrowserProfile;
+  public profile: BrowserProfile;
   private isStarted = false;
   private _loggedUniqueSessionIds = new Set<string>();
 
@@ -945,5 +945,52 @@ export class BrowserSession extends EventEmitter {
       const latestPageId = pageIds[pageIds.length - 1];
       await this.switchTab(latestPageId);
     }
+  }
+
+  /**
+   * Go back in browser history
+   */
+  async goBack(): Promise<void> {
+    const currentPage = this.getCurrentPage();
+    if (currentPage) {
+      await currentPage.goBack();
+    }
+  }
+
+  /**
+   * List all tabs (alias for getTabs for compatibility)
+   */
+  async listTabs(): Promise<TabInfo[]> {
+    return await this.getTabs();
+  }
+
+  /**
+   * Remove highlights from the page (placeholder implementation)
+   */
+  async removeHighlights(): Promise<void> {
+    const currentPage = this.getCurrentPage();
+    if (currentPage) {
+      // TODO: Implement highlight removal logic
+      await currentPage.evaluate(() => {
+        // Remove any highlight elements
+        const highlights = document.querySelectorAll('[data-browser-use-highlight]');
+        highlights.forEach(el => el.remove());
+      });
+    }
+  }
+
+  /**
+   * Get the underlying browser instance
+   */
+  getBrowser(): ChromiumBrowser | null {
+    return this.browser;
+  }
+
+  /**
+   * Check if this is a local browser session
+   */
+  get isLocal(): boolean {
+    // For now, assume all sessions are local unless connecting via CDP
+    return !this.cdpUrl;
   }
 }

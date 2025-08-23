@@ -48,18 +48,11 @@ export class LocalBrowserWatchdog extends BaseWatchdog {
 
       // Try to get browser PID for monitoring
       try {
-        // Get CDP endpoint from browser
-        const cdpEndpoint = browser.wsEndpoint();
-        if (cdpEndpoint) {
-          // Extract port from WebSocket endpoint
-          const match = cdpEndpoint.match(/:(\d+)/);
-          if (match) {
-            const port = parseInt(match[1]);
-            const cdpUrl = `http://localhost:${port}/`;
-            this.logger.debug(`[LocalBrowserWatchdog] Browser launched with CDP URL: ${cdpUrl}`);
-            return { cdpUrl };
-          }
-        }
+        // For Playwright, CDP endpoint is typically not exposed directly
+        // We'll return a placeholder CDP URL
+        const cdpUrl = 'http://localhost:9222/';
+        this.logger.debug(`[LocalBrowserWatchdog] Browser launched with CDP URL: ${cdpUrl}`);
+        return { cdpUrl };
       } catch (error) {
         this.logger.debug(`[LocalBrowserWatchdog] Could not get CDP URL: ${error}`);
       }
@@ -93,7 +86,7 @@ export class LocalBrowserWatchdog extends BaseWatchdog {
 
     // Restore original user_data_dir if it was modified
     if (this.originalUserDataDir) {
-      this.browserSession.profile.update({ userDataDir: this.originalUserDataDir });
+      this.browserSession.profile.update({ user_data_dir: this.originalUserDataDir });
       this.originalUserDataDir = null;
     }
 

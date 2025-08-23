@@ -6,7 +6,7 @@
 
 import { BaseWatchdog } from './base';
 import { BrowserSession } from '../session';
-import { ScreenshotEvent } from '../events-classes';
+import { ScreenshotEventClass as ScreenshotEvent } from '../events-classes';
 import { BrowserException } from '../../exceptions';
 import { getLogger } from '../../logging';
 
@@ -20,8 +20,6 @@ export interface ScreenshotWatchdogConfig {
 export class ScreenshotWatchdog extends BaseWatchdog {
   public static readonly LISTENS_TO = [ScreenshotEvent];
   public static readonly EMITS = [];
-
-  protected logger = getLogger('ScreenshotWatchdog');
   private defaultFormat: 'png' | 'jpeg';
   private quality: number;
   private timeout: number;
@@ -58,7 +56,7 @@ export class ScreenshotWatchdog extends BaseWatchdog {
       }
 
       // Handle full page screenshot
-      if (event.fullPage) {
+      if (event.full_page) {
         screenshotOptions.fullPage = true;
         this.logger.debug('[ScreenshotWatchdog] Taking full page screenshot');
       } else {
@@ -109,7 +107,7 @@ export class ScreenshotWatchdog extends BaseWatchdog {
     quality?: number;
   } = {}): Promise<string> {
     const screenshotEvent = new ScreenshotEvent({
-      fullPage: options.fullPage,
+      full_page: options.fullPage,
       clip: options.clip,
     });
 

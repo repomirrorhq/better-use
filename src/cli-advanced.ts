@@ -5,7 +5,7 @@
  * Sophisticated terminal user interface matching Python Textual implementation
  */
 
-const blessed = require('neo-blessed');
+import * as blessed from 'neo-blessed';
 import { Agent } from './agent/service';
 import { BrowserSession } from './browser';
 import { ChatOpenAI } from './llm/providers/openai';
@@ -528,7 +528,7 @@ export class BrowserUseTUI extends EventEmitter {
         browserSession: this.browserSession,
         settings: {
           use_vision: this.config.useVision || false,
-          max_action_history: this.config.maxSteps || 50,
+          max_actions_per_step: this.config.maxSteps || 50,
         }
       });
       

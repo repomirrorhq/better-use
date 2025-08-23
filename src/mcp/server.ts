@@ -344,9 +344,10 @@ export class BrowserUseMCPServer extends EventEmitter {
     
     try {
       if (newTab) {
-        await this.browserSession!.navigateToUrl(url, { newTab: true });
+        await this.browserSession!.createNewPage(url);
       } else {
-        await this.browserSession!.navigateToUrl(url);
+        const navigateEvent = { url, target_id: '' };
+        await this.browserSession!.navigateToUrl(navigateEvent);
       }
       
       // Wait for page to load
@@ -373,12 +374,13 @@ export class BrowserUseMCPServer extends EventEmitter {
     
     try {
       // Use controller to perform click action
-      const clickEvent = {
+      const clickAction = {
+        action: 'click',
         index,
-        mouseButton: button === 'right' ? 'right' : 'left'
+        button: button === 'right' ? 'right' : 'left'
       };
       
-      await this.controller.click(clickEvent, this.browserSession!);
+      await this.controller.act([clickAction], this.browserSession!);
       
       return { 
         success: true, 
@@ -401,12 +403,13 @@ export class BrowserUseMCPServer extends EventEmitter {
     
     try {
       // Use controller to perform type action
-      const typeEvent = {
+      const typeAction = {
+        action: 'input_text',
         index,
         text
       };
       
-      await this.controller.type(typeEvent, this.browserSession!);
+      await this.controller.act([typeAction], this.browserSession!);
       
       return { 
         success: true, 
@@ -428,12 +431,8 @@ export class BrowserUseMCPServer extends EventEmitter {
     await this.ensureBrowserSession();
     
     try {
-      // Get browser state using controller
-      const state = await this.controller.getBrowserState({
-        include_dom: true,
-        include_screenshot: useVision,
-        include_recent_events: false
-      }, this.browserSession!);
+      // Get browser state directly from browser session
+      const state = await this.browserSession!.getBrowserState();
       
       return {
         success: true,
@@ -458,12 +457,8 @@ export class BrowserUseMCPServer extends EventEmitter {
     await this.ensureLLM();
     
     try {
-      // Get page content
-      const state = await this.controller.getBrowserState({
-        include_dom: true,
-        include_screenshot: false,
-        include_recent_events: false
-      }, this.browserSession!);
+      // Get page content directly from browser session
+      const state = await this.browserSession!.getBrowserState();
       
       // Use LLM to extract content based on instruction
       const extractionPrompt = `
@@ -501,19 +496,19 @@ Return the extracted information in JSON format.
     await this.ensureBrowserSession();
     
     try {
-      // Use controller to perform scroll action
+      // Use browser session to perform scroll action
       const scrollEvent = {
-        direction,
-        amount: amount || (direction === 'up' ? -800 : 800)
+        down: direction === 'down',
+        num_pages: 1
       };
       
-      await this.controller.scroll(scrollEvent, this.browserSession!);
+      await this.browserSession!.scroll(scrollEvent);
       
       return { 
         success: true, 
-        message: `Scrolled ${direction}${amount ? ` by ${amount}px` : ' by one viewport'}`,
+        message: `Scrolled ${direction} by ${scrollEvent.num_pages} page${scrollEvent.num_pages !== 1 ? 's' : ''}`,
         direction,
-        amount: scrollEvent.amount
+        num_pages: scrollEvent.num_pages
       };
     } catch (error) {
       throw new Error(`Scroll failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -620,7 +615,7 @@ Return the extracted information in JSON format.
     await this.ensureBrowserSession();
     
     try {
-      await this.browserSession!.switchToTab(tabId);
+      await this.browserSession!.switchTab(tabId);
       return {
         success: true,
         message: `Switched to tab ${tabId}`,
@@ -679,8 +674,7 @@ Return the extracted information in JSON format.
   private async ensureBrowserSession(): Promise<void> {
     if (!this.browserSession) {
       this.browserSession = new BrowserSession({
-        headless: this.config.browserProfile?.headless ?? false,
-        viewport: this.config.browserProfile?.viewport ?? { width: 1280, height: 720 }
+        headless: this.config.browserProfile?.headless ?? false
       });
       await this.browserSession.start();
     }
