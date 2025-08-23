@@ -522,15 +522,82 @@ export class Controller<Context = any> {
   }
 
   private registerScrollAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Scroll action not yet implemented' });
+    const actionFunction = async (
+      params: z.infer<typeof ScrollActionSchema>,
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      return this.scroll(params, { browserSession });
     };
+
     this.registry.actions['scroll'] = {
       name: 'scroll',
-      description: 'Scroll page (not yet implemented)',
+      description: 'Scroll the page by specified number of pages (set down=True to scroll down, down=False to scroll up, num_pages=number of pages to scroll like 0.5 for half page, 1.0 for one page, etc.). Optional index parameter to scroll within a specific element or its scroll container (works well for dropdowns and custom UI components). Use index=0 or omit index to scroll the entire page.',
       function: actionFunction,
       paramSchema: ScrollActionSchema,
     };
+  }
+
+  private async scroll(
+    params: z.infer<typeof ScrollActionSchema>,
+    { browserSession }: { browserSession: BrowserSession }
+  ): Promise<ActionResult> {
+    try {
+      // Look up the node from the selector map if index is provided
+      // Special case: index 0 means scroll the whole page (root/body element)
+      let node: EnhancedDOMTreeNode | null = null;
+      if (params.frameElementIndex !== null && params.frameElementIndex !== undefined && params.frameElementIndex !== 0) {
+        try {
+          node = await browserSession.getElementByIndex(params.frameElementIndex);
+          if (node === null) {
+            // Element not found - return error
+            throw new Error(`Element index ${params.frameElementIndex} not found in DOM`);
+          }
+        } catch (e) {
+          // Error getting element - return error
+          throw new Error(`Failed to get element ${params.frameElementIndex}: ${e}`);
+        }
+      }
+
+      // Dispatch scroll event with node - the complex logic is handled in the event handler
+      // Convert pages to pixels (assuming 800px per page as standard viewport height)
+      const pixels = Math.round(params.numPages * 800);
+      const event = browserSession.eventBus.dispatch(new ScrollEvent({
+        direction: params.down ? 'down' : 'up',
+        amount: pixels,
+        node: node ?? undefined,
+      }));
+      await event;
+      await event.eventResult();
+      
+      const direction = params.down ? 'down' : 'up';
+
+      // If index is 0 or null/undefined, we're scrolling the page
+      const target = (params.frameElementIndex === null || params.frameElementIndex === undefined || params.frameElementIndex === 0) 
+        ? 'the page'
+        : `element ${params.frameElementIndex}`;
+
+      let longTermMemory: string;
+      if (params.numPages === 1.0) {
+        longTermMemory = `Scrolled ${direction} ${target} by one page`;
+      } else {
+        longTermMemory = `Scrolled ${direction} ${target} by ${params.numPages} pages`;
+      }
+
+      const msg = `🔍 ${longTermMemory}`;
+      console.log(msg);
+      
+      return new ActionResult({
+        extractedContent: msg,
+        includeInMemory: true,
+        longTermMemory: longTermMemory,
+      });
+    } catch (e) {
+      console.error(`Failed to dispatch ScrollEvent: ${(e as Error).constructor.name}: ${e}`);
+      const cleanMsg = extractLlmErrorMessage(e as Error);
+      const errorMsg = `Failed to scroll: ${cleanMsg}`;
+      return new ActionResult({ error: errorMsg });
+    }
   }
 
   private registerSendKeysAction() {
