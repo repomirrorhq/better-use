@@ -153,24 +153,36 @@ export class DownloadsWatchdog extends BaseWatchdog {
     filename: string,
     targetId: string
   ): Promise<void> {
-    this.logger.info(`[DownloadsWatchdog] Download beginning: ${filename} from ${url}`);
+    // Initialize variables to prevent scope issues
+    let download: ActiveDownload | null = null;
     
-    const download: ActiveDownload = {
-      url,
-      filename,
-      startTime: Date.now(),
-      targetId,
-    };
-    
-    this.activeDownloads.set(downloadId, download);
-    
-    // Set up timeout to clean up stale downloads
-    setTimeout(() => {
-      if (this.activeDownloads.has(downloadId)) {
-        console.warn(`[DownloadsWatchdog] Download timeout for: ${filename}`);
+    try {
+      this.logger.info(`[DownloadsWatchdog] Download beginning: ${filename} from ${url}`);
+      
+      download = {
+        url,
+        filename,
+        startTime: Date.now(),
+        targetId,
+      };
+      
+      this.activeDownloads.set(downloadId, download);
+      
+      // Set up timeout to clean up stale downloads
+      setTimeout(() => {
+        if (this.activeDownloads.has(downloadId)) {
+          this.logger.warn(`[DownloadsWatchdog] Download timeout for: ${filename}`);
+          this.activeDownloads.delete(downloadId);
+        }
+      }, this.config.maxDownloadTimeoutMs);
+      
+    } catch (error) {
+      this.logger.error(`[DownloadsWatchdog] Error handling download will begin: ${error}`);
+      // Clean up on error
+      if (download) {
         this.activeDownloads.delete(downloadId);
       }
-    }, this.config.maxDownloadTimeoutMs);
+    }
   }
 
   /**
@@ -202,28 +214,42 @@ export class DownloadsWatchdog extends BaseWatchdog {
     const download = this.activeDownloads.get(downloadId);
     if (!download) return;
 
+    // Initialize variables used across try blocks to prevent UnboundLocal errors
+    let stats: fs.Stats | null = null;
+    let elapsedMs = 0;
+    let fileExists = false;
+
     try {
       if (success && filePath) {
-        // Verify file exists
-        const stats = await fs.stat(filePath);
-        const elapsedMs = Date.now() - download.startTime;
-        
-        this.logger.info(
-          `[DownloadsWatchdog] Download completed: ${download.filename} ` +
-          `(${stats.size} bytes, ${elapsedMs}ms)`
-        );
+        try {
+          // Verify file exists and get stats
+          stats = await fs.stat(filePath);
+          fileExists = true;
+          elapsedMs = Date.now() - download.startTime;
+          
+          this.logger.info(
+            `[DownloadsWatchdog] Download completed: ${download.filename} ` +
+            `(${stats.size} bytes, ${elapsedMs}ms)`
+          );
 
-        // Emit FileDownloadedEvent
-        const event = {
-          filename: download.filename,
-          filePath,
-          url: download.url,
-          sizeBytes: stats.size,
-          elapsedMs,
-        };
+          // Only emit FileDownloadedEvent after successful file verification
+          const event = {
+            filename: download.filename,
+            filePath,
+            url: download.url,
+            sizeBytes: stats.size,
+            elapsedMs,
+          };
 
-        this.browserSession.emit('FileDownloadedEvent', event);
-      } else {
+          this.browserSession.emit('FileDownloadedEvent', event);
+          
+        } catch (statError) {
+          this.logger.error(`[DownloadsWatchdog] Failed to verify downloaded file: ${statError}`);
+          success = false;
+        }
+      }
+      
+      if (!success || !fileExists) {
         this.logger.error(`[DownloadsWatchdog] Download failed: ${download.filename}`);
       }
     } catch (error) {
