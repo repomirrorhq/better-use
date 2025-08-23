@@ -905,4 +905,15 @@ export class BrowserSession extends EventEmitter {
       timestamp: Date.now()
     });
   }
+
+  /**
+   * Switch to the most recently opened page/tab
+   */
+  async switchToLatestPage(): Promise<void> {
+    const pageIds = Array.from(this.pages.keys());
+    if (pageIds.length > 0) {
+      const latestPageId = pageIds[pageIds.length - 1];
+      await this.switchTab(latestPageId);
+    }
+  }
 }

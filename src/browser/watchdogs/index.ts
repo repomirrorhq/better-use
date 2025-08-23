@@ -10,7 +10,8 @@ export { PermissionsWatchdog, type PermissionsWatchdogConfig } from './permissio
 export { PopupsWatchdog, type PopupsWatchdogConfig } from './popups';
 export { AboutBlankWatchdog } from './aboutblank';
 export { StorageStateWatchdog, type StorageStateWatchdogConfig } from './storagestate';
-// Note: DefaultActionWatchdog, DOMWatchdog, and LocalBrowserWatchdog are work in progress
+export { DefaultActionWatchdog, type DefaultActionConfig } from './defaultaction';
+// Note: DOMWatchdog, and LocalBrowserWatchdog are work in progress
 
 // Watchdog registry for easy initialization
 import { BrowserSession } from '../session';
@@ -22,7 +23,8 @@ import { PermissionsWatchdog, PermissionsWatchdogConfig } from './permissions';
 import { PopupsWatchdog, PopupsWatchdogConfig } from './popups';
 import { AboutBlankWatchdog } from './aboutblank';
 import { StorageStateWatchdog, StorageStateWatchdogConfig } from './storagestate';
-// Note: DefaultActionWatchdog, DOMWatchdog, and LocalBrowserWatchdog imports removed
+import { DefaultActionWatchdog, DefaultActionConfig } from './defaultaction';
+// Note: DOMWatchdog, and LocalBrowserWatchdog imports removed
 
 export interface WatchdogRegistry {
   crash?: CrashWatchdogConfig | boolean;
@@ -32,7 +34,8 @@ export interface WatchdogRegistry {
   popups?: PopupsWatchdogConfig | boolean;
   aboutblank?: WatchdogConfig | boolean;
   storagestate?: StorageStateWatchdogConfig | boolean;
-  // Note: defaultaction, dom, localbrowser watchdogs are work in progress
+  defaultaction?: DefaultActionConfig | boolean;
+  // Note: dom, localbrowser watchdogs are work in progress
 }
 
 /**
@@ -87,7 +90,13 @@ export function createWatchdogs(
     watchdogs.push(storagestateWatchdog);
   }
 
-  // Note: defaultaction, dom, localbrowser watchdogs are work in progress
+  if (config.defaultaction !== false) {
+    const defaultactionConfig = config.defaultaction === true ? {} : config.defaultaction || {};
+    const defaultactionWatchdog = new DefaultActionWatchdog(browserSession, defaultactionConfig);
+    watchdogs.push(defaultactionWatchdog);
+  }
+
+  // Note: dom, localbrowser watchdogs are work in progress
   // They have been temporarily disabled due to compilation issues
 
   // Attach all watchdogs to the session
