@@ -8,12 +8,12 @@ import {
   ContentPartTextParam, 
   ContentPartImageParam, 
   ImageURL 
-} from '../llm/messages.js';
+} from '../llm/messages';
 import type { 
   BrowserStateSummary, 
   AgentStepInfo 
-} from './views.js';
-import type { FileSystem } from '../filesystem/file_system.js';
+} from './views';
+import type { FileSystem } from '../filesystem/file_system';
 
 // Get the current file's directory
 const __filename = fileURLToPath(import.meta.url);

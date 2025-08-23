@@ -1,3 +1,3 @@
-export * from './service.js';
-export * from './views.js';
-export * from './registry/index.js';
+export * from './service';
+export * from './views';
+export * from './registry';

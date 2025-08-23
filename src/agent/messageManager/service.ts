@@ -15,7 +15,7 @@ import {
   createUserMessage,
   createSystemMessage,
   ContentPartTextParam,
-} from '../../llm/messages.js';
+} from '../../llm/messages';
 import {
   MessageManagerState,
   MessageManagerStateSchema,
@@ -27,9 +27,9 @@ import {
   AgentStepInfo,
   MessageHistory,
   MessageHistoryHelper,
-} from '../views.js';
-import { BrowserStateSummary } from '../../browser/views.js';
-import { matchUrlWithDomainPattern } from '../../utils.js';
+} from '../views';
+import { BrowserStateSummary } from '../../browser/views';
+import { matchUrlWithDomainPattern } from '../../utils';
 
 const logger = console; // Simple logger for now
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ActionResult } from '../agent/views.js';
-import { BrowserSession } from '../browser/session.js';
+import { ActionResult } from '../agent/views';
+import { BrowserSession } from '../browser/session';
 import { 
   ClickElementEvent,
   CloseTabEvent,
@@ -14,9 +14,9 @@ import {
   SwitchTabEvent,
   TypeTextEvent,
   UploadFileEvent,
-} from '../browser/events.js';
-import { BrowserError } from '../browser/views.js';
-import { Registry } from './registry/service.js';
+} from '../browser/events';
+import { BrowserError } from '../browser/views';
+import { Registry } from './registry/service';
 import { 
   ClickElementActionSchema,
   CloseTabActionSchema,
@@ -32,11 +32,11 @@ import {
   StructuredOutputActionSchema,
   SwitchTabActionSchema,
   UploadFileActionSchema,
-} from './views.js';
-import { EnhancedDOMTreeNode } from '../dom/service.js';
-import { FileSystem } from '../filesystem/index.js';
-import { BaseChatModel } from '../llm/base.js';
-import { UserMessage } from '../llm/messages.js';
+} from './views';
+import { EnhancedDOMTreeNode } from '../dom/service';
+import { FileSystem } from '../filesystem/index';
+import { BaseChatModel } from '../llm/base';
+import { UserMessage } from '../llm/messages';
 import { NodeHtmlMarkdown } from 'node-html-markdown';
 
 function extractLlmErrorMessage(error: Error): string {

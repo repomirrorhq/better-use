@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { ActionRegistry, RegisteredAction, ActionFunction, ActionModel, SpecialActionParameters } from './views.js';
-import { BrowserSession } from '../../browser/session.js';
-import { BaseChatModel } from '../../llm/base.js';
-import { FileSystem } from '../../filesystem/file_system.js';
+import { ActionRegistry, RegisteredAction, ActionFunction, ActionModel, SpecialActionParameters } from './views';
+import { BrowserSession } from '../../browser/session';
+import { BaseChatModel } from '../../llm/base';
+import { FileSystem } from '../../filesystem/file_system';
 
 export interface RegistryConfig<Context = any> {
   excludeActions?: string[];

@@ -1,2 +1,2 @@
-export * from './service.js';
-export * from './views.js';
+export * from './service';
+export * from './views';

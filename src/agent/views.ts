@@ -7,8 +7,8 @@
 
 import { z } from 'zod';
 import { v7 as uuid7 } from 'uuid';
-import { BaseMessage, BaseMessageSchema } from '../llm/messages.js';
-import { DEFAULT_INCLUDE_ATTRIBUTES, DOMInteractedElementSchema, type DOMInteractedElement } from '../dom/views.js';
+import { BaseMessage, BaseMessageSchema } from '../llm/messages';
+import { DEFAULT_INCLUDE_ATTRIBUTES, DOMInteractedElementSchema, type DOMInteractedElement } from '../dom/views';
 
 // Agent Settings schema
 export const AgentSettingsSchema = z.object({

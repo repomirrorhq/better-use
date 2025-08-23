@@ -3,10 +3,10 @@
  */
 
 // Views and schemas
-export * from './views.js';
+export * from './views';
 
 // Message Manager
-export * from './messageManager/index.js';
+export * from './messageManager/index';
 
 // Main Agent Service
-export * from './service.js';
+export * from './service';

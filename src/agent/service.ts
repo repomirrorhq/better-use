@@ -24,13 +24,13 @@ import {
   createAgentState,
   createActionResult,
   createAgentStepInfo,
-} from './views.js';
-import { MessageManager, type SensitiveData } from './messageManager/index.js';
-import { BaseChatModel } from '../llm/base.js';
-import { SystemMessage, createSystemMessage } from '../llm/messages.js';
-import { BrowserSession } from '../browser/session.js';
-import { BrowserStateSummary } from '../browser/views.js';
-import { logPrettyUrl, sleep } from '../utils.js';
+} from './views';
+import { MessageManager, type SensitiveData } from './messageManager/index';
+import { BaseChatModel } from '../llm/base';
+import { SystemMessage, createSystemMessage } from '../llm/messages';
+import { BrowserSession } from '../browser/session';
+import { BrowserStateSummary } from '../browser/views';
+import { logPrettyUrl, sleep } from '../utils';
 
 const logger = console; // Simple logger for now
 

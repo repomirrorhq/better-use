@@ -4,7 +4,7 @@
 
 import { promises as fs } from 'fs';
 import { dirname } from 'path';
-import { BaseMessage, ContentPartTextParam } from '../../llm/messages.js';
+import { BaseMessage, ContentPartTextParam } from '../../llm/messages';
 
 /**
  * Save conversation history to file asynchronously
