@@ -9,7 +9,11 @@ describe('BrowserUseMCPServer', () => {
   let server: BrowserUseMCPServer;
   
   beforeEach(() => {
-    server = new BrowserUseMCPServer();
+    // Ensure headless mode for tests
+    process.env.NODE_ENV = 'test';
+    server = new BrowserUseMCPServer({
+      browserProfile: { headless: true }
+    });
   });
   
   afterEach(async () => {

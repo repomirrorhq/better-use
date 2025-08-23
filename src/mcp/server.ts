@@ -673,8 +673,12 @@ Return the extracted information in JSON format.
    */
   private async ensureBrowserSession(): Promise<void> {
     if (!this.browserSession) {
+      // Default to headless mode, especially for CI/test environments
+      const headless = this.config.browserProfile?.headless ?? 
+                      (process.env.NODE_ENV === 'test' || process.env.CI === 'true' || !process.env.DISPLAY);
+      
       this.browserSession = new BrowserSession({
-        headless: this.config.browserProfile?.headless ?? false
+        headless,
       });
       await this.browserSession.start();
     }
