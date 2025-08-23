@@ -54,7 +54,7 @@ export class ClickableElementDetector {
       ]);
 
       // Check class names for search indicators
-      const classList = (node.attributes.class || '').toLowerCase().split();
+      const classList = (node.attributes.class || '').toLowerCase().split(' ');
       const classString = classList.join(' ');
       if (Array.from(searchIndicators).some(indicator => classString.includes(indicator))) {
         return true;

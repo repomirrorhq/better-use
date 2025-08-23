@@ -197,7 +197,7 @@ export class Controller<Context = any> {
       
       return new ActionResult({
         extracted_content: memory,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: memory,
       });
     } catch (e) {
@@ -252,7 +252,7 @@ export class Controller<Context = any> {
       console.log(msg);
       return new ActionResult({
         extracted_content: msg,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: memory,
       });
     } catch (e) {
@@ -396,7 +396,7 @@ export class Controller<Context = any> {
 
       return new ActionResult({
         extracted_content: memory,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: memory,
         metadata: typeof clickMetadata === 'object' ? clickMetadata : undefined,
       });
@@ -464,7 +464,7 @@ export class Controller<Context = any> {
 
       return new ActionResult({
         extracted_content: msg,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: `Input '${params.text}' into element ${params.index}.`,
         metadata: typeof inputMetadata === 'object' ? inputMetadata : undefined,
       });
@@ -569,7 +569,7 @@ export class Controller<Context = any> {
       
       return new ActionResult({
         extracted_content: msg,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: `Uploaded file ${params.path} to element ${params.index}`,
       });
     } catch (e) {
@@ -624,7 +624,7 @@ export class Controller<Context = any> {
       
       return new ActionResult({
         extracted_content: memory,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: memory,
       });
     } catch (e) {
@@ -686,7 +686,7 @@ export class Controller<Context = any> {
       
       return new ActionResult({
         extracted_content: memory,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: memory,
       });
     } catch (e) {
@@ -792,7 +792,7 @@ If you called extract_structured_data in the last step and the result was not go
       
       return new ActionResult({
         extracted_content: msg,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: longTermMemory,
       });
     } catch (e) {
@@ -835,7 +835,7 @@ If you called extract_structured_data in the last step and the result was not go
       
       return new ActionResult({
         extracted_content: memory,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: memory,
       });
     } catch (e) {
@@ -881,7 +881,7 @@ If you called extract_structured_data in the last step and the result was not go
       
       return new ActionResult({
         extracted_content: memory,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: memory,
       });
     } catch (e) {
@@ -891,7 +891,7 @@ If you called extract_structured_data in the last step and the result was not go
       
       return new ActionResult({
         extracted_content: msg,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: `Tried scrolling to text '${params.text}' but it was not found`,
       });
     }
@@ -948,7 +948,7 @@ If you called extract_structured_data in the last step and the result was not go
 
       return new ActionResult({
         extracted_content: msg,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: `Found ${optionsCount} dropdown options for index ${params.index}`,
         includeExtractedContentOnlyOnce: true,
       });
@@ -1003,7 +1003,7 @@ If you called extract_structured_data in the last step and the result was not go
 
       return new ActionResult({
         extracted_content: msg,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: `Selected dropdown option '${params.text}' at index ${params.index}`,
       });
     } catch (e) {
@@ -1388,7 +1388,7 @@ Provide the extracted information in a clear, structured format.`;
       console.log(`💾 ${result}`);
       return new ActionResult({
         extracted_content: result,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: result,
       });
     } catch (error) {
@@ -1409,7 +1409,7 @@ Provide the extracted information in a clear, structured format.`;
       console.log(`💾 ${result}`);
       return new ActionResult({
         extracted_content: result,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: result,
       });
     } catch (error) {
@@ -1460,7 +1460,7 @@ Provide the extracted information in a clear, structured format.`;
       console.log(`💾 ${memory}`);
       return new ActionResult({
         extracted_content: result,
-        includeInMemory: true,
+        include_in_memory: true,
         longTermMemory: memory,
         includeExtractedContentOnlyOnce: true,
       });
@@ -1515,7 +1515,7 @@ Provide the extracted information in a clear, structured format.`;
       
       // Check all siblings and their descendants
       if (current.parent_node) {
-        for (const sibling of current.parent_node.childrenNodes || []) {
+        for (const sibling of current.parent_node.children_nodes || []) {
           if (sibling === current) continue;
           
           if (browserSession.isFileInput(sibling)) {

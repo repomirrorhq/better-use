@@ -138,7 +138,7 @@ export class DomService {
     crossOriginIframes: boolean = false
   ) {
     this.browserSession = browserSession;
-    this.logger = logger || browserSession.logger;
+    this.logger = logger || console;
     this.crossOriginIframes = crossOriginIframes;
   }
 

@@ -135,7 +135,7 @@ export const EnhancedDOMTreeNodeSchema: z.ZodType<EnhancedDOMTreeNode> = z.lazy(
   snapshot_node: EnhancedSnapshotNodeSchema.nullable(),
 
   // Interactive element index
-  element_index: z.number().nullable().default(null),
+  element_index: z.number().nullable(),
   
   // Unique identifier
   uuid: z.string(),
@@ -213,10 +213,10 @@ export type PropagatingBounds = z.infer<typeof PropagatingBoundsSchema>;
 export const SimplifiedNodeSchema: z.ZodType<SimplifiedNode> = z.lazy(() => z.object({
   original_node: EnhancedDOMTreeNodeSchema,
   children: z.array(SimplifiedNodeSchema),
-  should_display: z.boolean().default(true),
+  should_display: z.boolean(),
   interactive_index: z.number().nullable(),
-  is_new: z.boolean().default(false),
-  excluded_by_parent: z.boolean().default(false),
+  is_new: z.boolean(),
+  excluded_by_parent: z.boolean(),
 }));
 
 export type SimplifiedNode = {
