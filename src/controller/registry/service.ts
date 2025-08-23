@@ -180,7 +180,7 @@ export class Registry<Context = any> {
           specialContext.pageUrl = undefined;
         }
 
-        specialContext.cdpClient = browserSession.cdpClient;
+        specialContext.cdpClient = browserSession.cdpClient || null;
       }
 
       // Execute the action

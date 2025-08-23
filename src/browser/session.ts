@@ -729,6 +729,11 @@ export class BrowserSession extends EventEmitter {
             getOuterHTML: async (params: any, sessionId?: string) => {
               return await cdpSession.send('DOM.getOuterHTML', params);
             }
+          },
+          Target: {
+            getTargetInfo: async (params: any, sessionId?: string) => {
+              return await cdpSession.send('Target.getTargetInfo', params);
+            }
           }
         }
       },
@@ -765,6 +770,12 @@ export class BrowserSession extends EventEmitter {
           getOuterHTML: async (params: any, sessionId?: string) => {
             const cdpSession = await currentPage.context().newCDPSession(currentPage);
             return await cdpSession.send('DOM.getOuterHTML', params);
+          }
+        },
+        Target: {
+          getTargetInfo: async (params: any, sessionId?: string) => {
+            const cdpSession = await currentPage.context().newCDPSession(currentPage);
+            return await cdpSession.send('Target.getTargetInfo', params);
           }
         }
       }

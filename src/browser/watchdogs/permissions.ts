@@ -46,6 +46,10 @@ export class PermissionsWatchdog extends BaseWatchdog {
       // Browser domain commands don't use session_id
       const cdpClient = this.browserSession.cdpClient;
       
+      if (!cdpClient) {
+        throw new Error('CDP client not available - no active browser page');
+      }
+      
       await cdpClient.send('Browser.grantPermissions', {
         permissions: permissions as any // CDP permissions are a specific enum
       });
