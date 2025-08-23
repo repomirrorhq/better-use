@@ -116,7 +116,10 @@ export class BrowserSession extends EventEmitter {
     }
 
     try {
-      // Import watchdogs dynamically
+      // TODO: Avoid using dynamic imports where possible - causes issues with ts-node
+      // The .js extension is required by TypeScript moduleResolution: node16 but breaks
+      // when running with ts-node since source files are .ts not .js
+      // Consider refactoring to use static imports at the top of the file instead
       const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction.js');
       const { ScreenshotWatchdog } = await import('./watchdogs/screenshot.js');
       
