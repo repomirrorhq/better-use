@@ -360,15 +360,58 @@ export class Controller<Context = any> {
   }
 
   private registerInputTextAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Input text action not yet implemented' });
+    const actionFunction = async (
+      params: z.infer<typeof InputTextActionSchema>,
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      const hasSensitiveData = specialParams.hasSensitiveData as boolean;
+      return this.inputText(params, { browserSession, hasSensitiveData });
     };
+
     this.registry.actions['inputText'] = {
       name: 'inputText',
-      description: 'Input text into element (not yet implemented)',
+      description: 'Click and input text into a input interactive element. Only input text into indices that are inside your current browser_state. Never input text into indices that are not inside your current browser_state.',
       function: actionFunction,
       paramSchema: InputTextActionSchema,
     };
+  }
+
+  private async inputText(
+    params: z.infer<typeof InputTextActionSchema>,
+    { browserSession, hasSensitiveData = false }: { browserSession: BrowserSession; hasSensitiveData?: boolean }
+  ): Promise<ActionResult> {
+    try {
+      // Look up the node from the selector map
+      const node = await browserSession.getElementByIndex(params.index);
+      if (node === null) {
+        throw new Error(`Element index ${params.index} not found in DOM`);
+      }
+
+      // Dispatch type text event with node
+      const event = browserSession.eventBus.dispatch(new TypeTextEvent({
+        node,
+        text: params.text,
+        clearExisting: params.clearExisting ?? true,
+      }));
+      await event;
+      
+      const inputMetadata = await event.eventResult();
+      const msg = `Input '${params.text}' into element ${params.index}.`;
+      console.log(msg);
+
+      return new ActionResult({
+        extractedContent: msg,
+        includeInMemory: true,
+        longTermMemory: `Input '${params.text}' into element ${params.index}.`,
+        metadata: typeof inputMetadata === 'object' ? inputMetadata : undefined,
+      });
+    } catch (e) {
+      // Log the full error for debugging
+      console.error(`Failed to dispatch TypeTextEvent: ${(e as Error).constructor.name}: ${e}`);
+      const errorMsg = `Failed to input text into element ${params.index}: ${e}`;
+      return new ActionResult({ error: errorMsg });
+    }
   }
 
   private registerUploadFileAction() {
