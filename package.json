@@ -50,7 +50,7 @@
     "axios": "^1.7.9",
     "blessed-contrib": "^4.11.0",
     "canvas": "^3.2.0",
-    "chalk": "^5.6.0",
+    "chalk": "^4.1.2",
     "commander": "^14.0.0",
     "dotenv": "^16.4.7",
     "gif-encoder-2": "^1.0.5",
