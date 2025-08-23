@@ -93,6 +93,9 @@ export const BrowserProfileSchema = z.object({
   // Storage settings
   storage_state_path: z.string().optional().describe('Path to storage state file'),
   
+  // DOM settings
+  cross_origin_iframes: z.boolean().default(false).describe('Enable cross-origin iframe access (experimental)'),
+  
   // Timeout settings
   timeout: z.number().default(30000).describe('Default timeout in milliseconds'),
   navigation_timeout: z.number().default(30000).describe('Navigation timeout in milliseconds'),
@@ -157,6 +160,10 @@ export class BrowserProfile {
 
   get permissions(): string[] {
     return this.config.permissions;
+  }
+
+  get crossOriginIframes(): boolean {
+    return this.config.cross_origin_iframes;
   }
 
   // Generate Chrome launch arguments
