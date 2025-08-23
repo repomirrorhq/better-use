@@ -215,7 +215,34 @@ export class AssistantMessageHelper implements AssistantMessage {
   }
 }
 
-// Factory functions
+// Factory functions for content parts
+export function createContentPartText(text: string): ContentPartTextParam {
+  return ContentPartTextParamSchema.parse({ text });
+}
+
+export function createContentPartImage(url: string, detail: 'auto' | 'low' | 'high' = 'auto', media_type: SupportedImageMediaType = 'image/png'): ContentPartImageParam {
+  return ContentPartImageParamSchema.parse({
+    image_url: {
+      url,
+      detail,
+      media_type
+    }
+  });
+}
+
+export function createContentPartRefusal(refusal: string): ContentPartRefusalParam {
+  return ContentPartRefusalParamSchema.parse({ refusal });
+}
+
+export function createImageURL(url: string, detail: 'auto' | 'low' | 'high' = 'auto', media_type: SupportedImageMediaType = 'image/png'): ImageURL {
+  return ImageURLSchema.parse({
+    url,
+    detail,
+    media_type
+  });
+}
+
+// Factory functions for messages
 export function createUserMessage(content: string | (ContentPartTextParam | ContentPartImageParam)[], options?: Partial<UserMessage>): UserMessage {
   return UserMessageSchema.parse({
     content,

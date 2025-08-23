@@ -8,7 +8,11 @@ import {
   ContentPartTextParam, 
   ContentPartImageParam, 
   ImageURL,
-  createUserMessage
+  createUserMessage,
+  createSystemMessage,
+  createContentPartText,
+  createContentPartImage,
+  createImageURL
 } from '../llm/messages';
 import type { 
   AgentStepInfo 
@@ -34,7 +38,7 @@ export class SystemPrompt {
   private maxActionsPerStep: number;
   private useThinking: boolean;
   private flashMode: boolean;
-  private promptTemplate: string;
+  private promptTemplate!: string;
   private systemMessage: SystemMessage;
 
   constructor(config: SystemPromptConfig) {
@@ -55,8 +59,7 @@ export class SystemPrompt {
       prompt += `\n${config.extendSystemMessage}`;
     }
 
-    this.systemMessage = new SystemMessage({
-      content: prompt,
+    this.systemMessage = createSystemMessage(prompt, {
       cache: true
     });
   }
@@ -322,7 +325,7 @@ ${finalTodoContents}
     if (useVision && this.screenshots.length > 0) {
       // Start with text description
       const contentParts: (ContentPartTextParam | ContentPartImageParam)[] = [
-        new ContentPartTextParam({ text: stateDescription })
+        createContentPartText(stateDescription)
       ];
 
       // Add screenshots with labels
@@ -337,17 +340,15 @@ ${finalTodoContents}
         }
 
         // Add label as text content
-        contentParts.push(new ContentPartTextParam({ text: label }));
+        contentParts.push(createContentPartText(label));
 
         // Add the screenshot
         contentParts.push(
-          new ContentPartImageParam({
-            imageUrl: new ImageURL({
-              url: `data:image/png;base64,${screenshot}`,
-              mediaType: 'image/png',
-              detail: this.visionDetailLevel
-            })
-          })
+          createContentPartImage(
+            `data:image/png;base64,${screenshot}`,
+            this.visionDetailLevel,
+            'image/png'
+          )
         );
       }
 
