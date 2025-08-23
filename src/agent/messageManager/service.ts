@@ -16,6 +16,7 @@ import {
   createSystemMessage,
   ContentPartTextParam,
 } from '../../llm/messages';
+import { AgentMessagePrompt } from '../prompts';
 import {
   MessageManagerState,
   MessageManagerStateSchema,
@@ -311,9 +312,8 @@ export class MessageManager {
       screenshots.push(browserStateSummary.screenshot);
     }
 
-    // Create single state message with all content
-    // TODO: Implement AgentMessagePrompt equivalent
-    const stateMessage = await this._createAgentMessagePrompt({
+    // Create single state message with all content using AgentMessagePrompt
+    const agentMessagePrompt = new AgentMessagePrompt({
       browserStateSummary,
       fileSystem: this.fileSystem,
       agentHistoryDescription: this.agentHistoryDescription,
@@ -327,39 +327,15 @@ export class MessageManager {
       screenshots,
       visionDetailLevel: this.visionDetailLevel,
       includeRecentEvents: this.includeRecentEvents,
-      useVision,
     });
+    
+    const stateMessage = agentMessagePrompt.getUserMessage(useVision);
 
     // Set the state message with caching enabled
     this._setMessageWithType(stateMessage, 'state');
   }
 
-  /**
-   * Create agent message prompt (placeholder implementation)
-   * TODO: Implement proper AgentMessagePrompt equivalent
-   */
-  private async _createAgentMessagePrompt(options: {
-    browserStateSummary: BrowserStateSummary;
-    fileSystem: any;
-    agentHistoryDescription: string;
-    readStateDescription: string;
-    task: string;
-    includeAttributes: string[];
-    stepInfo?: AgentStepInfo | null;
-    pageFilteredActions?: string | null;
-    sensitiveData: string;
-    availableFilePaths?: string[] | null;
-    screenshots: string[];
-    visionDetailLevel: VisionDetailLevel;
-    includeRecentEvents: boolean;
-    useVision: boolean;
-  }): Promise<UserMessage> {
-    // This is a placeholder implementation
-    // The actual implementation would need the AgentMessagePrompt class
-    const content = `Task: ${options.task}\n\nCurrent URL: ${options.browserStateSummary.url}\n\nHistory: ${options.agentHistoryDescription}`;
-    
-    return createUserMessage(content, { cache: true });
-  }
+  // _createAgentMessagePrompt method removed - now using AgentMessagePrompt class directly
 
   /**
    * Get current message list
