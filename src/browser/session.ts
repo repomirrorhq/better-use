@@ -18,6 +18,7 @@ import { BrowserException } from '../exceptions';
 import { sleep } from '../utils';
 import { CONFIG } from '../config';
 import { getLogger } from '../logging';
+import { createSerializedDOMStateWithLLMRepresentation } from '../dom/serializer/serializer';
 
 export interface BrowserSessionConfig {
   profile?: BrowserProfile;
@@ -940,16 +941,14 @@ export class BrowserSession extends EventEmitter {
       });
       
       
-      return {
-        selector_map: elements || {},
-        _root: null // Placeholder for root node
-      };
+      // Return DOM state with llmRepresentation method
+      return createSerializedDOMStateWithLLMRepresentation(
+        null, // root node - placeholder for now
+        elements || {}
+      );
     } catch (error) {
       console.warn('Failed to get DOM state, returning empty state:', error);
-      return {
-        selector_map: {},
-        _root: null
-      };
+      return createSerializedDOMStateWithLLMRepresentation(null, {});
     }
   }
 
