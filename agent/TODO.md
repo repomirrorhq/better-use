@@ -191,34 +191,15 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 
 ## 🐛 Known Issues
 
-### Dynamic Import Path Resolution Issue
+### ✅ Dynamic Import Path Resolution Issue - FIXED
 **Location:** `/src/browser/session.ts:123-124`  
-**Priority:** HIGH - Blocks ts-node execution  
-**Added:** 2025-08-23
+**Resolution:** Converted dynamic imports to static imports  
+**Fixed:** 2025-08-23 (commit c8ce25b)
 
-**Problem:**
-- Dynamic imports use `.js` extension (required by TypeScript `moduleResolution: node16`)
-- When running with `ts-node src/cli.ts`, the runtime looks for `.js` files in source directory
-- Source directory only contains `.ts` files, causing module not found errors
-
-**Error:**
-```
-Cannot find module '/Users/yonom/GitHub/browser-use-ts/src/browser/watchdogs/defaultaction.js'
-```
-
-**Current Code:**
-```typescript
-const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction.js');
-const { ScreenshotWatchdog } = await import('./watchdogs/screenshot.js');
-```
-
-**Solutions to Consider:**
-1. **Use static imports** (Preferred): Replace dynamic imports with static imports at the top of the file
-2. **Conditional paths**: Check if running in ts-node vs compiled mode and adjust extension
-3. **Build before run**: Always compile to dist/ and run from there, never use ts-node directly
-4. **Adjust tsconfig**: Modify module resolution settings (may break other things)
-
-**Workaround:** Run compiled version instead: `npm run build && node dist/cli.js`
+**Solution Applied:**
+- Replaced dynamic imports with static imports at the top of the file
+- Both `npm run build && node dist/cli.js` and `npx ts-node src/cli.ts` now work correctly
+- No more "Cannot find module" errors when using ts-node
 
 ---
 

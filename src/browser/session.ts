@@ -45,6 +45,7 @@ export class BrowserSession extends EventEmitter {
   public downloadedFiles: string[] = [];
   public watchdogs: any[] = []; // Watchdogs for tracking browser events
   private watchdogsAttached = false;
+  private cachedSelectorMap: Map<number, any> | null = null;
 
   constructor(config: BrowserSessionConfig = {}) {
     super();
@@ -481,13 +482,37 @@ export class BrowserSession extends EventEmitter {
         ));
       }
 
-      // Get page info
+      // Get page info with actual dimensions
       const viewport = currentPage.viewportSize() || { width: 1280, height: 720 };
+      let pageWidth = viewport.width;
+      let pageHeight = viewport.height;
+
+      try {
+        // Try to get actual page dimensions using evaluate
+        const dimensions = await currentPage.evaluate(() => {
+          return {
+            scrollWidth: Math.max(
+              document.documentElement.scrollWidth,
+              document.body?.scrollWidth || 0
+            ),
+            scrollHeight: Math.max(
+              document.documentElement.scrollHeight,
+              document.body?.scrollHeight || 0
+            ),
+          };
+        });
+        pageWidth = dimensions.scrollWidth;
+        pageHeight = dimensions.scrollHeight;
+      } catch (error) {
+        // Fallback to viewport size if evaluation fails
+        getLogger('browser').debug(`Failed to get page dimensions: ${error}`);
+      }
+
       const pageInfo = createPageInfo(
         viewport.width,
         viewport.height,
-        viewport.width, // TODO: Get actual page dimensions
-        viewport.height,
+        pageWidth,
+        pageHeight,
       );
 
       // Add basic DOM state with selector map
@@ -858,11 +883,30 @@ export class BrowserSession extends EventEmitter {
   }
 
   /**
-   * Get selector map for elements (stub implementation)
-   * TODO: Implement proper selector mapping
+   * Get selector map for elements from cached state or DOM watchdog
    */
-  async getSelectorMap(): Promise<Record<string, string>> {
-    return {};
+  async getSelectorMap(): Promise<Map<number, any>> {
+    // First try cached selector map
+    if (this.cachedSelectorMap) {
+      return this.cachedSelectorMap;
+    }
+
+    // Try to get from DOM watchdog
+    const domWatchdog = this.watchdogs.find(w => w.constructor.name === 'DOMWatchdog');
+    if (domWatchdog && domWatchdog.selectorMap) {
+      this.cachedSelectorMap = domWatchdog.selectorMap;
+      return domWatchdog.selectorMap;
+    }
+
+    // Return empty map if no selector map available
+    return new Map();
+  }
+
+  /**
+   * Update cached selector map
+   */
+  updateSelectorMap(selectorMap: Map<number, any>): void {
+    this.cachedSelectorMap = selectorMap;
   }
 
   /**
@@ -1144,17 +1188,40 @@ export class BrowserSession extends EventEmitter {
   }
 
   /**
-   * Remove highlights from the page (placeholder implementation)
+   * Remove highlights from the page
    */
   async removeHighlights(): Promise<void> {
     const currentPage = this.getCurrentPage();
-    if (currentPage) {
-      // TODO: Implement highlight removal logic
-      await currentPage.evaluate(() => {
-        // Remove any highlight elements
+    if (!currentPage) {
+      return;
+    }
+
+    try {
+      const result = await currentPage.evaluate(() => {
+        // Remove all browser-use highlight elements
         const highlights = document.querySelectorAll('[data-browser-use-highlight]');
+        console.log('Removing', highlights.length, 'browser-use highlight elements');
         highlights.forEach(el => el.remove());
+        
+        // Also remove by ID in case selector missed anything
+        const highlightContainer = document.getElementById('browser-use-debug-highlights');
+        if (highlightContainer) {
+          console.log('Removing highlight container by ID');
+          highlightContainer.remove();
+        }
+        
+        // Final cleanup - remove any orphaned tooltips
+        const orphanedTooltips = document.querySelectorAll('[data-browser-use-highlight="tooltip"]');
+        orphanedTooltips.forEach(el => el.remove());
+        
+        return { removed: highlights.length };
       });
+
+      if (result && result.removed > 0) {
+        getLogger('browser').debug(`Successfully removed ${result.removed} highlight elements`);
+      }
+    } catch (error) {
+      getLogger('browser').warning(`Failed to remove highlights: ${error}`);
     }
   }
 
