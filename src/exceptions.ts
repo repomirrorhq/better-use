@@ -21,6 +21,13 @@ export class ModelProviderError extends LLMException {
   }
 }
 
+export class ModelRateLimitError extends LLMException {
+  constructor(options: { message: string; status_code?: number; model?: string }) {
+    super(options.status_code || 429, options.message, options.model);
+    this.name = 'ModelRateLimitError';
+  }
+}
+
 export class BrowserException extends Error {
   constructor(message: string) {
     super(message);

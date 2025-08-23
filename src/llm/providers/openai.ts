@@ -223,30 +223,24 @@ export class ChatOpenAI extends AbstractChatModel {
         return createCompletion(content as T, { usage });
       }
 
-    } catch (error) {
-      if (error instanceof OpenAI.RateLimitError) {
+    } catch (error: any) {
+      if (error?.constructor?.name === 'RateLimitError') {
+        const errorMessage = this.extractErrorMessage(error);
+        throw new ModelProviderError({
+          message: errorMessage,
+          status_code: error.status || 429,
+          model: this.name,
+        });
+      } else if (error?.constructor?.name === 'APIConnectionError') {
+        throw new ModelProviderError({
+          message: error.message || String(error),
+          model: this.name,
+        });
+      } else if (error?.status) {
         const errorMessage = this.extractErrorMessage(error);
         throw new ModelProviderError({
           message: errorMessage,
           status_code: error.status,
-          model: this.name,
-        });
-      } else if (error instanceof OpenAI.APIConnectionError) {
-        throw new ModelProviderError({
-          message: error.message,
-          model: this.name,
-        });
-      } else if (error instanceof OpenAI.APIStatusError) {
-        const errorMessage = this.extractErrorMessage(error);
-        throw new ModelProviderError({
-          message: errorMessage,
-          status_code: error.status,
-          model: this.name,
-        });
-      } else if (error instanceof OpenAI.APIError) {
-        throw new ModelProviderError({
-          message: error.message,
-          status_code: (error as any).status || 500,
           model: this.name,
         });
       }
@@ -257,7 +251,7 @@ export class ChatOpenAI extends AbstractChatModel {
     }
   }
 
-  private extractErrorMessage(error: OpenAI.APIError): string {
+  private extractErrorMessage(error: any): string {
     try {
       // Try to extract error message from response
       const errorBody = (error as any).response?.data?.error;
