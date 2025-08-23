@@ -690,7 +690,7 @@ export class Controller<Context = any> {
       
       // Get tab URL for display purposes before closing
       const cdpSession = await browserSession.getOrCreateCdpSession();
-      if (!cdpSession) {
+      if (!cdpSession || !cdpSession.cdpClient) {
         throw new Error('CDP client not available - no active browser page');
       }
       const targetInfo = await cdpSession.cdpClient.send.Target.getTargetInfo({
@@ -1279,7 +1279,7 @@ If you called extract_structured_data in the last step and the result was not go
     try {
       const cdpSession = await browserSession.getOrCreateCdpSession();
       
-      if (!cdpSession) {
+      if (!cdpSession || !cdpSession.cdpClient) {
         throw new Error('CDP client not available - no active browser page');
       }
 
