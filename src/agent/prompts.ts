@@ -13,7 +13,7 @@ import type {
   BrowserStateSummary, 
   AgentStepInfo 
 } from './views';
-import type { FileSystem } from '../filesystem/file_system';
+import type { FileSystem } from '../filesystem/index';
 
 // Get the current file's directory
 const __filename = fileURLToPath(import.meta.url);

@@ -33,7 +33,7 @@ import {
   SwitchTabActionSchema,
   UploadFileActionSchema,
 } from './views';
-import { EnhancedDOMTreeNode } from '../dom/service';
+import { EnhancedDOMTreeNode } from '../dom/views';
 import { FileSystem } from '../filesystem/index';
 import { BaseChatModel } from '../llm/base';
 import { UserMessage } from '../llm/messages';

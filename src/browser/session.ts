@@ -33,8 +33,14 @@ export class BrowserSession extends EventEmitter {
   private isStarted = false;
   private logger = console; // TODO: Use proper logger
 
+  // Public properties for compatibility with controller
+  public readonly id: string;
+  public agentFocus: { targetId: string } | null = null;
+  public eventBus = this; // Use EventEmitter as event bus
+
   constructor(config: BrowserSessionConfig = {}) {
     super();
+    this.id = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.profile = config.profile || BrowserProfile.createDefault();
     if (config.headless !== undefined) {
       this.profile.update({ headless: config.headless });
@@ -434,5 +440,61 @@ export class BrowserSession extends EventEmitter {
 
   get tabCount(): number {
     return this.pages.size;
+  }
+
+  async getTabs(): Promise<TabInfo[]> {
+    const tabs: TabInfo[] = [];
+    
+    for (const [pageId, page] of this.pages) {
+      try {
+        const url = page.url();
+        const title = await page.title();
+        tabs.push({
+          url,
+          title,
+          target_id: pageId,
+        });
+      } catch (error) {
+        // If page is closed or unavailable, skip it
+        console.warn(`Failed to get info for tab ${pageId}:`, error);
+      }
+    }
+    
+    return tabs;
+  }
+
+  async getCurrentPageUrl(): Promise<string> {
+    const currentPage = this.getCurrentPage();
+    if (!currentPage) {
+      throw new Error('No current page available');
+    }
+    return currentPage.url();
+  }
+
+  getCurrentTargetId(): string | null {
+    return this.currentPageId;
+  }
+
+  async getElementByIndex(index: number): Promise<any> {
+    // This would need to be implemented with proper DOM integration
+    // For now, return a placeholder
+    throw new Error('getElementByIndex not yet implemented - requires DOM integration');
+  }
+
+  isFileInput(node: any): boolean {
+    // This would need to be implemented with proper DOM integration  
+    // For now, return false
+    return false;
+  }
+
+  getOrCreateCdpSession(): any {
+    // This would need to be implemented with CDP integration
+    // For now, return null
+    return null;
+  }
+
+  // Add cdpClient getter for compatibility
+  get cdpClient(): any {
+    return this.getOrCreateCdpSession();
   }
 }

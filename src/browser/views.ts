@@ -122,3 +122,6 @@ export function createBrowserStateSummary(
     ...options,
   });
 }
+
+// Re-export BrowserError from exceptions for compatibility
+export { BrowserException as BrowserError } from '../exceptions';

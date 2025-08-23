@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ActionRegistry, RegisteredAction, ActionFunction, ActionModel, SpecialActionParameters } from './views';
 import { BrowserSession } from '../../browser/session';
 import { BaseChatModel } from '../../llm/base';
-import { FileSystem } from '../../filesystem/file_system';
+import { FileSystem } from '../../filesystem/index';
 
 export interface RegistryConfig<Context = any> {
   excludeActions?: string[];
@@ -15,6 +15,11 @@ export class Registry<Context = any> {
   constructor(config: RegistryConfig<Context> = {}) {
     this.registry = new ActionRegistry();
     this.excludeActions = config.excludeActions ?? [];
+  }
+
+  // Getter to access the internal actions for direct registration
+  get actions(): Record<string, RegisteredAction> {
+    return this.registry.actions;
   }
 
   private getSpecialParamTypes(): Record<string, any> {
