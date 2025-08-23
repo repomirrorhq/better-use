@@ -96,6 +96,10 @@ export const BrowserProfileSchema = z.object({
   // DOM settings
   cross_origin_iframes: z.boolean().default(false).describe('Enable cross-origin iframe access (experimental)'),
   
+  // Page load timing settings
+  minimum_wait_page_load_time: z.number().default(0).describe('Minimum time to wait after page load in seconds'),
+  wait_for_network_idle_page_load_time: z.number().default(0).describe('Time to wait for network idle after page load in seconds'),
+  
   // Timeout settings
   timeout: z.number().default(30000).describe('Default timeout in milliseconds'),
   navigation_timeout: z.number().default(30000).describe('Navigation timeout in milliseconds'),
@@ -164,6 +168,14 @@ export class BrowserProfile {
 
   get crossOriginIframes(): boolean {
     return this.config.cross_origin_iframes;
+  }
+
+  get minimumWaitPageLoadTime(): number {
+    return this.config.minimum_wait_page_load_time;
+  }
+
+  get waitForNetworkIdlePageLoadTime(): number {
+    return this.config.wait_for_network_idle_page_load_time;
   }
 
   // Generate Chrome launch arguments

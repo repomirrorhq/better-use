@@ -577,6 +577,10 @@ export class BrowserSession extends EventEmitter {
     return this.pages.size;
   }
 
+  get browserProfile(): BrowserProfile {
+    return this.profile;
+  }
+
   async getTabs(): Promise<TabInfo[]> {
     const tabs: TabInfo[] = [];
     
@@ -604,6 +608,31 @@ export class BrowserSession extends EventEmitter {
       throw new Error('No current page available');
     }
     return currentPage.url();
+  }
+
+  async getCurrentPageTitle(): Promise<string> {
+    const currentPage = this.getCurrentPage();
+    if (!currentPage) {
+      throw new Error('No current page available');
+    }
+    try {
+      return await currentPage.title();
+    } catch (error) {
+      this.logger.warn(`Failed to get page title: ${error}`);
+      return 'Page';
+    }
+  }
+
+  async addInitScript(script: string): Promise<void> {
+    if (!this.context) {
+      throw new Error('Browser context not available');
+    }
+    try {
+      await this.context.addInitScript(script);
+    } catch (error) {
+      // If page isn't ready, this may fail - that's expected
+      throw error;
+    }
   }
 
   getCurrentTargetId(): string | null {
