@@ -98,12 +98,6 @@ export class BrowserSession extends EventEmitter {
     return `BrowserSession🅑 ${this._idForLogs} 🅣 ${this._targetIdForLogs}`;
   }
 
-  /**
-   * Get browser profile accessor for compatibility
-   */
-  get browserProfile() {
-    return this.profile;
-  }
 
   // ============================================================================
   // Event System

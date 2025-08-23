@@ -177,33 +177,38 @@ export class DOMWatchdog extends BaseWatchdog {
           this.logger.debug(`Failed to get page info for empty page: ${error}, using fallback`);
           // Use default viewport dimensions
           const viewport = { width: this.browserSession.browserProfile.viewportWidth, height: this.browserSession.browserProfile.viewportHeight };
-          pageInfo = createPageInfo({
-            viewportWidth: viewport.width,
-            viewportHeight: viewport.height,
-            pageWidth: viewport.width,
-            pageHeight: viewport.height,
-            scrollX: 0,
-            scrollY: 0,
-            pixelsAbove: 0,
-            pixelsBelow: 0,
-            pixelsLeft: 0,
-            pixelsRight: 0,
-          });
+          pageInfo = createPageInfo(
+            viewport.width,
+            viewport.height,
+            viewport.width,
+            viewport.height,
+            {
+              scroll_x: 0,
+              scroll_y: 0,
+              pixels_above: 0,
+              pixels_below: 0,
+              pixels_left: 0,
+              pixels_right: 0,
+            }
+          );
         }
 
-        return createBrowserStateSummary({
-          domState: content,
-          url: pageUrl,
-          title: 'Empty Tab',
-          tabs: tabsInfo,
-          screenshot: screenshotB64,
+        return createBrowserStateSummary(
+          pageUrl,
+          'Empty Tab',
+          screenshotB64 || '',
+          tabsInfo,
+          this.browserSession.currentTabId || '',
           pageInfo,
-          pixelsAbove: 0,
-          pixelsBelow: 0,
-          browserErrors: [],
-          isPdfViewer: false,
-          recentEvents: event.include_recent_events ? this.getRecentEventsStr() : undefined,
-        });
+          {
+            dom_state: content,
+            pixels_above: 0,
+            pixels_below: 0,
+            browser_errors: [],
+            is_pdf_viewer: false,
+            recent_events: event.include_recent_events ? this.getRecentEventsStr() : undefined,
+          }
+        );
       }
 
       // Normal path: Build DOM tree if requested
@@ -274,37 +279,42 @@ export class DOMWatchdog extends BaseWatchdog {
         );
         // Fallback to default viewport dimensions
         const viewport = { width: this.browserSession.browserProfile.viewportWidth, height: this.browserSession.browserProfile.viewportHeight };
-        pageInfo = createPageInfo({
-          viewportWidth: viewport.width,
-          viewportHeight: viewport.height,
-          pageWidth: viewport.width,
-          pageHeight: viewport.height,
-          scrollX: 0,
-          scrollY: 0,
-          pixelsAbove: 0,
-          pixelsBelow: 0,
-          pixelsLeft: 0,
-          pixelsRight: 0,
-        });
+        pageInfo = createPageInfo(
+          viewport.width,
+          viewport.height,
+          viewport.width,
+          viewport.height,
+          {
+            scroll_x: 0,
+            scroll_y: 0,
+            pixels_above: 0,
+            pixels_below: 0,
+            pixels_left: 0,
+            pixels_right: 0,
+          }
+        );
       }
 
       // Check for PDF viewer
       const isPdfViewer = pageUrl.endsWith('.pdf') || pageUrl.includes('/pdf/');
 
       // Build browser state summary
-      const browserState = createBrowserStateSummary({
-        domState: content,
-        url: pageUrl,
+      const browserState = createBrowserStateSummary(
+        pageUrl,
         title,
-        tabs: tabsInfo,
-        screenshot: screenshotB64,
+        screenshotB64 || '',
+        tabsInfo,
+        this.browserSession.currentTabId || '',
         pageInfo,
-        pixelsAbove: 0,
-        pixelsBelow: 0,
-        browserErrors: [],
-        isPdfViewer,
-        recentEvents: event.include_recent_events ? this.getRecentEventsStr() : undefined,
-      });
+        {
+          dom_state: content,
+          pixels_above: 0,
+          pixels_below: 0,
+          browser_errors: [],
+          is_pdf_viewer: isPdfViewer,
+          recent_events: event.include_recent_events ? this.getRecentEventsStr() : undefined,
+        }
+      );
 
       this.logger.debug('🔍 DOMWatchdog.onBrowserStateRequestEvent: ✅ COMPLETED - Returning browser state');
       return browserState;
@@ -314,30 +324,35 @@ export class DOMWatchdog extends BaseWatchdog {
 
       // Return minimal recovery state
       const viewport = { width: this.browserSession.browserProfile.viewportWidth, height: this.browserSession.browserProfile.viewportHeight };
-      return createBrowserStateSummary({
-        domState: { _root: null, selector_map: new Map() },
-        url: pageUrl || '',
-        title: 'Error',
-        tabs: [],
-        screenshot: null,
-        pageInfo: createPageInfo({
-          viewportWidth: viewport.width,
-          viewportHeight: viewport.height,
-          pageWidth: viewport.width,
-          pageHeight: viewport.height,
-          scrollX: 0,
-          scrollY: 0,
-          pixelsAbove: 0,
-          pixelsBelow: 0,
-          pixelsLeft: 0,
-          pixelsRight: 0,
-        }),
-        pixelsAbove: 0,
-        pixelsBelow: 0,
-        browserErrors: [String(error)],
-        isPdfViewer: false,
-        recentEvents: undefined,
-      });
+      return createBrowserStateSummary(
+        pageUrl || '',
+        'Error',
+        '',
+        [],
+        this.browserSession.currentTabId || '',
+        createPageInfo(
+          viewport.width,
+          viewport.height,
+          viewport.width,
+          viewport.height,
+          {
+            scroll_x: 0,
+            scroll_y: 0,
+            pixels_above: 0,
+            pixels_below: 0,
+            pixels_left: 0,
+            pixels_right: 0,
+          }
+        ),
+        {
+          dom_state: { _root: null, selector_map: new Map() },
+          pixels_above: 0,
+          pixels_below: 0,
+          browser_errors: [String(error)],
+          is_pdf_viewer: false,
+          recent_events: undefined,
+        }
+      );
     }
   }
 
@@ -436,18 +451,20 @@ export class DOMWatchdog extends BaseWatchdog {
     const pixelsLeft = pageMetrics.scrollX;
     const pixelsRight = Math.max(0, pageMetrics.pageWidth - viewport.width - pageMetrics.scrollX);
 
-    return createPageInfo({
-      viewportWidth: viewport.width,
-      viewportHeight: viewport.height,
-      pageWidth: pageMetrics.pageWidth,
-      pageHeight: pageMetrics.pageHeight,
-      scrollX: pageMetrics.scrollX,
-      scrollY: pageMetrics.scrollY,
-      pixelsAbove,
-      pixelsBelow,
-      pixelsLeft,
-      pixelsRight,
-    });
+    return createPageInfo(
+      viewport.width,
+      viewport.height,
+      pageMetrics.pageWidth,
+      pageMetrics.pageHeight,
+      {
+        scroll_x: pageMetrics.scrollX,
+        scroll_y: pageMetrics.scrollY,
+        pixels_above: pixelsAbove,
+        pixels_below: pixelsBelow,
+        pixels_left: pixelsLeft,
+        pixels_right: pixelsRight,
+      }
+    );
   }
 
   // Public helper methods
