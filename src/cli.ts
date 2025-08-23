@@ -16,7 +16,11 @@ import { ChatGoogle } from './llm/providers/google';
 import { ChatAWSBedrock } from './llm/providers/aws';
 import { ChatAzureOpenAI } from './llm/providers/azure';
 import { ChatDeepseek } from './llm/providers/deepseek';
+import { ChatGroq } from './llm/providers/groq';
+import { ChatOllama } from './llm/providers/ollama';
+import { ChatOpenRouter } from './llm/providers/openrouter';
 import { getBrowserUseVersion } from './utils';
+import { runSimpleTUI } from './cli-simple-tui';
 
 const program = new Command();
 
@@ -33,11 +37,14 @@ ${chalk.gray('Browser automation powered by AI - TypeScript Edition')}
 `;
 
 interface CLIConfig {
-  provider: 'openai' | 'anthropic' | 'google' | 'aws' | 'azure' | 'deepseek';
+  provider: 'openai' | 'anthropic' | 'google' | 'aws' | 'azure' | 'deepseek' | 'groq' | 'ollama' | 'openrouter';
   model: string;
   apiKey?: string;
   temperature: number;
   headless: boolean;
+  useVision: boolean;
+  maxSteps: number;
+  debug: boolean;
 }
 
 function displayLogo() {
@@ -82,6 +89,24 @@ function createLLMProvider(config: CLIConfig) {
       return new ChatDeepseek({
         model: config.model,
         api_key: config.apiKey || process.env.DEEPSEEK_API_KEY,
+        temperature: config.temperature,
+      });
+    case 'groq':
+      return new ChatGroq({
+        model: config.model,
+        api_key: config.apiKey || process.env.GROQ_API_KEY,
+        temperature: config.temperature,
+      });
+    case 'ollama':
+      return new ChatOllama({
+        model: config.model,
+        host: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+        temperature: config.temperature,
+      });
+    case 'openrouter':
+      return new ChatOpenRouter({
+        model: config.model,
+        api_key: config.apiKey || process.env.OPENROUTER_API_KEY,
         temperature: config.temperature,
       });
     default:
@@ -224,7 +249,7 @@ program
 program
   .command('run')
   .description('Run browser automation in interactive mode')
-  .option('-p, --provider <provider>', 'LLM provider (openai, anthropic, google, aws, azure, deepseek)', 'openai')
+  .option('-p, --provider <provider>', 'LLM provider (openai, anthropic, google, aws, azure, deepseek, groq, ollama, openrouter)', 'openai')
   .option('-m, --model <model>', 'Model name', 'gpt-4o')
   .option('-k, --api-key <key>', 'API key (can also use environment variables)')
   .option('-t, --temperature <temp>', 'Temperature for LLM', parseFloat, 0.2)
@@ -237,6 +262,9 @@ program
       apiKey: options.apiKey,
       temperature: options.temperature,
       headless: options.headless,
+      useVision: false,
+      maxSteps: 50,
+      debug: false,
     };
     
     await runInteractiveSession(config);
@@ -245,7 +273,7 @@ program
 program
   .command('exec <task>')
   .description('Execute a single browser automation task')
-  .option('-p, --provider <provider>', 'LLM provider (openai, anthropic, google, aws, azure, deepseek)', 'openai')
+  .option('-p, --provider <provider>', 'LLM provider (openai, anthropic, google, aws, azure, deepseek, groq, ollama, openrouter)', 'openai')
   .option('-m, --model <model>', 'Model name', 'gpt-4o')
   .option('-k, --api-key <key>', 'API key (can also use environment variables)')
   .option('-t, --temperature <temp>', 'Temperature for LLM', parseFloat, 0.2)
@@ -258,9 +286,40 @@ program
       apiKey: options.apiKey,
       temperature: options.temperature,
       headless: options.headless,
+      useVision: false,
+      maxSteps: 50,
+      debug: false,
     };
     
     await runSingleCommand(task, config);
+  });
+
+program
+  .command('tui')
+  .description('Launch advanced TUI (Terminal User Interface) for browser automation')
+  .option('-p, --provider <provider>', 'LLM provider (openai, anthropic, google, aws, azure, deepseek, groq, ollama, openrouter)', 'openai')
+  .option('-m, --model <model>', 'Model name', 'gpt-4o')
+  .option('-k, --api-key <key>', 'API key (can also use environment variables)')
+  .option('-t, --temperature <temp>', 'Temperature for LLM', parseFloat, 0.2)
+  .option('--headless', 'Run browser in headless mode', false)
+  .option('--no-headless', 'Run browser with GUI (default)')
+  .option('--vision', 'Enable vision capabilities', true)
+  .option('--no-vision', 'Disable vision capabilities')
+  .option('--max-steps <steps>', 'Maximum steps per task', parseInt, 50)
+  .option('--debug', 'Enable debug mode', false)
+  .action(async (options) => {
+    const config: CLIConfig = {
+      provider: options.provider,
+      model: options.model,
+      apiKey: options.apiKey,
+      temperature: options.temperature,
+      headless: options.headless,
+      useVision: options.vision ?? true,
+      maxSteps: options.maxSteps ?? 50,
+      debug: options.debug ?? false,
+    };
+    
+    await runSimpleTUI(config);
   });
 
 program
