@@ -162,8 +162,8 @@ export class DOMWatchdog extends BaseWatchdog {
 
         // Create minimal DOM state
         const content: SerializedDOMState = {
-          root: null,
-          selectorMap: new Map()
+          _root: null,
+          selector_map: new Map()
         };
 
         // Skip screenshot for empty pages
@@ -176,7 +176,7 @@ export class DOMWatchdog extends BaseWatchdog {
         } catch (error) {
           this.logger.debug(`Failed to get page info for empty page: ${error}, using fallback`);
           // Use default viewport dimensions
-          const viewport = this.browserSession.profile.viewport || { width: 1280, height: 720 };
+          const viewport = { width: this.browserSession.browserProfile.viewportWidth, height: this.browserSession.browserProfile.viewportHeight };
           pageInfo = createPageInfo({
             viewportWidth: viewport.width,
             viewportHeight: viewport.height,
@@ -202,13 +202,13 @@ export class DOMWatchdog extends BaseWatchdog {
           pixelsBelow: 0,
           browserErrors: [],
           isPdfViewer: false,
-          recentEvents: event.includeRecentEvents ? this.getRecentEventsStr() : undefined,
+          recentEvents: event.include_recent_events ? this.getRecentEventsStr() : undefined,
         });
       }
 
       // Normal path: Build DOM tree if requested
       let content: SerializedDOMState;
-      if (event.includeDom) {
+      if (event.include_dom) {
         this.logger.debug('🔍 DOMWatchdog.onBrowserStateRequestEvent: 🌳 Building DOM tree...');
 
         // Build the DOM directly using the internal method
@@ -220,26 +220,26 @@ export class DOMWatchdog extends BaseWatchdog {
           this.logger.debug('🔍 DOMWatchdog.onBrowserStateRequestEvent: ✅ _buildDomTree completed');
         } catch (error) {
           this.logger.warn(`🔍 DOMWatchdog.onBrowserStateRequestEvent: DOM build failed: ${error}, using minimal state`);
-          content = { root: null, selectorMap: new Map() };
+          content = { _root: null, selector_map: new Map() };
         }
 
         if (!content) {
           this.logger.warn('DOM build returned no content, using minimal state');
-          content = { root: null, selectorMap: new Map() };
+          content = { _root: null, selector_map: new Map() };
         }
       } else {
         // Skip DOM building if not requested
-        content = { root: null, selectorMap: new Map() };
+        content = { _root: null, selector_map: new Map() };
       }
 
       // Get screenshot if requested
       let screenshotB64: string | null = null;
-      if (event.includeScreenshot) {
+      if (event.include_screenshot) {
         this.logger.debug(
-          `🔍 DOMWatchdog.onBrowserStateRequestEvent: 📸 DOM watchdog requesting screenshot, includeScreenshot=${event.includeScreenshot}`
+          `🔍 DOMWatchdog.onBrowserStateRequestEvent: 📸 DOM watchdog requesting screenshot, includeScreenshot=${event.include_screenshot}`
         );
         try {
-          const screenshotEvent = new ScreenshotEvent({ fullPage: false });
+          const screenshotEvent = new ScreenshotEvent({ full_page: false });
           this.browserSession.emit('ScreenshotEvent', screenshotEvent);
           this.logger.debug('📸 Dispatched ScreenshotEvent, waiting for result...');
           // In TypeScript implementation, we'd need to handle screenshot capture differently
@@ -248,7 +248,7 @@ export class DOMWatchdog extends BaseWatchdog {
           this.logger.warn(`📸 Screenshot failed: ${error}`);
         }
       } else {
-        this.logger.debug(`📸 Skipping screenshot, includeScreenshot=${event.includeScreenshot}`);
+        this.logger.debug(`📸 Skipping screenshot, includeScreenshot=${event.include_screenshot}`);
       }
 
       // Get target title safely
@@ -273,7 +273,7 @@ export class DOMWatchdog extends BaseWatchdog {
           `🔍 DOMWatchdog.onBrowserStateRequestEvent: Failed to get page info: ${error}, using fallback`
         );
         // Fallback to default viewport dimensions
-        const viewport = this.browserSession.profile.viewport || { width: 1280, height: 720 };
+        const viewport = { width: this.browserSession.browserProfile.viewportWidth, height: this.browserSession.browserProfile.viewportHeight };
         pageInfo = createPageInfo({
           viewportWidth: viewport.width,
           viewportHeight: viewport.height,
@@ -303,7 +303,7 @@ export class DOMWatchdog extends BaseWatchdog {
         pixelsBelow: 0,
         browserErrors: [],
         isPdfViewer,
-        recentEvents: event.includeRecentEvents ? this.getRecentEventsStr() : undefined,
+        recentEvents: event.include_recent_events ? this.getRecentEventsStr() : undefined,
       });
 
       this.logger.debug('🔍 DOMWatchdog.onBrowserStateRequestEvent: ✅ COMPLETED - Returning browser state');
@@ -313,9 +313,9 @@ export class DOMWatchdog extends BaseWatchdog {
       this.logger.error(`Failed to get browser state: ${error}`);
 
       // Return minimal recovery state
-      const viewport = this.browserSession.profile.viewport || { width: 1280, height: 720 };
+      const viewport = { width: this.browserSession.browserProfile.viewportWidth, height: this.browserSession.browserProfile.viewportHeight };
       return createBrowserStateSummary({
-        domState: { root: null, selectorMap: new Map() },
+        domState: { _root: null, selector_map: new Map() },
         url: pageUrl || '',
         title: 'Error',
         tabs: [],
@@ -350,7 +350,7 @@ export class DOMWatchdog extends BaseWatchdog {
         this.domService = new DomService(
           this.browserSession,
           this.logger,
-          this.browserSession.profile.crossOriginIframes ?? false
+          this.browserSession.browserProfile.crossOriginIframes ?? false
         );
       }
 
@@ -358,9 +358,9 @@ export class DOMWatchdog extends BaseWatchdog {
       this.logger.debug('🔍 DOMWatchdog.buildDomTree: Calling DomService.getSerializedDomTree...');
       const start = Date.now();
       
-      const result = await this.domService.getSerializedDomTree(previousState);
-      this.currentDomState = result.domState;
-      this.enhancedDomTree = result.enhancedDomTree;
+      const [domState, enhancedDomTree, timing] = await this.domService.getSerializedDOMTree(previousState);
+      this.currentDomState = domState;
+      this.enhancedDomTree = enhancedDomTree;
       
       const end = Date.now();
       this.logger.debug('🔍 DOMWatchdog.buildDomTree: ✅ DomService.getSerializedDomTree completed');
@@ -368,7 +368,7 @@ export class DOMWatchdog extends BaseWatchdog {
 
       // Update selector map for other watchdogs
       this.logger.debug('🔍 DOMWatchdog.buildDomTree: Updating selector maps...');
-      this.selectorMap = this.currentDomState.selectorMap;
+      this.selectorMap = this.currentDomState.selector_map as Map<number, EnhancedDOMTreeNode>;
       
       this.logger.debug(`🔍 DOMWatchdog.buildDomTree: ✅ Selector maps updated, ${this.selectorMap.size} elements`);
 
@@ -378,8 +378,9 @@ export class DOMWatchdog extends BaseWatchdog {
     } catch (error) {
       this.logger.error(`Failed to build DOM tree: ${error}`);
       this.browserSession.emit('BrowserErrorEvent', new BrowserErrorEvent({
-        errorType: 'DOMBuildFailed',
+        error_type: 'DOMBuildFailed',
         message: String(error),
+        target_id: this.browserSession.getCurrentTargetId() || 'unknown',
       }));
       throw error;
     }
@@ -389,14 +390,14 @@ export class DOMWatchdog extends BaseWatchdog {
     const start = Date.now();
 
     // Apply minimum wait time first (let page settle)
-    const minWait = this.browserSession.profile.minimumWaitPageLoadTime ?? 0;
+    const minWait = this.browserSession.browserProfile.minimumWaitPageLoadTime ?? 0;
     if (minWait > 0) {
       this.logger.debug(`⏳ Minimum wait: ${minWait}s`);
       await sleep(minWait * 1000);
     }
 
     // Apply network idle wait time (for dynamic content like iframes)
-    const networkIdleWait = this.browserSession.profile.waitForNetworkIdlePageLoadTime ?? 0;
+    const networkIdleWait = this.browserSession.browserProfile.waitForNetworkIdlePageLoadTime ?? 0;
     if (networkIdleWait > 0) {
       this.logger.debug(`⏳ Network idle wait: ${networkIdleWait}s`);
       await sleep(networkIdleWait * 1000);
@@ -468,13 +469,13 @@ export class DOMWatchdog extends BaseWatchdog {
   }
 
   isFileInput(element: EnhancedDOMTreeNode): boolean {
-    return element.nodeName.toUpperCase() === 'INPUT' && 
-           element.attributes.get('type')?.toLowerCase() === 'file';
+    return element.node_name.toUpperCase() === 'INPUT' && 
+           element.attributes?.type?.toLowerCase() === 'file';
   }
 
   async cleanup(): Promise<void> {
     if (this.domService) {
-      await this.domService.cleanup();
+      // DomService doesn't have a cleanup method in current implementation
       this.domService = null;
     }
   }

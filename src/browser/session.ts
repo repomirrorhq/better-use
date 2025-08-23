@@ -286,7 +286,7 @@ export class BrowserSession extends EventEmitter {
   // ============================================================================
 
   async navigateToUrl(event: NavigateToUrlEvent): Promise<void> {
-    const page = this.getCurrentPage();
+    const page = this.getInternalCurrentPage();
     
     try {
       this.logger.debug(`Navigating to: ${event.url}`);
@@ -333,7 +333,7 @@ export class BrowserSession extends EventEmitter {
   // ============================================================================
 
   async clickElement(event: ClickElementEvent): Promise<void> {
-    const page = this.getCurrentPage();
+    const page = this.getInternalCurrentPage();
     
     try {
       // Find element by index or selector
@@ -358,7 +358,7 @@ export class BrowserSession extends EventEmitter {
   }
 
   async typeText(event: TypeTextEvent): Promise<void> {
-    const page = this.getCurrentPage();
+    const page = this.getInternalCurrentPage();
     
     try {
       const selector = this.nodeToSelector(event.node);
@@ -381,7 +381,7 @@ export class BrowserSession extends EventEmitter {
   // ============================================================================
 
   async takeScreenshot(event: ScreenshotEvent): Promise<string> {
-    const page = this.getCurrentPage();
+    const page = this.getInternalCurrentPage();
     
     try {
       const options: any = {
@@ -410,7 +410,7 @@ export class BrowserSession extends EventEmitter {
 
   async getBrowserState(): Promise<BrowserStateSummary> {
     try {
-      const currentPage = this.getCurrentPage();
+      const currentPage = this.getInternalCurrentPage();
       const url = currentPage.url();
       const title = await currentPage.title();
       const screenshot = await this.takeScreenshot({ full_page: false });
@@ -471,7 +471,7 @@ export class BrowserSession extends EventEmitter {
 
     this.emit('agentFocusChanged', {
       target_id: this.currentPageId,
-      url: this.getCurrentPage().url(),
+      url: this.getInternalCurrentPage().url(),
     });
   }
 
@@ -502,7 +502,7 @@ export class BrowserSession extends EventEmitter {
   // Utility Methods
   // ============================================================================
 
-  private getCurrentPage(): Page {
+  private getInternalCurrentPage(): Page {
     if (!this.currentPageId || !this.pages.has(this.currentPageId)) {
       throw new BrowserException('No active page available');
     }
@@ -581,6 +581,13 @@ export class BrowserSession extends EventEmitter {
     return this.profile;
   }
 
+  getCurrentPage(): Page {
+    if (!this.currentPageId || !this.pages.has(this.currentPageId)) {
+      throw new BrowserException('No active page available');
+    }
+    return this.pages.get(this.currentPageId)!;
+  }
+
   async getTabs(): Promise<TabInfo[]> {
     const tabs: TabInfo[] = [];
     
@@ -603,7 +610,7 @@ export class BrowserSession extends EventEmitter {
   }
 
   async getCurrentPageUrl(): Promise<string> {
-    const currentPage = this.getCurrentPage();
+    const currentPage = this.getInternalCurrentPage();
     if (!currentPage) {
       throw new Error('No current page available');
     }
@@ -611,7 +618,7 @@ export class BrowserSession extends EventEmitter {
   }
 
   async getCurrentPageTitle(): Promise<string> {
-    const currentPage = this.getCurrentPage();
+    const currentPage = this.getInternalCurrentPage();
     if (!currentPage) {
       throw new Error('No current page available');
     }
@@ -641,7 +648,7 @@ export class BrowserSession extends EventEmitter {
 
   async getElementByIndex(index: number): Promise<any> {
     try {
-      const currentPage = this.getCurrentPage();
+      const currentPage = this.getInternalCurrentPage();
       
       // Use the same approach as getDOMState - get all interactive elements and find by index
       const elementInfo = await currentPage.evaluate((targetIndex) => {
@@ -850,7 +857,7 @@ export class BrowserSession extends EventEmitter {
    */
   private async getDOMState(): Promise<any> {
     try {
-      const currentPage = this.getCurrentPage();
+      const currentPage = this.getInternalCurrentPage();
       
       // Wait for page to be ready
       await new Promise(resolve => setTimeout(resolve, 100));
