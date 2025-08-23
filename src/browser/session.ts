@@ -823,4 +823,32 @@ export class BrowserSession extends EventEmitter {
       };
     }
   }
+
+  /**
+   * Get the number of open pages/tabs
+   */
+  getPageCount(): number {
+    return this.pages.size;
+  }
+
+  /**
+   * Create a new blank page
+   */
+  async createNewPage(url: string = 'about:blank'): Promise<void> {
+    if (!this.context) {
+      throw new BrowserException('Browser context not available');
+    }
+
+    const newPage = await this.context.newPage();
+    await newPage.goto(url);
+    
+    const newPageId = `tab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.pages.set(newPageId, newPage);
+    
+    this.emit('tabCreated', {
+      url: url,
+      target_id: newPageId,
+      timestamp: Date.now()
+    });
+  }
 }

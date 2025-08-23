@@ -8,15 +8,17 @@ export { SecurityWatchdog, type SecurityWatchdogConfig } from './security';
 export { DownloadsWatchdog, type DownloadsWatchdogConfig } from './downloads';
 export { PermissionsWatchdog, type PermissionsWatchdogConfig } from './permissions';
 export { PopupsWatchdog, type PopupsWatchdogConfig } from './popups';
+export { AboutBlankWatchdog } from './aboutblank';
 
 // Watchdog registry for easy initialization
 import { BrowserSession } from '../session';
-import { BaseWatchdog } from './base';
+import { BaseWatchdog, WatchdogConfig } from './base';
 import { CrashWatchdog, CrashWatchdogConfig } from './crash';
 import { SecurityWatchdog, SecurityWatchdogConfig } from './security';
 import { DownloadsWatchdog, DownloadsWatchdogConfig } from './downloads';
 import { PermissionsWatchdog, PermissionsWatchdogConfig } from './permissions';
 import { PopupsWatchdog, PopupsWatchdogConfig } from './popups';
+import { AboutBlankWatchdog } from './aboutblank';
 
 export interface WatchdogRegistry {
   crash?: CrashWatchdogConfig | boolean;
@@ -24,6 +26,7 @@ export interface WatchdogRegistry {
   downloads?: DownloadsWatchdogConfig | boolean;
   permissions?: PermissionsWatchdogConfig | boolean;
   popups?: PopupsWatchdogConfig | boolean;
+  aboutblank?: WatchdogConfig | boolean;
 }
 
 /**
@@ -64,6 +67,12 @@ export function createWatchdogs(
     const popupsConfig = config.popups === true ? {} : config.popups || {};
     const popupsWatchdog = new PopupsWatchdog(browserSession, popupsConfig);
     watchdogs.push(popupsWatchdog);
+  }
+
+  if (config.aboutblank !== false) {
+    const aboutblankConfig = config.aboutblank === true ? {} : config.aboutblank || {};
+    const aboutblankWatchdog = new AboutBlankWatchdog(browserSession, aboutblankConfig);
+    watchdogs.push(aboutblankWatchdog);
   }
 
   // Attach all watchdogs to the session
