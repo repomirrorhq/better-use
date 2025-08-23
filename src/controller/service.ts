@@ -332,10 +332,16 @@ export class Controller<Context = any> {
     try {
       const event = browserSession.eventBus.dispatch(createGoBackEvent());
       await event;
+      await event.eventResult(); // Wait for the event to complete
+      
       const memory = 'Navigated back';
       const msg = `🔙 ${memory}`;
       console.log(msg);
-      return new ActionResult({ extracted_content: memory });
+      return new ActionResult({ 
+        extracted_content: memory,
+        include_in_memory: true,
+        long_term_memory: memory
+      });
     } catch (e) {
       console.error(`Failed to dispatch GoBackEvent: ${(e as Error).constructor.name}: ${e}`);
       const cleanMsg = extractLlmErrorMessage(e as Error);

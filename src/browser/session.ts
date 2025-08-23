@@ -151,6 +151,11 @@ export class BrowserSession extends EventEmitter {
         // UploadFileEvent - has 'node' and 'file_path' properties
         await this.uploadFile(event);
         return undefined as T;
+      } else if ('event_timeout' in event && 'id' in event && 'timestamp' in event && 
+                 !('url' in event) && !('direction' in event) && !('node' in event) && !('text' in event)) {
+        // GoBackEvent - has event_timeout, id, timestamp but none of the other specific properties
+        await this.goBack();
+        return undefined as T;
       } else {
         throw new Error(`Event type not implemented: ${JSON.stringify(Object.keys(event))}`);
       }
