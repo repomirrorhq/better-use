@@ -55,12 +55,12 @@
 
 ---
 
-## 📅 Latest Status (Updated: 2025-08-23 - Maintenance Session 4)
+## 📅 Latest Status (Updated: 2025-08-23 - Maintenance Session 5)
 
 ### Repository Health
 - **Python Repo:** Synced with commit 1173e2c3 (No new changes)
 - **TypeScript Repo:** ✅ Rebranded to Better-Use, production ready
-- **Test Coverage:** 53/59 tests ported (90%)
+- **Test Coverage:** 56/59 tests ported (95%)
 - **GitHub Issues:** None open (4 closed issues resolved)
 - **Build Status:** ✅ Working (compile before running)
 - **MCP Mode:** ✅ Fixed logging to stderr (addresses Python issue #2748)
@@ -113,10 +113,11 @@
 12. StorageState (cookies/storage)
 
 ### Test Coverage Summary
-- **Total Tests:** 53 tests ported from Python (added telemetry test this session)
-- **Core Tests:** 25/25 passing ✅ (added telemetry.test.ts)
+- **Total Tests:** 56 tests ported from Python (added 3 registry tests this session)
+- **Core Tests:** 28/28 passing ✅ (added registry tests)
 - **Watchdog Tests:** 8/8 passing ✅
 - **LLM Provider Tests:** All 9 providers tested ✅
+- **Registry Tests:** 3/6 ported ✅ (registry, parameter injection, search google)
 - **Test Naming:** Tests use kebab-case in TypeScript (e.g., browser-event-clickelement.test.ts)
 - **Note:** Many Python tests are actually ported but with different naming conventions
 
@@ -144,7 +145,39 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 
 ---
 
-## 📅 Latest Maintenance Session (Aug 23, 2025 - Session 4)
+## 📅 Latest Maintenance Session (Aug 23, 2025 - Session 5)
+
+### Session Summary: Registry Test Porting
+- **Time:** Completed
+- **Agent:** Claude Code automated maintenance bot
+- **Task:** Port remaining registry tests from Python
+- **Result:** Successfully ported 3 registry-related tests
+
+### Accomplishments
+✅ **Registry Tests Ported:**
+1. **registry.test.ts** - Comprehensive registry system tests
+   - Tests parameter patterns (individual params, pydantic models)
+   - Tests special parameter injection
+   - Tests action-to-action calling scenarios
+   - Tests registry edge cases
+   
+2. **registry-action-parameter-injection.test.ts** - Browser context & parameter injection
+   - Tests URL security validation with allowed domains
+   - Tests browser session operations
+   - Tests tab management
+   - Tests custom actions with no arguments
+   
+3. **registry-action-search-google.test.ts** - Search action focus tests
+   - Tests search_google creates and focuses new tab
+   - Tests NavigateToUrlEvent with new_tab switches focus
+   - Tests multiple new tabs focus on latest
+
+**Test Coverage Progress:**
+- Previous: 53/59 tests (90%)
+- Current: 56/59 tests (95%)
+- Remaining: 3 sync/cloud tests (lower priority)
+
+## 📅 Previous Maintenance Session (Aug 23, 2025 - Session 4)
 
 ### Session Summary: MCP Server Mode Fix
 - **Time:** Completed
@@ -252,16 +285,16 @@ leaving stdout clean for JSON-RPC communication with MCP clients like Claude Des
    - browser-event-typetextevent3.test.ts (TypeTextEvent3 - fallback mechanisms)
    - browser-event-dropdown-aria-menus.test.ts (ARIA menu support)
 
-**Remaining Tests to Port (6 tests for full parity):**
+**Remaining Tests to Port (3 tests for full parity):**
 1. **Sync/Cloud Tests** (Lower Priority - Cloud features)
    - test_sync_client.py
    - test_sync_client_auth.py  
    - test_sync_agent_events.py
 
-2. **Registry/Controller Tests** (Medium Priority)
-   - test_registry.py
-   - test_registry_action_parameter_injection.py
-   - test_registry_action_search_google.py
+✅ **Registry/Controller Tests** (COMPLETED THIS SESSION)
+   - ✅ test_registry.py → registry.test.ts
+   - ✅ test_registry_action_parameter_injection.py → registry-action-parameter-injection.test.ts
+   - ✅ test_registry_action_search_google.py → registry-action-search-google.test.ts
 
 Note: Many Python tests are skipped due to deprecated features or different architecture in TypeScript
 
