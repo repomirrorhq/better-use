@@ -34,9 +34,10 @@ import {
   UploadFileActionSchema,
 } from './views.js';
 import { EnhancedDOMTreeNode } from '../dom/service.js';
-import { FileSystem } from '../filesystem/file_system.js';
+import { FileSystem } from '../filesystem/index.js';
 import { BaseChatModel } from '../llm/base.js';
 import { UserMessage } from '../llm/messages.js';
+import { NodeHtmlMarkdown } from 'node-html-markdown';
 
 function extractLlmErrorMessage(error: Error): string {
   const errorStr = error.message;
@@ -677,14 +678,30 @@ export class Controller<Context = any> {
   }
 
   private registerExtractStructuredDataAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Extract structured data action not yet implemented' });
+    const actionFunction = async (
+      params: { query: string; extractLinks?: boolean }, 
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      const pageExtractionLlm = specialParams.pageExtractionLlm as BaseChatModel;
+      const fileSystem = specialParams.fileSystem as FileSystem;
+      
+      return this.extractStructuredData(params, { browserSession, pageExtractionLlm, fileSystem });
     };
+    
     this.registry.actions['extractStructuredData'] = {
       name: 'extractStructuredData',
-      description: 'Extract structured data from page (not yet implemented)',
+      description: `Extract structured, semantic data (e.g. product description, price, all information about XYZ) from the current webpage based on a textual query.
+This tool takes the entire markdown of the page and extracts the query from it.
+Set extract_links=True ONLY if your query requires extracting links/URLs from the page.
+Only use this for specific queries for information retrieval from the page. Don't use this to get interactive elements - the tool does not see HTML elements, only the markdown.
+Note: Extracting from the same page will yield the same results unless more content is loaded (e.g., through scrolling for dynamic content, or new page is loaded) - so one extraction per page state is sufficient. If you want to scrape a listing of many elements always first scroll a lot until the page end to load everything and then call this tool in the end.
+If you called extract_structured_data in the last step and the result was not good (e.g. because of antispam protection), use the current browser state and scrolling to get the information, dont call extract_structured_data again.`,
       function: actionFunction,
-      paramSchema: z.object({ query: z.string(), extractLinks: z.boolean().default(false) }),
+      paramSchema: z.object({ 
+        query: z.string(), 
+        extractLinks: z.boolean().default(false) 
+      }),
     };
   }
 
@@ -1171,5 +1188,125 @@ export class Controller<Context = any> {
     }
     
     return new ActionResult();
+  }
+
+  private async extractStructuredData(
+    params: { query: string; extractLinks?: boolean },
+    { browserSession, pageExtractionLlm, fileSystem }: { 
+      browserSession: BrowserSession; 
+      pageExtractionLlm: BaseChatModel; 
+      fileSystem: FileSystem 
+    }
+  ): Promise<ActionResult> {
+    try {
+      const cdpSession = await browserSession.getOrCreateCdpSession();
+
+      // Wait for the page to be ready (same pattern used in DOM service)
+      try {
+        await cdpSession.cdpClient.send.Runtime.evaluate({
+          expression: 'document.readyState'
+        }, cdpSession.sessionId);
+      } catch {
+        // Page might not be ready yet
+      }
+
+      let pageHtml: string;
+      try {
+        // Get the HTML content
+        const bodyId = await cdpSession.cdpClient.send.DOM.getDocument({}, cdpSession.sessionId);
+        const pageHtmlResult = await cdpSession.cdpClient.send.DOM.getOuterHTML({
+          backendNodeId: bodyId.root.backendNodeId
+        }, cdpSession.sessionId);
+        pageHtml = pageHtmlResult.outerHTML;
+      } catch (error) {
+        throw new Error(`Couldn't extract page content: ${error}`);
+      }
+
+      // HTML to Markdown conversion
+      let content: string;
+      try {
+        const nhm = new NodeHtmlMarkdown(
+          /* options */ {}, 
+          /* customTransformers */ undefined, 
+          /* customCodeBlockTranslators */ undefined
+        );
+        
+        if (params.extractLinks) {
+          content = nhm.translate(pageHtml);
+        } else {
+          // Strip links - convert HTML without links, then clean up any remaining markdown links
+          const htmlWithoutLinks = pageHtml.replace(/<a[^>]*>([^<]+)<\/a>/gi, '$1');
+          content = nhm.translate(htmlWithoutLinks);
+          
+          // Remove any remaining markdown links and images
+          content = content.replace(/!\[.*?\]\([^)]*\)/g, ''); // Remove images
+          content = content.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1'); // Convert [text](url) -> text
+        }
+
+        // Remove positioning artifacts and cleanup
+        content = content.replace(/❓\s*\[\d+\]\s*\w+.*?Position:.*?Size:.*?\n?/g, '');
+        content = content.replace(/Primary: UNKNOWN\n\nNo specific evidence found/g, '');
+        content = content.replace(/UNKNOWN CONFIDENCE/g, '');
+        content = content.replace(/!\[\]\(\)/g, '');
+        
+      } catch (error) {
+        throw new Error(`Could not convert html to markdown: ${error}`);
+      }
+
+      // Simple truncation to 30k characters
+      if (content.length > 30000) {
+        content = content.substring(0, 30000) + '\n\n... [Content truncated at 30k characters] ...';
+      }
+
+      // Simple prompt
+      const prompt = `Extract the requested information from this webpage content.
+      
+Query: ${params.query}
+
+Webpage Content:
+${content}
+
+Provide the extracted information in a clear, structured format.`;
+
+      try {
+        const response = await Promise.race([
+          pageExtractionLlm.ainvoke([new UserMessage(prompt)]),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout after 120 seconds')), 120000)
+          )
+        ]) as any;
+
+        const extractedContent = `Query: ${params.query}\nResult:\n${response.completion}`;
+
+        // Simple memory handling
+        let memory: string;
+        let includeExtractedContentOnlyOnce = false;
+        
+        if (extractedContent.length < 1000) {
+          memory = extractedContent;
+        } else {
+          const saveResult = await fileSystem.saveExtractedContent(extractedContent);
+          const currentUrl = await browserSession.getCurrentPageUrl();
+          memory = `Extracted content from ${currentUrl} for query: ${params.query}\nContent saved to file system: ${saveResult}`;
+          includeExtractedContentOnlyOnce = true;
+        }
+
+        console.log(`📄 ${memory}`);
+        return new ActionResult({
+          extractedContent,
+          includeExtractedContentOnlyOnce,
+          longTermMemory: memory,
+        });
+      } catch (error) {
+        console.error(`Error extracting content: ${error}`);
+        throw error;
+      }
+    } catch (error) {
+      console.error(`Failed to extract structured data: ${(error as Error).constructor.name}: ${error}`);
+      const cleanMsg = extractLlmErrorMessage(error as Error);
+      return new ActionResult({ 
+        error: `Failed to extract structured data: ${cleanMsg}` 
+      });
+    }
   }
 }
