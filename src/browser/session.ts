@@ -556,12 +556,17 @@ export class BrowserSession extends EventEmitter {
     try {
       const currentPage = this.getCurrentPage();
       
-      // Use the same approach as getDOMState - get clickable elements and find by index
-      const elementInfo = await currentPage.$$eval('.clickable', (clickableElements, targetIndex) => {
+      // Use the same approach as getDOMState - get all interactive elements and find by index
+      const elementInfo = await currentPage.evaluate((targetIndex) => {
         let currentIndex = 1; // Start from index 1 as per Python version
         
-        for (const element of clickableElements) {
-          if (element.offsetWidth > 0 && element.offsetHeight > 0) {
+        // Get all interactive elements (buttons, links, inputs, etc.) - same as getDOMState
+        const interactiveSelector = 'a, button, input, select, textarea, [onclick], [role="button"], [tabindex]:not([tabindex="-1"]), .clickable';
+        const allElements = Array.from(document.querySelectorAll(interactiveSelector));
+        
+        for (const element of allElements) {
+          const htmlElement = element as HTMLElement;
+          if (htmlElement.offsetWidth > 0 && htmlElement.offsetHeight > 0) {
             if (currentIndex === targetIndex) {
               const rect = element.getBoundingClientRect();
               return {
@@ -762,21 +767,27 @@ export class BrowserSession extends EventEmitter {
       // Wait for page to be ready
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Get all clickable/interactable elements from the page using $$eval
-      const elements = await currentPage.$$eval('.clickable', (clickableElements) => {
+      // Get all clickable/interactable elements from the page using evaluate
+      const elements = await currentPage.evaluate(() => {
         const selectorMap: any = {};
         let index = 1; // Start from index 1 as per Python version
         
-        clickableElements.forEach((element) => {
-          if (element.offsetWidth > 0 && element.offsetHeight > 0) {
+        // Get all interactive elements (buttons, links, inputs, etc.)
+        const interactiveSelector = 'a, button, input, select, textarea, [onclick], [role="button"], [tabindex]:not([tabindex="-1"]), .clickable';
+        const allElements = Array.from(document.querySelectorAll(interactiveSelector));
+        
+        allElements.forEach((element: Element) => {
+          const htmlElement = element as HTMLElement;
+          if (htmlElement.offsetWidth > 0 && htmlElement.offsetHeight > 0) {
             const rect = element.getBoundingClientRect();
             
             selectorMap[index] = {
               tagName: element.tagName.toLowerCase(),
               attributes: {
-                class: (element as any).className,
-                id: (element as any).id,
-                type: (element as any).type || null,
+                class: htmlElement.className || '',
+                id: htmlElement.id || '',
+                type: (htmlElement as any).type || null,
+                href: (htmlElement as any).href || null,
               },
               text: element.textContent ? element.textContent.trim() : '',
               rect: {
