@@ -31,6 +31,8 @@ import { SystemMessage, createSystemMessage } from '../llm/messages';
 import { BrowserSession } from '../browser/session';
 import { BrowserStateSummary } from '../browser/views';
 import { logPrettyUrl, sleep } from '../utils';
+import { ScreenshotService } from '../screenshots';
+import * as path from 'path';
 
 const logger = console; // Simple logger for now
 
@@ -56,6 +58,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
   public state: AgentState;
   public browserSession?: BrowserSession;
   public messageManager: MessageManager;
+  public screenshotService?: ScreenshotService;
   
   // Context and callbacks
   public context?: TContext;
@@ -75,6 +78,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     browserSession?: BrowserSession;
     context?: TContext;
     sensitiveData?: SensitiveData;
+    agentDirectory?: string;
   }) {
     super();
     
@@ -85,6 +89,12 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.browserSession = options.browserSession;
     this.context = options.context;
     this.sensitiveData = options.sensitiveData;
+    
+    // Initialize screenshot service
+    if (options.agentDirectory) {
+      this.screenshotService = new ScreenshotService(options.agentDirectory);
+      logger.debug(`📸 Screenshot service initialized in: ${path.join(options.agentDirectory, 'screenshots')}`);
+    }
     
     // Initialize message manager
     const systemMessage = this.createSystemMessage();
@@ -358,13 +368,30 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       step_number: this.state.n_steps + 1,
     });
     
+    // Store screenshot if available
+    let screenshotPath: string | null = null;
+    if (browserStateSummary.screenshot && this.screenshotService) {
+      logger.debug(
+        `📸 Storing screenshot for step ${this.state.n_steps}, screenshot length: ${browserStateSummary.screenshot.length}`
+      );
+      screenshotPath = await this.screenshotService.storeScreenshot(
+        browserStateSummary.screenshot, 
+        this.state.n_steps
+      );
+      logger.debug(`📸 Screenshot stored at: ${screenshotPath}`);
+    } else if (browserStateSummary.screenshot && !this.screenshotService) {
+      logger.debug('📸 Screenshot available but ScreenshotService not initialized');
+    } else {
+      logger.debug(`📸 No screenshot in browser_state_summary for step ${this.state.n_steps}`);
+    }
+    
     // Create browser state history
     const stateHistory: BrowserStateHistory = {
       url: browserStateSummary.url,
       title: browserStateSummary.title,
       tabs: browserStateSummary.tabs,
       interacted_element: [], // TODO: Implement interacted elements
-      screenshot_path: null, // TODO: Implement screenshot saving
+      screenshot_path: screenshotPath,
     };
     
     // Create and add history entry
