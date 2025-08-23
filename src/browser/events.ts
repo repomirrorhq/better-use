@@ -3,6 +3,7 @@
  */
 
 import { z } from 'zod';
+import { EnhancedDOMTreeNode, EnhancedDOMTreeNodeSchema } from '../dom/views';
 
 // Basic types
 export type TargetID = string;
@@ -20,29 +21,8 @@ export type MouseButton = z.infer<typeof MouseButtonSchema>;
 export const ScrollDirectionSchema = z.enum(['up', 'down', 'left', 'right']);
 export type ScrollDirection = z.infer<typeof ScrollDirectionSchema>;
 
-// Enhanced DOM Tree Node (simplified version)
-export const EnhancedDOMTreeNodeSchema = z.object({
-  element_index: z.number(),
-  node_id: z.string(),
-  backend_node_id: z.number(),
-  session_id: z.string(),
-  frame_id: z.string(),
-  target_id: z.string(),
-  node_type: z.number(),
-  node_name: z.string(),
-  node_value: z.string().optional(),
-  attributes: z.record(z.string()).default({}),
-  is_scrollable: z.boolean().default(false),
-  is_visible: z.boolean().default(true),
-  absolute_position: z.object({
-    x: z.number(),
-    y: z.number(),
-    width: z.number(),
-    height: z.number(),
-  }).optional(),
-});
-
-export type EnhancedDOMTreeNode = z.infer<typeof EnhancedDOMTreeNodeSchema>;
+// Re-export EnhancedDOMTreeNode from dom/views to ensure consistency
+export { EnhancedDOMTreeNode } from '../dom/views';
 
 // Base Event interface
 export interface BaseEvent<T = any> {

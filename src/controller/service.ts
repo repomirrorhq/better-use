@@ -560,26 +560,17 @@ export class Controller<Context = any> {
         throw new Error(`File ${resolvedPath} does not exist`);
       }
 
-      // Get the element from the selector map
-      const selectorMap = await browserSession.getSelectorMap();
-      if (!(params.index in selectorMap)) {
-        throw new Error(`Element with index ${params.index} not found in selector map`);
-      }
-      
-      const node = selectorMap[params.index];
-
-      // Enhanced file input finding logic
-      const fileInputNode = await this.findFileInputNearElement(browserSession, node, selectorMap);
-      
-      if (!fileInputNode) {
-        throw new Error('No file upload element found on the page');
+      // Get the element by index (same pattern as other actions)
+      const node = await browserSession.getElementByIndex(params.index);
+      if (node === null) {
+        throw new Error(`Element index ${params.index} not found in DOM`);
       }
 
-      // Dispatch upload file event with the resolved file input node
+      // For now, directly use the node (TODO: implement file input finding logic when DOM system is complete)
       const event = browserSession.eventBus.dispatch(createUploadFileEvent(
-        node: fileInputNode,
-        filePath: resolvedPath,
-      }));
+        node,
+        resolvedPath
+      ));
       await event;
       await event.eventResult();
       
@@ -623,9 +614,17 @@ export class Controller<Context = any> {
       let targetId: string;
       
       if (params.tabId !== undefined) {
-        targetId = await browserSession.getTargetIdFromTabId(params.tabId);
+        const result = await browserSession.getTargetIdFromTabId(params.tabId);
+        if (result === null) {
+          throw new Error(`Tab with ID ${params.tabId} not found`);
+        }
+        targetId = result;
       } else if (params.url !== undefined) {
-        targetId = await browserSession.getTargetIdFromUrl(params.url);
+        const result = await browserSession.getTargetIdFromUrl(params.url);
+        if (result === null) {
+          throw new Error(`Tab with URL ${params.url} not found`);
+        }
+        targetId = result;
       } else {
         targetId = await browserSession.getMostRecentlyOpenedTargetId();
       }
@@ -678,6 +677,9 @@ export class Controller<Context = any> {
   ): Promise<ActionResult> {
     try {
       const targetId = await browserSession.getTargetIdFromTabId(params.tabId);
+      if (targetId === null) {
+        throw new Error(`Tab with ID ${params.tabId} not found`);
+      }
       
       // Get tab URL for display purposes before closing
       const cdpSession = await browserSession.getOrCreateCdpSession();
@@ -686,7 +688,7 @@ export class Controller<Context = any> {
       }, cdpSession.sessionId);
       const tabUrl = targetInfo.targetInfo.url;
 
-      const event = browserSession.eventBus.dispatch(createCloseTabEvent(targetId }));
+      const event = browserSession.eventBus.dispatch(createCloseTabEvent(targetId));
       await event;
       await event.eventResult();
       
@@ -785,10 +787,10 @@ If you called extract_structured_data in the last step and the result was not go
       // Convert pages to pixels (assuming 800px per page as standard viewport height)
       const pixels = Math.round(params.numPages * 800);
       const event = browserSession.eventBus.dispatch(createScrollEvent(
-        direction: params.down ? 'down' : 'up',
-        amount: pixels,
-        node: node ?? undefined,
-      }));
+        params.down ? 'down' : 'up',
+        pixels,
+        { node: node ?? undefined }
+      ));
       await event;
       await event.eventResult();
       
@@ -844,7 +846,7 @@ If you called extract_structured_data in the last step and the result was not go
     { browserSession }: { browserSession: BrowserSession }
   ): Promise<ActionResult> {
     try {
-      const event = browserSession.eventBus.dispatch(createSendKeysEvent(: params.keys }));
+      const event = browserSession.eventBus.dispatch(createSendKeysEvent(params.keys));
       await event;
       await event.eventResult();
       
@@ -888,7 +890,7 @@ If you called extract_structured_data in the last step and the result was not go
   ): Promise<ActionResult> {
     try {
       // Dispatch scroll to text event
-      const event = browserSession.eventBus.dispatch(createScrollToTextEvent(: params.text }));
+      const event = browserSession.eventBus.dispatch(createScrollToTextEvent(params.text));
       await event;
       
       // The handler returns None on success or raises an exception if text not found
@@ -945,7 +947,7 @@ If you called extract_structured_data in the last step and the result was not go
       }
 
       // Dispatch GetDropdownOptionsEvent to the event handler
-      const event = browserSession.eventBus.dispatch(createGetDropdownOptionsEvent(node }));
+      const event = browserSession.eventBus.dispatch(createGetDropdownOptionsEvent(node));
       const dropdownData = await event.eventResult();
 
       if (!dropdownData) {
@@ -1009,8 +1011,8 @@ If you called extract_structured_data in the last step and the result was not go
       // Dispatch SelectDropdownOptionEvent to the event handler
       const event = browserSession.eventBus.dispatch(createSelectDropdownOptionEvent(
         node,
-        text: params.text,
-      }));
+        params.text
+      ));
       const selectionData = await event.eventResult();
 
       if (!selectionData) {
