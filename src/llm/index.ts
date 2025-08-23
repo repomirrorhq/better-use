@@ -8,6 +8,7 @@ export * from './views';
 export * from './schema';
 export * from './providers/openai';
 export * from './providers/anthropic';
+export * from './providers/google';
 
 // Re-export commonly used types
 export type { 
