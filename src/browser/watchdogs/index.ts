@@ -9,6 +9,7 @@ export { DownloadsWatchdog, type DownloadsWatchdogConfig } from './downloads';
 export { PermissionsWatchdog, type PermissionsWatchdogConfig } from './permissions';
 export { PopupsWatchdog, type PopupsWatchdogConfig } from './popups';
 export { AboutBlankWatchdog } from './aboutblank';
+export { StorageStateWatchdog, type StorageStateWatchdogConfig } from './storagestate';
 
 // Watchdog registry for easy initialization
 import { BrowserSession } from '../session';
@@ -19,6 +20,7 @@ import { DownloadsWatchdog, DownloadsWatchdogConfig } from './downloads';
 import { PermissionsWatchdog, PermissionsWatchdogConfig } from './permissions';
 import { PopupsWatchdog, PopupsWatchdogConfig } from './popups';
 import { AboutBlankWatchdog } from './aboutblank';
+import { StorageStateWatchdog, StorageStateWatchdogConfig } from './storagestate';
 
 export interface WatchdogRegistry {
   crash?: CrashWatchdogConfig | boolean;
@@ -27,6 +29,7 @@ export interface WatchdogRegistry {
   permissions?: PermissionsWatchdogConfig | boolean;
   popups?: PopupsWatchdogConfig | boolean;
   aboutblank?: WatchdogConfig | boolean;
+  storagestate?: StorageStateWatchdogConfig | boolean;
 }
 
 /**
@@ -73,6 +76,12 @@ export function createWatchdogs(
     const aboutblankConfig = config.aboutblank === true ? {} : config.aboutblank || {};
     const aboutblankWatchdog = new AboutBlankWatchdog(browserSession, aboutblankConfig);
     watchdogs.push(aboutblankWatchdog);
+  }
+
+  if (config.storagestate !== false) {
+    const storagestateConfig = config.storagestate === true ? {} : config.storagestate || {};
+    const storagestateWatchdog = new StorageStateWatchdog(browserSession, storagestateConfig);
+    watchdogs.push(storagestateWatchdog);
   }
 
   // Attach all watchdogs to the session

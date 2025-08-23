@@ -24,13 +24,14 @@ describe('Watchdog Tests', () => {
     it('should create default watchdogs', () => {
       const watchdogs = createWatchdogs(browserSession);
       
-      expect(watchdogs).toHaveLength(6); // crash, security, downloads, permissions, popups, aboutblank
+      expect(watchdogs).toHaveLength(7); // crash, security, downloads, permissions, popups, aboutblank, storagestate
       expect(watchdogs[0].constructor.name).toBe('CrashWatchdog');
       expect(watchdogs[1].constructor.name).toBe('SecurityWatchdog'); 
       expect(watchdogs[2].constructor.name).toBe('DownloadsWatchdog');
       expect(watchdogs[3].constructor.name).toBe('PermissionsWatchdog');
       expect(watchdogs[4].constructor.name).toBe('PopupsWatchdog');
       expect(watchdogs[5].constructor.name).toBe('AboutBlankWatchdog');
+      expect(watchdogs[6].constructor.name).toBe('StorageStateWatchdog');
       
       destroyWatchdogs(watchdogs);
     });
@@ -43,6 +44,7 @@ describe('Watchdog Tests', () => {
         permissions: false,
         popups: false,
         aboutblank: false,
+        storagestate: false,
       });
       
       expect(watchdogs).toHaveLength(2); // crash and downloads only
@@ -68,6 +70,7 @@ describe('Watchdog Tests', () => {
         permissions: false,
         popups: false,
         aboutblank: false,
+        storagestate: false,
       });
       
       expect(watchdogs).toHaveLength(3);
