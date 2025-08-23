@@ -228,8 +228,8 @@ export type SimplifiedNode = {
   excluded_by_parent: boolean;
 };
 
-// DOM selector map
-export type DOMSelectorMap = Map<number, EnhancedDOMTreeNode>;
+// DOM selector map (supports both Map and plain object for JSON serialization)
+export type DOMSelectorMap = Map<number, EnhancedDOMTreeNode> | Record<number, any>;
 
 // Serialized DOM state
 export const SerializedDOMStateSchema = z.object({

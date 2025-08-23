@@ -939,13 +939,8 @@ export class BrowserSession extends EventEmitter {
       
       
       // Return DOM state with llmRepresentation method
-      // Convert plain object to Map for DOMSelectorMap
-      const selectorMap = new Map();
-      if (elements) {
-        Object.entries(elements).forEach(([key, value]) => {
-          selectorMap.set(parseInt(key), value);
-        });
-      }
+      // Keep selector map as plain object for JSON serialization
+      const selectorMap = elements || {};
 
       return createSerializedDOMStateWithLLMRepresentation(
         null, // root node - placeholder for now
@@ -953,7 +948,7 @@ export class BrowserSession extends EventEmitter {
       );
     } catch (error) {
       console.warn('Failed to get DOM state, returning empty state:', error);
-      return createSerializedDOMStateWithLLMRepresentation(null, new Map());
+      return createSerializedDOMStateWithLLMRepresentation(null, {});
     }
   }
 

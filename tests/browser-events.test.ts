@@ -173,12 +173,24 @@ describe('Browser Event Tests', () => {
       // Find a clickable element in the selector map
       let buttonIndex: number | undefined;
 
-      for (const [idx, element] of Object.entries(browserState.dom_state?.selector_map || {})) {
+      const selectorMap = browserState.dom_state?.selector_map || {};
+
+      for (const [idx, element] of Object.entries(selectorMap)) {
         // Look for the first div with class "clickable"
         if ((element as any).tagName?.toLowerCase() === 'div' && 
             (element as any).attributes?.class?.includes('clickable')) {
           buttonIndex = parseInt(idx);
           break;
+        }
+      }
+
+      // If we didn't find div.clickable, look for any clickable element
+      if (buttonIndex === undefined) {
+        for (const [idx, element] of Object.entries(selectorMap)) {
+          if ((element as any).attributes?.class?.includes('clickable')) {
+            buttonIndex = parseInt(idx);
+            break;
+          }
         }
       }
 

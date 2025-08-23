@@ -251,8 +251,45 @@ Based on the current repository state, the TypeScript port appears to have subst
 
 ## Current Priority Issues
 
-### ✅ RESOLVED: Agent CLI Issue - Test Search Loop
-**Status:** FIXED IN THIS SESSION ✅  
+### ⚠️ NEW ISSUE: Agent CLI Multi-Action Problem  
+**Status:** ACTIVE ISSUE (Identified in this session)
+**Problem:** Agent CLI now processes LLM responses properly BUT has new critical issues preventing task completion.
+
+**Issues Discovered from CLI Testing:**
+
+1. **🚨 LLM Responding with ALL Actions Instead of One**
+   - LLM is returning a single response object containing ALL possible actions (done, searchGoogle, goToUrl, wait, etc.)
+   - Should only return 1-2 specific actions for the task, not every available action
+   - Example bad response: `{"done":{"text":"..."},"searchGoogle":{"query":"..."},"goToUrl":{"url":"..."},"wait":{"seconds":5},...}`
+   - Causes confusion and potentially executes wrong actions
+
+2. **🚨 Agent Completing Tasks Too Early with "done" Action**
+   - Agent marks tasks as completed immediately with `done` action on first step
+   - Tasks like "open assistant ui com" should navigate to the site, not just say "attempting to open"
+   - Agent should actually perform the navigation action instead of ending with done
+
+3. **🚨 Schema Validation Issue**
+   - The AgentOutputSchema expects `z.array(this.ActionModel)` for actions
+   - But LLM is returning a single object with all action keys, not an array of action objects
+   - Schema mismatch between expected format and actual LLM response
+
+4. **⚠️ Screenshot Service Not Initialized** 
+   - Debug logs show "Screenshot available but ScreenshotService not initialized"
+   - Impacts agent's ability to see and analyze the current browser state
+
+**Root Cause Analysis:**
+- The ActionModel schema created by controller registry is likely malformed
+- Should be a union type or oneOf pattern, not an object with all actions as optional properties
+- LLM interprets the schema as "provide values for all these properties" instead of "choose one action"
+
+**Action Required:**
+1. Fix ActionModel schema to use proper union/oneOf pattern for actions
+2. Ensure LLM returns array of single action objects, not one object with all actions
+3. Fix agent logic to not immediately complete tasks with "done" action
+4. Initialize ScreenshotService in CLI mode for better browser state analysis
+
+### ✅ RESOLVED: Agent CLI Issue - Test Search Loop  
+**Status:** FIXED IN PREVIOUS ITERATION ✅  
 **Problem:** The agent when run via CLI only performed "test search" in a loop, not actually processing real tasks or user input.
 
 **Resolution Completed:**
@@ -263,71 +300,36 @@ Based on the current repository state, the TypeScript port appears to have subst
 - ✅ Fixed TODO comments for action model setup and downloads checking
 - ✅ Agent now properly processes real LLM responses instead of running in test loop
 
-**Technical Details:**
-- Fixed `/src/agent/service.ts:303` - Added proper structured output with action schemas
-- Fixed `/src/agent/service.ts:307` - Now parses actual LLM response into structured actions  
-- Fixed `/src/agent/service.ts:272-273` - Implemented downloads check and removed action model setup TODO
-- Added `actionRegistry` getter to `Controller` class to expose registry for action model creation
-- Created dynamic `AgentOutputSchema` that includes actual browser actions instead of placeholder
+**Impact:** Fixed the test loop issue, but revealed new schema and action selection problems.
 
-**Impact:** This was the most critical issue blocking real agent usage via CLI. The agent now processes actual user tasks instead of running hardcoded test scenarios.
+### Session Summary (Current - 2025-08-23) ✅
 
-### Session Tasks
-1. **✅ Check GitHub Issues** - No new user reports found
-2. **✅ Test Coverage** - Fixed failing watchdog creation tests
-3. **✅ Code Quality** - Minor linting improvements and unused variable cleanup
-4. **✅ Maintenance** - Repository health check and status update
+**Completed This Session:**
+1. **✅ Agent CLI Schema Fix** - Fixed test search loop, implemented proper structured output
+2. **✅ ActionModel Issues Identified** - Discovered LLM multi-action response problems through testing
+3. **✅ TODO Comments Audit** - Catalogued remaining 19 TODO items, resolved 3 critical ones
+4. **✅ Code Quality** - Minor linting improvements and unused variable cleanup  
+5. **✅ Test Coverage** - Fixed failing watchdog creation tests
 
-### Session Progress
-- Starting session: 100%+ feature parity (74/72 examples)
-- **Current session: 100%+ feature parity maintained** ✅ 
-- Examples: 74/72 (103% complete) - unchanged
-- Tests: 26/81 (32% complete) - unchanged (but fixed failures)
+**Session Impact:**
+- Fixed the critical test search loop issue but revealed new schema validation problems
+- Agent now processes real LLM responses but schema needs refinement for proper action selection
+- Repository health maintained at 100%+ feature parity (74/72 examples)
 
-### Completed This Session (New Maintenance Session - 2025-08-23) ✅
+**Remaining TODO Comments:** 19 items across the codebase (3 resolved this session):
 
-1. **✅ Watchdog Test Fixes**
-   - Fixed failing watchdog creation tests that expected incorrect counts
-   - Updated test expectations to match actual behavior (11 default watchdogs, not 7)
-   - Corrected selective and custom configuration test expectations
-   - All watchdog creation tests now pass
+**High Priority (Core Features):**
+- `/src/browser/session.ts:731,779,784,826` - Implement selector mapping, keys, scrolling, file upload
+- `/src/controller/service.ts:428,569` - Dropdown options fallback, file input finding logic  
+- `/src/dom/service.ts:128,578` - Persistent websocket, DOM tree serializer
 
-2. **✅ Code Quality Improvements**
-   - Removed unused variables in token service (stats, C_YELLOW, C_BLUE)
-   - Minor ESLint warning reductions
-   - Code cleanup for better maintainability
+**Medium Priority (Enhancement):**
+- Storage state management, cloud events, browser configuration, sync service improvements
 
-3. **✅ Repository Health Check**
-   - No new GitHub issues found
-   - Confirmed project structure and dependencies are healthy
-   - Test suite mostly passing (97%+ success rate)
-   - 563 ESLint issues identified but mostly stylistic (not blocking)
-
-## Current Session Accomplishments (2025-08-23 Latest) ✅
-
-### Critical Bug Fix Completed
-
-**🚨 RESOLVED: Agent CLI Loop Issue**  
-- **Problem:** The most critical issue in the TypeScript port - the agent was hardcoded to perform "test search" in a loop instead of processing real user tasks
-- **Root Cause:** Missing structured output schema setup and hardcoded test logic instead of actual LLM response processing  
-- **Resolution:** Implemented complete structured output pipeline following the Python version architecture
-
-**Technical Implementation:**
-1. **Agent Constructor Enhancement** - Added ActionModel and AgentOutputSchema properties
-2. **setupActionModels() Method** - Creates dynamic schemas with actual browser actions from controller registry
-3. **LLM Structured Output** - Replaced `await this.llm.ainvoke(messages)` with `await this.llm.ainvoke(messages, this.AgentOutputSchema)`
-4. **Real Response Processing** - Removed hardcoded `{searchGoogle: {query: 'test search'}}` and now uses actual LLM output
-5. **Controller Registry Access** - Added `actionRegistry` getter to expose action models for schema creation
-
-**Files Modified:**
-- `/src/agent/service.ts` - Major refactoring with structured output implementation
-- `/src/controller/service.ts` - Added actionRegistry getter for action model access
-
-**Verification:**
-- ✅ TypeScript compilation successful with no errors  
-- ✅ Basic tests passing
-- ✅ Agent class imports correctly with setupActionModels method present
-- ✅ Commit pushed successfully: `575fdac`
+**✅ Resolved This Session:**
+- ✅ `/src/agent/service.ts:303` - Added proper structured output with action schemas
+- ✅ `/src/agent/service.ts:307` - Now parses actual LLM response into structured actions  
+- ✅ `/src/agent/service.ts:272-273` - Implemented downloads check, removed action model setup TODO
 
 ## Maintenance Status Summary
 
