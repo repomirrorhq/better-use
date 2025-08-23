@@ -56,14 +56,16 @@ export class DefaultActionWatchdog extends BaseWatchdog {
   ];
 
   constructor(browserSession: BrowserSession, config: DefaultActionConfig = {}) {
-    super(browserSession, { enabled: true });
-    this.config = {
+    const mergedConfig = {
       clickTimeoutMs: 15000,
       typeTimeoutMs: 15000, 
       scrollTimeoutMs: 8000,
       waitTimeoutMs: 60000,
+      enabled: true,
       ...config
     };
+    super(browserSession, mergedConfig);
+    this.config = mergedConfig;
   }
 
   protected onAttached(): void {
