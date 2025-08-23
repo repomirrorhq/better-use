@@ -10,6 +10,7 @@ export * from './providers/openai';
 export * from './providers/anthropic';
 export * from './providers/google';
 export * from './providers/aws';
+export * from './providers/azure';
 
 // Re-export commonly used types
 export type { 
