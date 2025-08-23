@@ -11,7 +11,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/agent/*.md dist/agent/ 2>/dev/null || true",
     "build:watch": "tsc --watch",
     "dev": "ts-node src/index.ts",
     "cli": "ts-node src/cli.ts",

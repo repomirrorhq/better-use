@@ -118,6 +118,7 @@ export class BrowserSession extends EventEmitter {
     try {
       // Import watchdogs dynamically
       const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction.js');
+      const { ScreenshotWatchdog } = await import('./watchdogs/screenshot.js');
       
       // Initialize DefaultActionWatchdog - handles scroll, click, type, etc.
       const defaultActionWatchdog = new DefaultActionWatchdog(this, {
@@ -126,6 +127,16 @@ export class BrowserSession extends EventEmitter {
       
       defaultActionWatchdog.attachToSession();
       this.watchdogs.push(defaultActionWatchdog);
+      
+      // Initialize ScreenshotWatchdog - handles screenshot capture
+      const screenshotWatchdog = new ScreenshotWatchdog(this, {
+        enabled: true,
+        defaultFormat: 'png',
+        timeout: 30000,
+      });
+      
+      screenshotWatchdog.attachToSession();
+      this.watchdogs.push(screenshotWatchdog);
       
       this.watchdogsAttached = true;
       this.logger.debug('📡 All watchdogs attached successfully');

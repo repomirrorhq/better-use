@@ -298,6 +298,7 @@ export class SimpleTUI extends EventEmitter {
         task,
         llm: this.llm,
         browserSession: this.browserSession,
+        agentDirectory: process.cwd(), // Initialize in current working directory
         settings: {
           use_vision: this.config.useVision,
           max_actions_per_step: this.config.maxSteps,

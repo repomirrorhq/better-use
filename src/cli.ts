@@ -157,6 +157,7 @@ async function runInteractiveSession(config: CLIConfig) {
           task: command,
           llm,
           browserSession: browser,
+          agentDirectory: process.cwd(), // Initialize in current working directory
         });
         
         const result = await agent.run();
@@ -212,6 +213,7 @@ async function runSingleCommand(task: string, config: CLIConfig) {
       task,
       llm,
       browserSession: browser,
+      agentDirectory: process.cwd(), // Initialize in current working directory
     });
     
     const result = await agent.run();
