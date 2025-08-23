@@ -48,6 +48,35 @@ export class BrowserSession extends EventEmitter {
   }
 
   // ============================================================================
+  // Event System
+  // ============================================================================
+
+  /**
+   * Dispatch an event and return a promise-like object for chaining
+   * This method provides compatibility with the expected event dispatch pattern
+   */
+  dispatch<T = any>(event: any): { eventResult: () => Promise<T> } {
+    // For now, this is a stub implementation
+    // In a full implementation, this would:
+    // 1. Process the event
+    // 2. Execute the corresponding action
+    // 3. Return the result
+    
+    const eventResult = async (): Promise<T> => {
+      // This is a placeholder - actual implementation would handle different event types
+      switch (event.constructor.name || (event as any).type) {
+        case 'SwitchTabEvent':
+          // Mock switch tab implementation
+          return (event as any).target_id as T;
+        default:
+          throw new Error(`Event type not implemented: ${event.constructor?.name || typeof event}`);
+      }
+    };
+
+    return { eventResult };
+  }
+
+  // ============================================================================
   // Browser Lifecycle
   // ============================================================================
 

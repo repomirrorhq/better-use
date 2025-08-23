@@ -372,3 +372,13 @@ export function createScrollEvent(direction: ScrollDirection, amount: number, op
     ...options,
   });
 }
+
+// Factory function for SwitchTabEvent
+export function createSwitchTabEvent(options: { targetId?: TargetID | null } = {}): SwitchTabEvent {
+  return {
+    target_id: options.targetId || null,
+    event_timeout: 10.0,
+    id: `switch_tab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now()
+  };
+}

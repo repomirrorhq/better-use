@@ -13,6 +13,7 @@ import {
   SendKeysEvent,
   SwitchTabEvent,
   TypeTextEvent,
+  createSwitchTabEvent,
   UploadFileEvent,
 } from '../browser/events';
 import { BrowserError } from '../browser/views';
@@ -143,9 +144,9 @@ export class Controller<Context = any> {
           console.log(`Found existing Google tab at index ${i}: ${tab.url}, reusing it`);
 
           // Switch to this tab first if it's not the current one
-          if (browserSession.agentFocus && tab.targetId !== browserSession.agentFocus.targetId) {
+          if (browserSession.agentFocus && tab.target_id !== browserSession.agentFocus.targetId) {
             try {
-              const switchEvent = browserSession.eventBus.dispatch(new SwitchTabEvent({ targetId: tab.targetId }));
+              const switchEvent = browserSession.eventBus.dispatch(createSwitchTabEvent({ targetId: tab.target_id }));
               await switchEvent;
               await switchEvent.eventResult();
             } catch (e) {
@@ -162,9 +163,9 @@ export class Controller<Context = any> {
           console.log(`Found agent-owned about:blank tab at index ${i} with title: "${tab.title}", reusing it`);
 
           // Switch to this tab first
-          if (browserSession.agentFocus && tab.targetId !== browserSession.agentFocus.targetId) {
+          if (browserSession.agentFocus && tab.target_id !== browserSession.agentFocus.targetId) {
             try {
-              const switchEvent = browserSession.eventBus.dispatch(new SwitchTabEvent({ targetId: tab.targetId }));
+              const switchEvent = browserSession.eventBus.dispatch(createSwitchTabEvent({ targetId: tab.target_id }));
               await switchEvent;
               await switchEvent.eventResult();
             } catch (e) {
@@ -195,7 +196,7 @@ export class Controller<Context = any> {
       console.log(msg);
       
       return new ActionResult({
-        extractedContent: memory,
+        extracted_content: memory,
         includeInMemory: true,
         longTermMemory: memory,
       });
@@ -250,7 +251,7 @@ export class Controller<Context = any> {
 
       console.log(msg);
       return new ActionResult({
-        extractedContent: msg,
+        extracted_content: msg,
         includeInMemory: true,
         longTermMemory: memory,
       });
@@ -312,7 +313,7 @@ export class Controller<Context = any> {
       const memory = 'Navigated back';
       const msg = `🔙 ${memory}`;
       console.log(msg);
-      return new ActionResult({ extractedContent: memory });
+      return new ActionResult({ extracted_content: memory });
     } catch (e) {
       console.error(`Failed to dispatch GoBackEvent: ${(e as Error).constructor.name}: ${e}`);
       const cleanMsg = extractLlmErrorMessage(e as Error);
@@ -343,7 +344,7 @@ export class Controller<Context = any> {
     console.log(`🕒 ${memory}`);
     await new Promise(resolve => setTimeout(resolve, actualSeconds * 1000));
     return new ActionResult({
-      extractedContent: memory,
+      extracted_content: memory,
       longTermMemory: memory,
     });
   }
@@ -394,7 +395,7 @@ export class Controller<Context = any> {
       console.log(msg);
 
       return new ActionResult({
-        extractedContent: memory,
+        extracted_content: memory,
         includeInMemory: true,
         longTermMemory: memory,
         metadata: typeof clickMetadata === 'object' ? clickMetadata : undefined,
@@ -462,7 +463,7 @@ export class Controller<Context = any> {
       console.log(msg);
 
       return new ActionResult({
-        extractedContent: msg,
+        extracted_content: msg,
         includeInMemory: true,
         longTermMemory: `Input '${params.text}' into element ${params.index}.`,
         metadata: typeof inputMetadata === 'object' ? inputMetadata : undefined,
@@ -567,7 +568,7 @@ export class Controller<Context = any> {
       console.log(`📁 ${msg}`);
       
       return new ActionResult({
-        extractedContent: msg,
+        extracted_content: msg,
         includeInMemory: true,
         longTermMemory: `Uploaded file ${params.path} to element ${params.index}`,
       });
@@ -610,7 +611,7 @@ export class Controller<Context = any> {
         targetId = await browserSession.getMostRecentlyOpenedTargetId();
       }
 
-      const event = browserSession.eventBus.dispatch(new SwitchTabEvent({ targetId }));
+      const event = browserSession.eventBus.dispatch(createSwitchTabEvent({ targetId }));
       await event;
       const newTargetId = await event.eventResult();
       
@@ -622,7 +623,7 @@ export class Controller<Context = any> {
       console.log(`🔄 ${memory}`);
       
       return new ActionResult({
-        extractedContent: memory,
+        extracted_content: memory,
         includeInMemory: true,
         longTermMemory: memory,
       });
@@ -684,7 +685,7 @@ export class Controller<Context = any> {
       console.log(`🗑️ ${memory}`);
       
       return new ActionResult({
-        extractedContent: memory,
+        extracted_content: memory,
         includeInMemory: true,
         longTermMemory: memory,
       });
@@ -790,7 +791,7 @@ If you called extract_structured_data in the last step and the result was not go
       console.log(msg);
       
       return new ActionResult({
-        extractedContent: msg,
+        extracted_content: msg,
         includeInMemory: true,
         longTermMemory: longTermMemory,
       });
@@ -833,7 +834,7 @@ If you called extract_structured_data in the last step and the result was not go
       console.log(msg);
       
       return new ActionResult({
-        extractedContent: memory,
+        extracted_content: memory,
         includeInMemory: true,
         longTermMemory: memory,
       });
@@ -879,7 +880,7 @@ If you called extract_structured_data in the last step and the result was not go
       console.log(msg);
       
       return new ActionResult({
-        extractedContent: memory,
+        extracted_content: memory,
         includeInMemory: true,
         longTermMemory: memory,
       });
@@ -889,7 +890,7 @@ If you called extract_structured_data in the last step and the result was not go
       console.log(msg);
       
       return new ActionResult({
-        extractedContent: msg,
+        extracted_content: msg,
         includeInMemory: true,
         longTermMemory: `Tried scrolling to text '${params.text}' but it was not found`,
       });
@@ -946,7 +947,7 @@ If you called extract_structured_data in the last step and the result was not go
       }
 
       return new ActionResult({
-        extractedContent: msg,
+        extracted_content: msg,
         includeInMemory: true,
         longTermMemory: `Found ${optionsCount} dropdown options for index ${params.index}`,
         includeExtractedContentOnlyOnce: true,
@@ -1001,7 +1002,7 @@ If you called extract_structured_data in the last step and the result was not go
       const msg = selectionData.message || `Selected option: ${params.text}`;
 
       return new ActionResult({
-        extractedContent: msg,
+        extracted_content: msg,
         includeInMemory: true,
         longTermMemory: `Selected dropdown option '${params.text}' at index ${params.index}`,
       });
@@ -1094,7 +1095,7 @@ If you called extract_structured_data in the last step and the result was not go
         return new ActionResult({
           isDone: true,
           success: params.success,
-          extractedContent: JSON.stringify(outputDict),
+          extracted_content: JSON.stringify(outputDict),
           longTermMemory: `Task completed. Success Status: ${params.success}`,
         });
       };
@@ -1160,7 +1161,7 @@ If you called extract_structured_data in the last step and the result was not go
         return new ActionResult({
           isDone: true,
           success: params.success,
-          extractedContent: userMessage,
+          extracted_content: userMessage,
           longTermMemory: memory,
           attachments: fullAttachmentPaths,
         });
@@ -1217,7 +1218,7 @@ If you called extract_structured_data in the last step and the result was not go
           });
 
           if (typeof result === 'string') {
-            return new ActionResult({ extractedContent: result });
+            return new ActionResult({ extracted_content: result });
           } else if (result instanceof ActionResult) {
             return result;
           } else if (result === null || result === undefined) {
@@ -1322,16 +1323,16 @@ Provide the extracted information in a clear, structured format.`;
           )
         ]) as any;
 
-        const extractedContent = `Query: ${params.query}\nResult:\n${response.completion}`;
+        const extracted_content = `Query: ${params.query}\nResult:\n${response.completion}`;
 
         // Simple memory handling
         let memory: string;
         let includeExtractedContentOnlyOnce = false;
         
-        if (extractedContent.length < 1000) {
-          memory = extractedContent;
+        if (extracted_content.length < 1000) {
+          memory = extracted_content;
         } else {
-          const saveResult = await fileSystem.saveExtractedContent(extractedContent);
+          const saveResult = await fileSystem.saveExtractedContent(extracted_content);
           const currentUrl = await browserSession.getCurrentPageUrl();
           memory = `Extracted content from ${currentUrl} for query: ${params.query}\nContent saved to file system: ${saveResult}`;
           includeExtractedContentOnlyOnce = true;
@@ -1339,7 +1340,7 @@ Provide the extracted information in a clear, structured format.`;
 
         console.log(`📄 ${memory}`);
         return new ActionResult({
-          extractedContent,
+          extracted_content,
           includeExtractedContentOnlyOnce,
           longTermMemory: memory,
         });
@@ -1386,7 +1387,7 @@ Provide the extracted information in a clear, structured format.`;
 
       console.log(`💾 ${result}`);
       return new ActionResult({
-        extractedContent: result,
+        extracted_content: result,
         includeInMemory: true,
         longTermMemory: result,
       });
@@ -1407,7 +1408,7 @@ Provide the extracted information in a clear, structured format.`;
       const result = await fileSystem.replaceFileStr(params.fileName, params.oldStr, params.newStr);
       console.log(`💾 ${result}`);
       return new ActionResult({
-        extractedContent: result,
+        extracted_content: result,
         includeInMemory: true,
         longTermMemory: result,
       });
@@ -1458,7 +1459,7 @@ Provide the extracted information in a clear, structured format.`;
 
       console.log(`💾 ${memory}`);
       return new ActionResult({
-        extractedContent: result,
+        extracted_content: result,
         includeInMemory: true,
         longTermMemory: memory,
         includeExtractedContentOnlyOnce: true,
@@ -1513,8 +1514,8 @@ Provide the extracted information in a clear, structured format.`;
       if (result) return result;
       
       // Check all siblings and their descendants
-      if (current.parentNode) {
-        for (const sibling of current.parentNode.childrenNodes || []) {
+      if (current.parent_node) {
+        for (const sibling of current.parent_node.childrenNodes || []) {
           if (sibling === current) continue;
           
           if (browserSession.isFileInput(sibling)) {
@@ -1526,12 +1527,12 @@ Provide the extracted information in a clear, structured format.`;
         }
       }
       
-      current = current.parentNode;
+      current = current.parent_node;
     }
 
     // If not found near the selected element, fallback to finding closest file input to scroll position
     console.log(
-      `No file upload element found near index ${node.nodeId || 'unknown'}, searching for closest file input to scroll position`
+      `No file upload element found near index ${node.node_id || 'unknown'}, searching for closest file input to scroll position`
     );
 
     // Get current scroll position
@@ -1553,8 +1554,8 @@ Provide the extracted information in a clear, structured format.`;
     for (const element of Object.values(selectorMap)) {
       if (browserSession.isFileInput(element)) {
         // Get element's Y position
-        if (element.absolutePosition) {
-          const elementY = element.absolutePosition.y;
+        if (element.absolute_position) {
+          const elementY = element.absolute_position.y;
           const distance = Math.abs(elementY - currentScrollY);
           if (distance < minDistance) {
             minDistance = distance;
