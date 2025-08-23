@@ -24,11 +24,12 @@ describe('Watchdog Tests', () => {
     it('should create default watchdogs', () => {
       const watchdogs = createWatchdogs(browserSession);
       
-      expect(watchdogs).toHaveLength(4); // crash, security, downloads, permissions
+      expect(watchdogs).toHaveLength(5); // crash, security, downloads, permissions, popups
       expect(watchdogs[0].constructor.name).toBe('CrashWatchdog');
       expect(watchdogs[1].constructor.name).toBe('SecurityWatchdog'); 
       expect(watchdogs[2].constructor.name).toBe('DownloadsWatchdog');
       expect(watchdogs[3].constructor.name).toBe('PermissionsWatchdog');
+      expect(watchdogs[4].constructor.name).toBe('PopupsWatchdog');
       
       destroyWatchdogs(watchdogs);
     });
@@ -39,6 +40,7 @@ describe('Watchdog Tests', () => {
         security: false,
         downloads: true,
         permissions: false,
+        popups: false,
       });
       
       expect(watchdogs).toHaveLength(2); // crash and downloads only
@@ -62,6 +64,7 @@ describe('Watchdog Tests', () => {
           maxDownloadTimeoutMs: 60000,
         },
         permissions: false,
+        popups: false,
       });
       
       expect(watchdogs).toHaveLength(3);
@@ -77,6 +80,7 @@ describe('Watchdog Tests', () => {
         security: false,
         downloads: false,
         permissions: false,
+        popups: false,
       });
       
       const crashWatchdog = watchdogs[0] as any;
@@ -100,6 +104,8 @@ describe('Watchdog Tests', () => {
           allowedDomains: ['example.com', '*.trusted.com'],
         },
         downloads: false,
+        permissions: false,
+        popups: false,
       });
       
       const securityWatchdog = watchdogs[0] as any;
@@ -121,6 +127,8 @@ describe('Watchdog Tests', () => {
         downloads: {
           downloadsPath: '/tmp/test-downloads',
         },
+        permissions: false,
+        popups: false,
       });
       
       const downloadsWatchdog = watchdogs[0] as any;
@@ -137,12 +145,53 @@ describe('Watchdog Tests', () => {
         crash: false,
         security: false,  
         downloads: true,
+        permissions: false,
+        popups: false,
       });
       
       const downloadsWatchdog = watchdogs[0] as any;
       
       expect(downloadsWatchdog.isPdfUrl('https://example.com/document.pdf')).toBe(true);
       expect(downloadsWatchdog.isPdfUrl('https://example.com/page.html')).toBe(false);
+      
+      destroyWatchdogs(watchdogs);
+    });
+  });
+
+  describe('Popups Watchdog', () => {
+    it('should handle dialog configuration', () => {
+      const watchdogs = createWatchdogs(browserSession, {
+        crash: false,
+        security: false,
+        downloads: false,
+        permissions: false,
+        popups: {
+          autoAccept: true,
+          delay: 500,
+        },
+      });
+      
+      const popupsWatchdog = watchdogs[0] as any;
+      
+      expect(popupsWatchdog.popupsConfig.autoAccept).toBe(true);
+      expect(popupsWatchdog.popupsConfig.delay).toBe(500);
+      
+      destroyWatchdogs(watchdogs);
+    });
+
+    it('should use default configuration when none provided', () => {
+      const watchdogs = createWatchdogs(browserSession, {
+        crash: false,
+        security: false,
+        downloads: false,
+        permissions: false,
+        popups: true,
+      });
+      
+      const popupsWatchdog = watchdogs[0] as any;
+      
+      expect(popupsWatchdog.popupsConfig.autoAccept).toBe(true);
+      expect(popupsWatchdog.popupsConfig.delay).toBe(250);
       
       destroyWatchdogs(watchdogs);
     });

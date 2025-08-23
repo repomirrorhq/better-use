@@ -7,6 +7,7 @@ export { CrashWatchdog, type CrashWatchdogConfig } from './crash';
 export { SecurityWatchdog, type SecurityWatchdogConfig } from './security';
 export { DownloadsWatchdog, type DownloadsWatchdogConfig } from './downloads';
 export { PermissionsWatchdog, type PermissionsWatchdogConfig } from './permissions';
+export { PopupsWatchdog, type PopupsWatchdogConfig } from './popups';
 
 // Watchdog registry for easy initialization
 import { BrowserSession } from '../session';
@@ -15,12 +16,14 @@ import { CrashWatchdog, CrashWatchdogConfig } from './crash';
 import { SecurityWatchdog, SecurityWatchdogConfig } from './security';
 import { DownloadsWatchdog, DownloadsWatchdogConfig } from './downloads';
 import { PermissionsWatchdog, PermissionsWatchdogConfig } from './permissions';
+import { PopupsWatchdog, PopupsWatchdogConfig } from './popups';
 
 export interface WatchdogRegistry {
   crash?: CrashWatchdogConfig | boolean;
   security?: SecurityWatchdogConfig | boolean;
   downloads?: DownloadsWatchdogConfig | boolean;
   permissions?: PermissionsWatchdogConfig | boolean;
+  popups?: PopupsWatchdogConfig | boolean;
 }
 
 /**
@@ -55,6 +58,12 @@ export function createWatchdogs(
     const permissionsConfig = config.permissions === true ? {} : config.permissions || {};
     const permissionsWatchdog = new PermissionsWatchdog(browserSession, permissionsConfig);
     watchdogs.push(permissionsWatchdog);
+  }
+
+  if (config.popups !== false) {
+    const popupsConfig = config.popups === true ? {} : config.popups || {};
+    const popupsWatchdog = new PopupsWatchdog(browserSession, popupsConfig);
+    watchdogs.push(popupsWatchdog);
   }
 
   // Attach all watchdogs to the session
