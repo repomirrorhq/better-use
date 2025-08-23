@@ -225,6 +225,7 @@ export interface NavigationCompleteEvent extends BaseEvent {
 export interface BrowserErrorEvent extends BaseEvent {
   error_type: string;
   message: string;
+  target_id?: TargetID;
   details?: Record<string, any>;
   event_timeout?: number; // 30.0 seconds
 }
