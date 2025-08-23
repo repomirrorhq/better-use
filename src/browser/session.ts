@@ -42,6 +42,7 @@ export class BrowserSession extends EventEmitter {
   public cdpUrl?: string;
   public downloadedFiles: string[] = [];
   public watchdogs: any[] = []; // Watchdogs for tracking browser events
+  private watchdogsAttached = false;
 
   constructor(config: BrowserSessionConfig = {}) {
     super();
@@ -103,62 +104,104 @@ export class BrowserSession extends EventEmitter {
 
 
   // ============================================================================
+  // Watchdog System
+  // ============================================================================
+
+  /**
+   * Initialize and attach all watchdogs to handle browser events
+   */
+  private async attachAllWatchdogs(): Promise<void> {
+    if (this.watchdogsAttached) {
+      return;
+    }
+
+    try {
+      // Import watchdogs dynamically
+      const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction.js');
+      
+      // Initialize DefaultActionWatchdog - handles scroll, click, type, etc.
+      const defaultActionWatchdog = new DefaultActionWatchdog(this, {
+        enabled: true,
+      });
+      
+      defaultActionWatchdog.attachToSession();
+      this.watchdogs.push(defaultActionWatchdog);
+      
+      this.watchdogsAttached = true;
+      this.logger.debug('📡 All watchdogs attached successfully');
+      
+    } catch (error) {
+      this.logger.error('❌ Failed to attach watchdogs:', error);
+      throw error;
+    }
+  }
+
+  // ============================================================================
   // Event System
   // ============================================================================
 
   /**
    * Dispatch an event and return a promise-like object for chaining
-   * This method provides compatibility with the expected event dispatch pattern
+   * This method emits events to watchdogs for handling
    */
   dispatch<T = any>(event: any): { eventResult: () => Promise<T> } {
-    // For now, this is a stub implementation
-    // In a full implementation, this would:
-    // 1. Process the event
-    // 2. Execute the corresponding action
-    // 3. Return the result
-    
     const eventResult = async (): Promise<T> => {
-      // Handle different event types based on their structure/properties
-      // Use duck typing to identify event types since constructor.name may not be reliable
+      // Determine event type based on properties and emit to watchdogs
+      let eventType: string;
+      
       if ('url' in event && ('wait_until' in event || 'timeout_ms' in event)) {
-        // NavigateToUrlEvent
-        await this.navigateToUrl(event);
-        return undefined as T;
+        eventType = 'NavigateToUrlEvent';
       } else if ('target_id' in event || 'tabId' in event) {
-        // SwitchTabEvent
-        return (event as any).target_id as T;
+        eventType = 'SwitchTabEvent';
       } else if ('node' in event && 'while_holding_ctrl' in event) {
-        // ClickElementEvent
-        await this.clickElement(event);
-        return undefined as T;
+        eventType = 'ClickElementEvent';
       } else if ('keys' in event) {
-        // SendKeysEvent
-        await this.sendKeys(event);
-        return undefined as T;
+        eventType = 'SendKeysEvent';
       } else if ('text' in event && 'node' in event) {
-        // TypeTextEvent
-        await this.typeText(event);
-        return undefined as T;
+        eventType = 'TypeTextEvent';
       } else if ('direction' in event && 'amount' in event) {
-        // ScrollEvent
-        await this.scrollEvent(event);
-        return undefined as T;
+        eventType = 'ScrollEvent';
       } else if ('text' in event && 'direction' in event) {
-        // ScrollToTextEvent
-        await this.scrollToText(event);
-        return undefined as T;
+        eventType = 'ScrollToTextEvent';
       } else if ('node' in event && 'file_path' in event) {
-        // UploadFileEvent - has 'node' and 'file_path' properties
-        await this.uploadFile(event);
-        return undefined as T;
+        eventType = 'UploadFileEvent';
       } else if ('event_timeout' in event && 'id' in event && 'timestamp' in event && 
                  !('url' in event) && !('direction' in event) && !('node' in event) && !('text' in event)) {
-        // GoBackEvent - has event_timeout, id, timestamp but none of the other specific properties
-        await this.goBack();
-        return undefined as T;
+        eventType = 'GoBackEvent';
       } else {
         throw new Error(`Event type not implemented: ${JSON.stringify(Object.keys(event))}`);
       }
+      
+      // Create a promise that resolves when the event is handled
+      return new Promise((resolve, reject) => {
+        // Set up a one-time listener for completion
+        const handleCompletion = (result?: T) => {
+          resolve(result || (undefined as T));
+        };
+        
+        const handleError = (error: Error) => {
+          reject(error);
+        };
+        
+        // For most events, we emit and assume they complete successfully
+        // In a more robust implementation, watchdogs would emit completion events
+        try {
+          this.emit(eventType, event);
+          
+          // For navigation events, we handle them directly for now
+          if (eventType === 'NavigateToUrlEvent') {
+            this.navigateToUrl(event).then(() => handleCompletion()).catch(handleError);
+          } else if (eventType === 'GoBackEvent') {
+            this.goBack().then(() => handleCompletion()).catch(handleError);
+          } else {
+            // For other events, assume they complete immediately
+            // Watchdogs will handle the actual implementation
+            handleCompletion();
+          }
+        } catch (error) {
+          handleError(error as Error);
+        }
+      });
     };
 
     return { eventResult };
@@ -231,6 +274,9 @@ export class BrowserSession extends EventEmitter {
 
       this.isStarted = true;
       this.emit('browserConnected', { cdp_url: 'playwright://session' });
+      
+      // Initialize watchdogs after browser is started
+      await this.attachAllWatchdogs();
       
       this.logger.debug('Browser session started successfully');
     } catch (error) {
@@ -858,9 +904,9 @@ export class BrowserSession extends EventEmitter {
   }
 
   async scrollEvent(event: { direction: string; amount: number; node?: any; event_timeout?: number }): Promise<void> {
-    // The actual scroll implementation is handled by the DefaultActionWatchdog
-    // This method just logs for debugging, the real work happens in the watchdog
-    this.logger.debug(`📜 Processing scroll event: ${event.direction} ${event.amount}px`);
+    // This method is kept for compatibility but the actual scroll implementation
+    // is handled by the DefaultActionWatchdog through the event system
+    this.logger.debug(`📜 Processing scroll event: ${event.direction} ${event.amount}px (handled by watchdog)`);
   }
 
   async scrollToText(event: { text: string; direction?: 'up' | 'down' }): Promise<void> {
