@@ -11,7 +11,9 @@ export { PopupsWatchdog, type PopupsWatchdogConfig } from './popups';
 export { AboutBlankWatchdog } from './aboutblank';
 export { StorageStateWatchdog, type StorageStateWatchdogConfig } from './storagestate';
 export { DefaultActionWatchdog, type DefaultActionConfig } from './defaultaction';
-// Note: DOMWatchdog, and LocalBrowserWatchdog are work in progress
+export { DOMWatchdog, type DOMWatchdogConfig } from './dom';
+export { LocalBrowserWatchdog, type LocalBrowserWatchdogConfig } from './localbrowser';
+export { ScreenshotWatchdog, type ScreenshotWatchdogConfig } from './screenshot';
 
 // Watchdog registry for easy initialization
 import { BrowserSession } from '../session';
@@ -24,7 +26,9 @@ import { PopupsWatchdog, PopupsWatchdogConfig } from './popups';
 import { AboutBlankWatchdog } from './aboutblank';
 import { StorageStateWatchdog, StorageStateWatchdogConfig } from './storagestate';
 import { DefaultActionWatchdog, DefaultActionConfig } from './defaultaction';
-// Note: DOMWatchdog, and LocalBrowserWatchdog imports removed
+import { DOMWatchdog, DOMWatchdogConfig } from './dom';
+import { LocalBrowserWatchdog, LocalBrowserWatchdogConfig } from './localbrowser';
+import { ScreenshotWatchdog, ScreenshotWatchdogConfig } from './screenshot';
 
 export interface WatchdogRegistry {
   crash?: CrashWatchdogConfig | boolean;
@@ -35,7 +39,9 @@ export interface WatchdogRegistry {
   aboutblank?: WatchdogConfig | boolean;
   storagestate?: StorageStateWatchdogConfig | boolean;
   defaultaction?: DefaultActionConfig | boolean;
-  // Note: dom, localbrowser watchdogs are work in progress
+  dom?: DOMWatchdogConfig | boolean;
+  localbrowser?: LocalBrowserWatchdogConfig | boolean;
+  screenshot?: ScreenshotWatchdogConfig | boolean;
 }
 
 /**
@@ -96,8 +102,23 @@ export function createWatchdogs(
     watchdogs.push(defaultactionWatchdog);
   }
 
-  // Note: dom, localbrowser watchdogs are work in progress
-  // They have been temporarily disabled due to compilation issues
+  if (config.dom !== false) {
+    const domConfig = config.dom === true ? {} : config.dom || {};
+    const domWatchdog = new DOMWatchdog(browserSession, domConfig);
+    watchdogs.push(domWatchdog);
+  }
+
+  if (config.localbrowser !== false) {
+    const localbrowserConfig = config.localbrowser === true ? {} : config.localbrowser || {};
+    const localbrowserWatchdog = new LocalBrowserWatchdog(browserSession, localbrowserConfig);
+    watchdogs.push(localbrowserWatchdog);
+  }
+
+  if (config.screenshot !== false) {
+    const screenshotConfig = config.screenshot === true ? {} : config.screenshot || {};
+    const screenshotWatchdog = new ScreenshotWatchdog(browserSession, screenshotConfig);
+    watchdogs.push(screenshotWatchdog);
+  }
 
   // Attach all watchdogs to the session
   watchdogs.forEach(watchdog => {
