@@ -1,6 +1,5 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { 
   SystemMessage, 
@@ -21,8 +20,8 @@ import type { BrowserStateSummary } from '../browser/views';
 import type { FileSystem } from '../filesystem/index';
 
 // Get the current file's directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Use CommonJS __dirname instead
+// __dirname is available in CommonJS
 
 export interface SystemPromptConfig {
   actionDescription: string;

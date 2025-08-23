@@ -421,19 +421,19 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     const hasError = this.state.last_result?.some(r => r.error) || false;
     if (hasError) {
       this.state.consecutive_failures += 1;
-      logger.warn(`⚠️ Step had errors. Consecutive failures: ${this.state.consecutive_failures}`);
+      this.logger.warn(`⚠️ Step had errors. Consecutive failures: ${this.state.consecutive_failures}`);
     } else {
       this.state.consecutive_failures = 0;
     }
     
-    logger.debug(`📈 Step ${this.state.n_steps} completed in ${metadata.durationSeconds.toFixed(2)}s`);
+    this.logger.debug(`📈 Step ${this.state.n_steps} completed in ${metadata.durationSeconds.toFixed(2)}s`);
   }
   
   /**
    * Handle step errors
    */
   private async handleStepError(error: any): Promise<void> {
-    logger.error(`❌ Step ${this.state.n_steps + 1} failed:`, error);
+    this.logger.error(`❌ Step ${this.state.n_steps + 1} failed:`, error);
     
     this.state.consecutive_failures += 1;
     
@@ -492,7 +492,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
    */
   public pause(): void {
     this.state.paused = true;
-    logger.info('⏸️ Agent paused');
+    this.logger.info('⏸️ Agent paused');
   }
   
   /**
@@ -500,7 +500,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
    */
   public resume(): void {
     this.state.paused = false;
-    logger.info('▶️ Agent resumed');
+    this.logger.info('▶️ Agent resumed');
   }
   
   /**
@@ -508,7 +508,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
    */
   public stop(): void {
     this.state.stopped = true;
-    logger.info('🛑 Agent stopped');
+    this.logger.info('🛑 Agent stopped');
   }
   
   /**
@@ -527,14 +527,14 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
   public addNewTask(newTask: string): void {
     this.task = newTask;
     this.messageManager.addNewTask(newTask);
-    logger.info(`🔄 Task updated: ${newTask}`);
+    this.logger.info(`🔄 Task updated: ${newTask}`);
   }
 }
 
 /**
  * Log the model's response (utility function)
  */
-export function logResponse(response: AgentOutput): void {
+export function logResponse(response: AgentOutput, logger: any): void {
   if (response.thinking) {
     logger.debug(`💡 Thinking:\n${response.thinking}`);
   }

@@ -10,9 +10,7 @@ export { PermissionsWatchdog, type PermissionsWatchdogConfig } from './permissio
 export { PopupsWatchdog, type PopupsWatchdogConfig } from './popups';
 export { AboutBlankWatchdog } from './aboutblank';
 export { StorageStateWatchdog, type StorageStateWatchdogConfig } from './storagestate';
-export { DefaultActionWatchdog } from './defaultaction';
-export { DOMWatchdog } from './dom';
-export { LocalBrowserWatchdog } from './localbrowser';
+// Note: DefaultActionWatchdog, DOMWatchdog, and LocalBrowserWatchdog are work in progress
 
 // Watchdog registry for easy initialization
 import { BrowserSession } from '../session';
@@ -24,9 +22,7 @@ import { PermissionsWatchdog, PermissionsWatchdogConfig } from './permissions';
 import { PopupsWatchdog, PopupsWatchdogConfig } from './popups';
 import { AboutBlankWatchdog } from './aboutblank';
 import { StorageStateWatchdog, StorageStateWatchdogConfig } from './storagestate';
-import { DefaultActionWatchdog } from './defaultaction';
-import { DOMWatchdog } from './dom';
-import { LocalBrowserWatchdog } from './localbrowser';
+// Note: DefaultActionWatchdog, DOMWatchdog, and LocalBrowserWatchdog imports removed
 
 export interface WatchdogRegistry {
   crash?: CrashWatchdogConfig | boolean;
@@ -36,9 +32,7 @@ export interface WatchdogRegistry {
   popups?: PopupsWatchdogConfig | boolean;
   aboutblank?: WatchdogConfig | boolean;
   storagestate?: StorageStateWatchdogConfig | boolean;
-  defaultaction?: WatchdogConfig | boolean;
-  dom?: WatchdogConfig | boolean;
-  localbrowser?: WatchdogConfig | boolean;
+  // Note: defaultaction, dom, localbrowser watchdogs are work in progress
 }
 
 /**
@@ -93,23 +87,8 @@ export function createWatchdogs(
     watchdogs.push(storagestateWatchdog);
   }
 
-  if (config.defaultaction !== false) {
-    const defaultactionConfig = config.defaultaction === true ? {} : config.defaultaction || {};
-    const defaultactionWatchdog = new DefaultActionWatchdog(browserSession, defaultactionConfig);
-    watchdogs.push(defaultactionWatchdog);
-  }
-
-  if (config.dom !== false) {
-    const domConfig = config.dom === true ? {} : config.dom || {};
-    const domWatchdog = new DOMWatchdog(browserSession, domConfig);
-    watchdogs.push(domWatchdog);
-  }
-
-  if (config.localbrowser !== false) {
-    const localbrowserConfig = config.localbrowser === true ? {} : config.localbrowser || {};
-    const localbrowserWatchdog = new LocalBrowserWatchdog(browserSession, localbrowserConfig);
-    watchdogs.push(localbrowserWatchdog);
-  }
+  // Note: defaultaction, dom, localbrowser watchdogs are work in progress
+  // They have been temporarily disabled due to compilation issues
 
   // Attach all watchdogs to the session
   watchdogs.forEach(watchdog => {

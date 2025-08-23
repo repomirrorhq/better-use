@@ -215,7 +215,7 @@ export class DownloadsWatchdog extends BaseWatchdog {
     if (!download) return;
 
     // Initialize variables used across try blocks to prevent UnboundLocal errors
-    let stats: fs.Stats | null = null;
+    let stats: Awaited<ReturnType<typeof fs.stat>> | null = null;
     let elapsedMs = 0;
     let fileExists = false;
 

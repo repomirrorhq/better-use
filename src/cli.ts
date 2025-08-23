@@ -6,7 +6,7 @@
  */
 
 import { Command } from 'commander';
-import chalk from 'chalk';
+const chalk = require('chalk');
 import inquirer from 'inquirer';
 import { Agent } from './agent/service';
 import { BrowserSession } from './browser';
