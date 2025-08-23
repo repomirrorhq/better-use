@@ -536,4 +536,53 @@ export class BrowserSession extends EventEmitter {
     // In a full implementation, this would track downloads via CDP
     return [];
   }
+
+  /**
+   * Get selector map for elements (stub implementation)
+   * TODO: Implement proper selector mapping
+   */
+  async getSelectorMap(): Promise<Record<string, string>> {
+    return {};
+  }
+
+  /**
+   * Get target ID from tab ID (stub implementation)
+   */
+  async getTargetIdFromTabId(tabId: string): Promise<string | null> {
+    return tabId; // Simple mapping for now
+  }
+
+  /**
+   * Get target ID from URL (stub implementation)
+   */
+  async getTargetIdFromUrl(url: string): Promise<string | null> {
+    // Search through pages for matching URL
+    for (const [pageId, page] of this.pages) {
+      try {
+        if (page.url() === url) {
+          return pageId;
+        }
+      } catch (error) {
+        // Ignore errors for closed pages
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get most recently opened target ID (stub implementation)
+   */
+  async getMostRecentlyOpenedTargetId(): Promise<string> {
+    // Return the current page ID or first available
+    if (this.currentPageId) {
+      return this.currentPageId;
+    }
+    
+    const pages = Array.from(this.pages.keys());
+    if (pages.length > 0) {
+      return pages[pages.length - 1]; // Return last page
+    }
+    
+    throw new Error('No pages available');
+  }
 }

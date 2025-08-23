@@ -18,6 +18,13 @@ import {
   createGoBackEvent,
   createClickElementEvent,
   createTypeTextEvent,
+  createUploadFileEvent,
+  createCloseTabEvent,
+  createSendKeysEvent,
+  createScrollEvent,
+  createScrollToTextEvent,
+  createGetDropdownOptionsEvent,
+  createSelectDropdownOptionEvent,
   UploadFileEvent,
 } from '../browser/events';
 import { BrowserError } from '../browser/views';
@@ -569,7 +576,7 @@ export class Controller<Context = any> {
       }
 
       // Dispatch upload file event with the resolved file input node
-      const event = browserSession.eventBus.dispatch(new UploadFileEvent({
+      const event = browserSession.eventBus.dispatch(createUploadFileEvent(
         node: fileInputNode,
         filePath: resolvedPath,
       }));
@@ -679,7 +686,7 @@ export class Controller<Context = any> {
       }, cdpSession.sessionId);
       const tabUrl = targetInfo.targetInfo.url;
 
-      const event = browserSession.eventBus.dispatch(new CloseTabEvent({ targetId }));
+      const event = browserSession.eventBus.dispatch(createCloseTabEvent(targetId }));
       await event;
       await event.eventResult();
       
@@ -777,7 +784,7 @@ If you called extract_structured_data in the last step and the result was not go
       // Dispatch scroll event with node - the complex logic is handled in the event handler
       // Convert pages to pixels (assuming 800px per page as standard viewport height)
       const pixels = Math.round(params.numPages * 800);
-      const event = browserSession.eventBus.dispatch(new ScrollEvent({
+      const event = browserSession.eventBus.dispatch(createScrollEvent(
         direction: params.down ? 'down' : 'up',
         amount: pixels,
         node: node ?? undefined,
@@ -837,7 +844,7 @@ If you called extract_structured_data in the last step and the result was not go
     { browserSession }: { browserSession: BrowserSession }
   ): Promise<ActionResult> {
     try {
-      const event = browserSession.eventBus.dispatch(new SendKeysEvent({ keys: params.keys }));
+      const event = browserSession.eventBus.dispatch(createSendKeysEvent(: params.keys }));
       await event;
       await event.eventResult();
       
@@ -881,7 +888,7 @@ If you called extract_structured_data in the last step and the result was not go
   ): Promise<ActionResult> {
     try {
       // Dispatch scroll to text event
-      const event = browserSession.eventBus.dispatch(new ScrollToTextEvent({ text: params.text }));
+      const event = browserSession.eventBus.dispatch(createScrollToTextEvent(: params.text }));
       await event;
       
       // The handler returns None on success or raises an exception if text not found
@@ -938,7 +945,7 @@ If you called extract_structured_data in the last step and the result was not go
       }
 
       // Dispatch GetDropdownOptionsEvent to the event handler
-      const event = browserSession.eventBus.dispatch(new GetDropdownOptionsEvent({ node }));
+      const event = browserSession.eventBus.dispatch(createGetDropdownOptionsEvent(node }));
       const dropdownData = await event.eventResult();
 
       if (!dropdownData) {
@@ -962,7 +969,7 @@ If you called extract_structured_data in the last step and the result was not go
         extracted_content: msg,
         include_in_memory: true,
         long_term_memory: `Found ${optionsCount} dropdown options for index ${params.index}`,
-        includeExtractedContentOnlyOnce: true,
+        include_extracted_content_only_once: true,
       });
     } catch (e) {
       console.error(`Failed to get dropdown options: ${e}`);
@@ -1000,7 +1007,7 @@ If you called extract_structured_data in the last step and the result was not go
       }
 
       // Dispatch SelectDropdownOptionEvent to the event handler
-      const event = browserSession.eventBus.dispatch(new SelectDropdownOptionEvent({
+      const event = browserSession.eventBus.dispatch(createSelectDropdownOptionEvent(
         node,
         text: params.text,
       }));
@@ -1105,7 +1112,7 @@ If you called extract_structured_data in the last step and the result was not go
         }
 
         return new ActionResult({
-          isDone: true,
+          is_done: true,
           success: params.success,
           extracted_content: JSON.stringify(outputDict),
           long_term_memory: `Task completed. Success Status: ${params.success}`,
@@ -1171,7 +1178,7 @@ If you called extract_structured_data in the last step and the result was not go
         );
 
         return new ActionResult({
-          isDone: true,
+          is_done: true,
           success: params.success,
           extracted_content: userMessage,
           long_term_memory: memory,
@@ -1339,7 +1346,7 @@ Provide the extracted information in a clear, structured format.`;
 
         // Simple memory handling
         let memory: string;
-        let includeExtractedContentOnlyOnce = false;
+        let include_extracted_content_only_once = false;
         
         if (extracted_content.length < 1000) {
           memory = extracted_content;
@@ -1347,13 +1354,13 @@ Provide the extracted information in a clear, structured format.`;
           const saveResult = await fileSystem.saveExtractedContent(extracted_content);
           const currentUrl = await browserSession.getCurrentPageUrl();
           memory = `Extracted content from ${currentUrl} for query: ${params.query}\nContent saved to file system: ${saveResult}`;
-          includeExtractedContentOnlyOnce = true;
+          include_extracted_content_only_once = true;
         }
 
         console.log(`📄 ${memory}`);
         return new ActionResult({
           extracted_content,
-          includeExtractedContentOnlyOnce,
+          include_extracted_content_only_once,
           long_term_memory: memory,
         });
       } catch (error) {
@@ -1474,7 +1481,7 @@ Provide the extracted information in a clear, structured format.`;
         extracted_content: result,
         include_in_memory: true,
         long_term_memory: memory,
-        includeExtractedContentOnlyOnce: true,
+        include_extracted_content_only_once: true,
       });
     } catch (error) {
       console.error(`Failed to read file: ${(error as Error).constructor.name}: ${error}`);

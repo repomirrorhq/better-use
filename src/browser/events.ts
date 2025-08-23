@@ -391,3 +391,61 @@ export function createGoBackEvent(options: Partial<GoBackEvent> = {}): GoBackEve
     timestamp: Date.now()
   };
 }
+
+// Additional factory functions for remaining events
+export function createUploadFileEvent(node: EnhancedDOMTreeNode, file_path: string, options: Partial<UploadFileEvent> = {}): UploadFileEvent {
+  return {
+    node,
+    file_path,
+    event_timeout: options.event_timeout || 30.0,
+    id: `upload_file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now()
+  };
+}
+
+export function createCloseTabEvent(target_id: TargetID, options: Partial<CloseTabEvent> = {}): CloseTabEvent {
+  return {
+    target_id,
+    event_timeout: options.event_timeout || 10.0,
+    id: `close_tab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now()
+  };
+}
+
+export function createSendKeysEvent(keys: string, options: Partial<SendKeysEvent> = {}): SendKeysEvent {
+  return {
+    keys,
+    event_timeout: options.event_timeout || 15.0,
+    id: `send_keys_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now()
+  };
+}
+
+export function createScrollToTextEvent(text: string, options: Partial<ScrollToTextEvent> = {}): ScrollToTextEvent {
+  return {
+    text,
+    direction: options.direction || 'down',
+    event_timeout: options.event_timeout || 15.0,
+    id: `scroll_to_text_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now()
+  };
+}
+
+export function createGetDropdownOptionsEvent(node: EnhancedDOMTreeNode, options: Partial<GetDropdownOptionsEvent> = {}): GetDropdownOptionsEvent {
+  return {
+    node,
+    event_timeout: options.event_timeout || 15.0,
+    id: `get_dropdown_options_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now()
+  };
+}
+
+export function createSelectDropdownOptionEvent(node: EnhancedDOMTreeNode, text: string, options: Partial<SelectDropdownOptionEvent> = {}): SelectDropdownOptionEvent {
+  return {
+    node,
+    text,
+    event_timeout: options.event_timeout || 8.0,
+    id: `select_dropdown_option_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now()
+  };
+}
