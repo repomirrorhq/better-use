@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { v7 as uuid7 } from 'uuid';
 import { BaseMessage, BaseMessageSchema } from '../llm/messages';
 import { DEFAULT_INCLUDE_ATTRIBUTES, DOMInteractedElementSchema, type DOMInteractedElement } from '../dom/views';
+import { TabInfoSchema, type TabInfo } from '../browser/views';
 
 // Agent Settings schema
 export const AgentSettingsSchema = z.object({
@@ -228,14 +229,7 @@ export const AgentOutputSchema = z.object({
 export type AgentOutput = z.infer<typeof AgentOutputSchema>;
 
 // Browser State History (simplified version of the Python equivalent)
-export const TabInfoSchema = z.object({
-  url: z.string(),
-  title: z.string(),
-  target_id: z.string().describe('Tab/Target ID'),
-  parent_target_id: z.string().optional().describe('Parent page that contains this popup or iframe'),
-});
-
-export type TabInfo = z.infer<typeof TabInfoSchema>;
+// TabInfo is imported from ../browser/views to avoid duplication
 
 export const BrowserStateHistorySchema = z.object({
   url: z.string(),

@@ -9,9 +9,9 @@ export * from './llm';
 export * from './browser';
 export * from './agent';
 
-// Re-export main classes
+// Re-export main classes (only if not already exported via export *)
 export { Agent } from './agent';
-export { BrowserSession } from './browser';
+// BrowserSession is already exported via export * from './browser'
 // export { DomService } from './dom';
 // export { Controller } from './controller';
 

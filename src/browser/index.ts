@@ -2,32 +2,23 @@
  * Browser module exports
  */
 
+// Export events
 export * from './events';
-export * from './views';
-export * from './profile';
-export * from './session';
 
-// Re-export commonly used types and classes
-export type {
-  NavigateToUrlEvent,
-  ClickElementEvent,
-  TypeTextEvent,
-  ScreenshotEvent,
-  BrowserStateRequestEvent,
-  TargetID,
-  EnhancedDOMTreeNode,
-} from './events';
-
-export type {
-  TabInfo,
-  PageInfo,
-  BrowserStateSummary,
+// Export views
+export type { TabInfo, PageInfo, BrowserStateSummary } from './views';
+export { 
+  TabInfoSchema, 
+  PageInfoSchema, 
+  BrowserStateSummarySchema, 
+  createTabInfo, 
+  createPageInfo, 
+  createBrowserStateSummary,
+  PLACEHOLDER_4PX_SCREENSHOT 
 } from './views';
 
-export {
-  BrowserProfile,
-} from './profile';
+// Export profile
+export { BrowserProfile, CHROME_DEBUG_PORT, CHROME_DISABLED_COMPONENTS } from './profile';
 
-export {
-  BrowserSession,
-} from './session';
+// Export session
+export { BrowserSession } from './session';
