@@ -49,6 +49,16 @@ These examples demonstrate basic functionality:
   ts-node examples/getting_started/03_data_extraction.ts
   ```
 
+- **Multi-Step Task** (`getting_started/04_multi_step_task.ts`)
+  ```bash
+  ts-node examples/getting_started/04_multi_step_task.ts
+  ```
+
+- **Fast Agent** (`getting_started/05_fast_agent.ts`)
+  ```bash
+  ts-node examples/getting_started/05_fast_agent.ts
+  ```
+
 ### Model Examples
 
 These examples show how to use different LLM providers:
