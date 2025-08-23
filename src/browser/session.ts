@@ -139,9 +139,9 @@ export class BrowserSession extends EventEmitter {
         // TypeTextEvent
         await this.typeText(event);
         return undefined as T;
-      } else if ('down' in event && 'num_pages' in event) {
+      } else if ('direction' in event && 'amount' in event) {
         // ScrollEvent
-        await this.scroll(event);
+        await this.scrollEvent(event);
         return undefined as T;
       } else if ('text' in event && 'direction' in event) {
         // ScrollToTextEvent
@@ -851,9 +851,10 @@ export class BrowserSession extends EventEmitter {
     console.log(`⌨️ Sending keys: "${event.keys}"`);
   }
 
-  async scroll(event: { down: boolean; num_pages: number }): Promise<void> {
-    // TODO: Implement scrolling
-    console.log(`📜 Scrolling ${event.down ? 'down' : 'up'} ${event.num_pages} pages`);
+  async scrollEvent(event: { direction: string; amount: number; node?: any; event_timeout?: number }): Promise<void> {
+    // The actual scroll implementation is handled by the DefaultActionWatchdog
+    // This method just logs for debugging, the real work happens in the watchdog
+    this.logger.debug(`📜 Processing scroll event: ${event.direction} ${event.amount}px`);
   }
 
   async scrollToText(event: { text: string; direction?: 'up' | 'down' }): Promise<void> {
