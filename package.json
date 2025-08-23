@@ -1,11 +1,11 @@
 {
-  "name": "browser-use",
+  "name": "better-use",
   "version": "0.1.0",
-  "description": "Make websites accessible for AI agents (TypeScript port)",
+  "description": "Make websites accessible for AI agents - Better TypeScript implementation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "browser-use": "dist/cli.js"
+    "better-use": "dist/cli.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -33,11 +33,11 @@
     "playwright",
     "typescript"
   ],
-  "author": "Browser-Use Team",
+  "author": "Better-Use Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Yonom/browser-use-ts.git"
+    "url": "https://github.com/Yonom/better-use.git"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.1",
