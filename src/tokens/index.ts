@@ -145,8 +145,8 @@ export class TokenCost {
    */
   private async isCacheValid(cacheFile: string): Promise<boolean> {
     try {
-      // Check if file exists
-      const stats = await fs.stat(cacheFile);
+      // Check if file exists  
+      await fs.stat(cacheFile);
       
       // Read the cached data
       const content = await fs.readFile(cacheFile, 'utf-8');
@@ -294,9 +294,9 @@ export class TokenCost {
 
     // ANSI color codes
     const C_CYAN = '\x1b[96m';
-    const C_YELLOW = '\x1b[93m';
+    // const C_YELLOW = '\x1b[93m'; // TODO: Use if needed
     const C_GREEN = '\x1b[92m';
-    const C_BLUE = '\x1b[94m';
+    // const C_BLUE = '\x1b[94m'; // TODO: Use if needed
     const C_RESET = '\x1b[0m';
 
     // Always get cost breakdown for token details (even if not showing costs)
