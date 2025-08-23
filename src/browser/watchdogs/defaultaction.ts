@@ -19,7 +19,7 @@ import {
   SwitchTabEvent,
 } from '../events';
 import { BrowserError, URLNotAllowedError } from '../../exceptions';
-import { EnhancedDOMTreeNode } from '../../dom/enhanced_snapshot';
+import { EnhancedDOMTreeNode } from '../../dom/views';
 
 export class DefaultActionWatchdog extends BaseWatchdog {
   async onClickElementEvent(event: ClickElementEvent): Promise<Record<string, any> | null> {
