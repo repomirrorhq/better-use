@@ -4,13 +4,20 @@
 
 export class LLMException extends Error {
   public readonly statusCode: number;
-  public readonly message: string;
+  public readonly model?: string;
 
-  constructor(statusCode: number, message: string) {
+  constructor(statusCode: number, message: string, model?: string) {
     super(`Error ${statusCode}: ${message}`);
     this.name = 'LLMException';
     this.statusCode = statusCode;
-    this.message = message;
+    this.model = model;
+  }
+}
+
+export class ModelProviderError extends LLMException {
+  constructor(options: { message: string; status_code?: number; model?: string }) {
+    super(options.status_code || 500, options.message, options.model);
+    this.name = 'ModelProviderError';
   }
 }
 

@@ -5,6 +5,7 @@
 export * from './base';
 export * from './messages';
 export * from './views';
+export * from './schema';
 export * from './providers/openai';
 export * from './providers/anthropic';
 

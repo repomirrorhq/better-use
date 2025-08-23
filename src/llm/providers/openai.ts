@@ -7,7 +7,8 @@ import OpenAI from 'openai';
 import { AbstractChatModel } from '../base';
 import { BaseMessage } from '../messages';
 import { ChatInvokeCompletion, ChatInvokeUsage, createCompletion } from '../views';
-import { LLMException } from '../../exceptions';
+import { ModelProviderError } from '../../exceptions';
+import { SchemaOptimizer } from '../schema';
 
 export const OpenAIChatModelSchema = z.object({
   model: z.string(),
@@ -199,9 +200,9 @@ export class ChatOpenAI extends AbstractChatModel {
         modelParams.response_format = {
           type: 'json_schema',
           json_schema: {
-            name: 'response',
+            name: 'agent_output',
             strict: true,
-            schema: this.zodToJsonSchema(outputFormat)
+            schema: SchemaOptimizer.createOptimizedJsonSchema(outputFormat)
           }
         };
       }
@@ -223,60 +224,52 @@ export class ChatOpenAI extends AbstractChatModel {
       }
 
     } catch (error) {
-      if (error instanceof OpenAI.APIError) {
-        throw new LLMException(error.status || 500, error.message);
+      if (error instanceof OpenAI.RateLimitError) {
+        const errorMessage = this.extractErrorMessage(error);
+        throw new ModelProviderError({
+          message: errorMessage,
+          status_code: error.status,
+          model: this.name,
+        });
+      } else if (error instanceof OpenAI.APIConnectionError) {
+        throw new ModelProviderError({
+          message: error.message,
+          model: this.name,
+        });
+      } else if (error instanceof OpenAI.APIStatusError) {
+        const errorMessage = this.extractErrorMessage(error);
+        throw new ModelProviderError({
+          message: errorMessage,
+          status_code: error.status,
+          model: this.name,
+        });
+      } else if (error instanceof OpenAI.APIError) {
+        throw new ModelProviderError({
+          message: error.message,
+          status_code: (error as any).status || 500,
+          model: this.name,
+        });
       }
-      throw error;
+      throw new ModelProviderError({
+        message: error instanceof Error ? error.message : String(error),
+        model: this.name,
+      });
     }
   }
 
-  private zodToJsonSchema(schema: z.ZodSchema): any {
-    // Basic Zod to JSON Schema conversion
-    // This is a simplified implementation - in production you'd want a proper library
-    if (schema instanceof z.ZodObject) {
-      const shape = schema.shape;
-      const properties: any = {};
-      const required: string[] = [];
-
-      for (const [key, value] of Object.entries(shape)) {
-        properties[key] = this.zodToJsonSchema(value as z.ZodSchema);
-        if (!(value instanceof z.ZodOptional)) {
-          required.push(key);
-        }
+  private extractErrorMessage(error: OpenAI.APIError): string {
+    try {
+      // Try to extract error message from response
+      const errorBody = (error as any).response?.data?.error;
+      if (errorBody && typeof errorBody === 'object' && errorBody.message) {
+        return errorBody.message;
       }
-
-      return {
-        type: 'object',
-        properties,
-        required,
-        additionalProperties: false
-      };
+      if (errorBody && typeof errorBody === 'string') {
+        return errorBody;
+      }
+    } catch {
+      // Fall back to the error message
     }
-
-    if (schema instanceof z.ZodString) {
-      return { type: 'string' };
-    }
-
-    if (schema instanceof z.ZodNumber) {
-      return { type: 'number' };
-    }
-
-    if (schema instanceof z.ZodBoolean) {
-      return { type: 'boolean' };
-    }
-
-    if (schema instanceof z.ZodArray) {
-      return {
-        type: 'array',
-        items: this.zodToJsonSchema(schema.element)
-      };
-    }
-
-    if (schema instanceof z.ZodOptional) {
-      return this.zodToJsonSchema(schema.unwrap());
-    }
-
-    // Default fallback
-    return { type: 'string' };
+    return error.message || 'Unknown model error';
   }
 }
