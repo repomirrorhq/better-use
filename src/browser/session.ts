@@ -787,14 +787,11 @@ export class BrowserSession extends EventEmitter {
 
   async scrollToText(event: { text: string; direction?: 'up' | 'down' }): Promise<void> {
     try {
-      if (!this.page) {
-        throw new Error('No active page');
-      }
-
+      const currentPage = this.getInternalCurrentPage();
       this.logger.debug(`🔍 Scrolling to text: "${event.text}"`);
 
       // Try to find and scroll to text using the same logic as the watchdog
-      const found = await this.page.evaluate((text: string) => {
+      const found = await currentPage.evaluate((text: string) => {
         // Use TreeWalker to find text nodes
         const walker = document.createTreeWalker(
           document.body,
@@ -942,13 +939,21 @@ export class BrowserSession extends EventEmitter {
       
       
       // Return DOM state with llmRepresentation method
+      // Convert plain object to Map for DOMSelectorMap
+      const selectorMap = new Map();
+      if (elements) {
+        Object.entries(elements).forEach(([key, value]) => {
+          selectorMap.set(parseInt(key), value);
+        });
+      }
+
       return createSerializedDOMStateWithLLMRepresentation(
         null, // root node - placeholder for now
-        elements || {}
+        selectorMap
       );
     } catch (error) {
       console.warn('Failed to get DOM state, returning empty state:', error);
-      return createSerializedDOMStateWithLLMRepresentation(null, {});
+      return createSerializedDOMStateWithLLMRepresentation(null, new Map());
     }
   }
 

@@ -355,7 +355,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     const results: ActionResult[] = [];
     
     // Import and create controller for action execution
-    const { Controller } = await import('../controller/service');
+    const { Controller } = await import('../controller/service.js');
     const controller = new Controller();
     
     // Execute each action through the controller
