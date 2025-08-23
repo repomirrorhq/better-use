@@ -9,7 +9,7 @@ describe('URL Allowlist Security Tests', () => {
       const browserProfile = new BrowserProfile({
         allowed_domains: ['example.com'],
         headless: true,
-        user_data_dir: null,
+        user_data_dir: undefined,
       });
       const browserSession = new BrowserSession(browserProfile);
       const watchdog = new SecurityWatchdog(browserSession);
@@ -32,7 +32,7 @@ describe('URL Allowlist Security Tests', () => {
       let browserProfile = new BrowserProfile({
         allowed_domains: ['*.example.com'],
         headless: true,
-        user_data_dir: null,
+        user_data_dir: undefined,
       });
       let browserSession = new BrowserSession(browserProfile);
       let watchdog = new SecurityWatchdog(browserSession);
@@ -58,7 +58,7 @@ describe('URL Allowlist Security Tests', () => {
           'brave://*',
         ],
         headless: true,
-        user_data_dir: null,
+        user_data_dir: undefined,
       });
       browserSession = new BrowserSession(browserProfile);
       watchdog = new SecurityWatchdog(browserSession);
@@ -99,7 +99,7 @@ describe('URL Allowlist Security Tests', () => {
       let browserProfile = new BrowserProfile({
         allowed_domains: ['*.google.com', 'https://wiki.org'],
         headless: true,
-        user_data_dir: null,
+        user_data_dir: undefined,
       });
       let browserSession = new BrowserSession(browserProfile);
       let watchdog = new SecurityWatchdog(browserSession);
@@ -116,7 +116,7 @@ describe('URL Allowlist Security Tests', () => {
       browserProfile = new BrowserProfile({
         allowed_domains: ['*.google.com', '*.google.co.uk'],
         headless: true,
-        user_data_dir: null,
+        user_data_dir: undefined,
       });
       browserSession = new BrowserSession(browserProfile);
       watchdog = new SecurityWatchdog(browserSession);
