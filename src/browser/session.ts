@@ -46,6 +46,7 @@ export class BrowserSession extends EventEmitter {
   public watchdogs: any[] = []; // Watchdogs for tracking browser events
   private watchdogsAttached = false;
   private cachedSelectorMap: Map<number, any> | null = null;
+  private cdpSessionPool: Map<string, any> = new Map(); // CDP session pool for WebSocket persistence
 
   constructor(config: BrowserSessionConfig = {}) {
     super();
@@ -780,12 +781,24 @@ export class BrowserSession extends EventEmitter {
   }
 
   isFileInput(node: any): boolean {
-    // This would need to be implemented with proper DOM integration  
-    // For now, return false
+    // Check if element is a file input
+    // First check if DOM watchdog has the method
+    const domWatchdog = this.watchdogs.find((w: any) => w.constructor.name === 'DOMWatchdog');
+    if (domWatchdog && typeof domWatchdog.isFileInput === 'function') {
+      return domWatchdog.isFileInput(node);
+    }
+    
+    // Fallback: check if it's an INPUT element with type="file"
+    if (node && node.node_name && node.node_name.toUpperCase() === 'INPUT') {
+      if (node.attributes && node.attributes.type) {
+        return node.attributes.type.toLowerCase() === 'file';
+      }
+    }
+    
     return false;
   }
 
-  async getOrCreateCdpSession(): Promise<any> {
+  async getOrCreateCdpSession(targetId?: string): Promise<any> {
     // Create a CDP-compatible client using Playwright's CDP functionality
     let currentPage;
     try {
@@ -797,9 +810,20 @@ export class BrowserSession extends EventEmitter {
       return null;
     }
 
+    // Use targetId or generate one based on page URL
+    const sessionKey = targetId || currentPage.url() || 'default';
+    
+    // Check if we already have a session for this target in the pool
+    if (this.cdpSessionPool.has(sessionKey)) {
+      this.logger.debug(`Reusing existing CDP session for target: ${sessionKey}`);
+      return this.cdpSessionPool.get(sessionKey);
+    }
+
+    // Create new CDP session
+    this.logger.debug(`Creating new CDP session for target: ${sessionKey}`);
     const cdpSession = await currentPage.context().newCDPSession(currentPage);
     
-    return {
+    const wrappedSession = {
       cdpClient: {
         send: {
           Runtime: {
@@ -819,11 +843,60 @@ export class BrowserSession extends EventEmitter {
             getTargetInfo: async (params: any, sessionId?: string) => {
               return await cdpSession.send('Target.getTargetInfo', params);
             }
+          },
+          Page: {
+            getLayoutMetrics: async (params = {}, sessionId?: string) => {
+              return await cdpSession.send('Page.getLayoutMetrics', params);
+            }
           }
         }
       },
-      sessionId: 'playwright-session'
+      sessionId: sessionKey,
+      rawSession: cdpSession // Keep reference to raw session for cleanup
     };
+    
+    // Store in pool for reuse
+    this.cdpSessionPool.set(sessionKey, wrappedSession);
+    
+    return wrappedSession;
+  }
+  
+  /**
+   * Clear CDP session for a specific target
+   */
+  clearCdpSession(targetId?: string): void {
+    const sessionKey = targetId || 'default';
+    if (this.cdpSessionPool.has(sessionKey)) {
+      this.logger.debug(`Clearing CDP session for target: ${sessionKey}`);
+      const session = this.cdpSessionPool.get(sessionKey);
+      // Detach the raw CDP session if possible
+      if (session?.rawSession?.detach) {
+        try {
+          session.rawSession.detach();
+        } catch (error) {
+          // Ignore detach errors
+        }
+      }
+      this.cdpSessionPool.delete(sessionKey);
+    }
+  }
+  
+  /**
+   * Clear all CDP sessions in the pool
+   */
+  clearAllCdpSessions(): void {
+    this.logger.debug(`Clearing all ${this.cdpSessionPool.size} CDP sessions`);
+    for (const [key, session] of this.cdpSessionPool.entries()) {
+      // Detach the raw CDP session if possible
+      if (session?.rawSession?.detach) {
+        try {
+          session.rawSession.detach();
+        } catch (error) {
+          // Ignore detach errors
+        }
+      }
+    }
+    this.cdpSessionPool.clear();
   }
 
   // Add cdpClient getter for compatibility

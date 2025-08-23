@@ -438,8 +438,19 @@ export class Controller<Context = any> {
       // If it's a select dropdown error, automatically get the dropdown options
       if (e instanceof Error && e.message.includes('dropdown')) {
         try {
-          // TODO: Implement dropdown options fallback after implementing getDropdownOptions
-          console.log('Dropdown detected but getDropdownOptions not yet implemented');
+          // Automatically get dropdown options as a fallback
+          const dropdownResult = await this.getDropdownOptions(
+            { index: params.index },
+            { browserSession }
+          );
+          
+          if (dropdownResult.data?.options) {
+            // Return error with dropdown options for LLM to make the next decision
+            return new ActionResult({
+              error: `${errorMsg}\n\nAvailable dropdown options:\n${JSON.stringify(dropdownResult.data.options, null, 2)}`,
+              extractedContent: dropdownResult.data.options
+            });
+          }
         } catch (dropdownError) {
           console.error(
             `Failed to get dropdown options as shortcut during click_element_by_index on dropdown: ${(dropdownError as Error).constructor.name}: ${dropdownError}`
@@ -587,7 +598,14 @@ export class Controller<Context = any> {
         throw new Error(`Element index ${params.index} not found in DOM`);
       }
 
-      // For now, directly use the node (TODO: implement file input finding logic when DOM system is complete)
+      // Check if it's a file input
+      if (!browserSession.isFileInput(node)) {
+        throw new Error(
+          `Element ${params.index} is not a file input. Use clickElement for non-file input elements.`
+        );
+      }
+
+      // Dispatch the upload file event
       const event = browserSession.eventBus.dispatch(createUploadFileEvent(
         node,
         resolvedPath
