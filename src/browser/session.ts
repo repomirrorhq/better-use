@@ -30,7 +30,7 @@ export class BrowserSession extends EventEmitter {
   private browser: ChromiumBrowser | null = null;
   private context: BrowserContext | null = null;
   private pages: Map<string, Page> = new Map();
-  private currentPageId: string | null = null;
+  public currentPageId: string | null = null;
   public profile: BrowserProfile;
   private isStarted = false;
   private _loggedUniqueSessionIds = new Set<string>();

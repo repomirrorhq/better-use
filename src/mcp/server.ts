@@ -502,7 +502,10 @@ Return the extracted information in JSON format.
         num_pages: 1
       };
       
-      await this.browserSession!.scroll(scrollEvent);
+      await this.browserSession!.scrollEvent({
+        direction: direction,
+        amount: 800 // Default scroll amount
+      });
       
       return { 
         success: true, 

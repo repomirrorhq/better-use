@@ -474,6 +474,10 @@ export class Controller<Context = any> {
     { browserSession, hasSensitiveData = false }: { browserSession: BrowserSession; hasSensitiveData?: boolean }
   ): Promise<ActionResult> {
     try {
+      if (params.index === 0) {
+        throw new Error('Cannot type text in element with index 0. If there are no interactive elements use scroll(), wait(), refresh(), etc. to troubleshoot');
+      }
+
       // Look up the node from the selector map
       const node = await browserSession.getElementByIndex(params.index);
       if (node === null) {
@@ -540,6 +544,10 @@ export class Controller<Context = any> {
     }
   ): Promise<ActionResult> {
     try {
+      if (params.index === 0) {
+        throw new Error('Cannot upload file to element with index 0. If there are no interactive elements use scroll(), wait(), refresh(), etc. to troubleshoot');
+      }
+
       let resolvedPath = params.path;
 
       // Enhanced file path validation with FileSystem integration
@@ -956,6 +964,10 @@ If you called extract_structured_data in the last step and the result was not go
     { browserSession }: { browserSession: BrowserSession }
   ): Promise<ActionResult> {
     try {
+      if (params.index === 0) {
+        throw new Error('Cannot get dropdown options for element with index 0. If there are no interactive elements use scroll(), wait(), refresh(), etc. to troubleshoot');
+      }
+
       // Look up the node from the selector map
       const node = await browserSession.getElementByIndex(params.index);
       if (node === null) {
@@ -1018,6 +1030,10 @@ If you called extract_structured_data in the last step and the result was not go
     { browserSession }: { browserSession: BrowserSession }
   ): Promise<ActionResult> {
     try {
+      if (params.index === 0) {
+        throw new Error('Cannot select dropdown option for element with index 0. If there are no interactive elements use scroll(), wait(), refresh(), etc. to troubleshoot');
+      }
+
       // Look up the node from the selector map
       const node = await browserSession.getElementByIndex(params.index);
       if (node === null) {
