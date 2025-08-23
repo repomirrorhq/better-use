@@ -20,8 +20,9 @@ export function tryParseGroqFailedGeneration<T>(
   outputFormat: ZodSchema<T>
 ): T {
   try {
-    // Extract content from error body
-    const failedGeneration = error.response?.body?.error?.failed_generation;
+    // Extract content from error body - check both possible locations
+    const failedGeneration = error.response?.body?.error?.failed_generation || 
+                             (error as any).body?.error?.failed_generation;
     if (!failedGeneration) {
       throw new ParseFailedGenerationError('No failed_generation in error body', error);
     }
