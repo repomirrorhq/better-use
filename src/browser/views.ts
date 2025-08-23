@@ -63,6 +63,9 @@ export const BrowserStateSummarySchema = z.object({
   
   // Timestamp
   timestamp: z.number().describe('Unix timestamp when state was captured'),
+  
+  // PDF viewer status
+  isPdfViewer: z.boolean().default(false).describe('Whether the current page is a PDF viewer'),
 });
 
 export type BrowserStateSummary = z.infer<typeof BrowserStateSummarySchema>;

@@ -253,6 +253,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       },
       recent_events: [],
       timestamp: Date.now(),
+      isPdfViewer: false,
     };
     
     if (browserStateSummary.screenshot) {

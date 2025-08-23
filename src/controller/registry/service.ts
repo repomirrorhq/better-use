@@ -28,7 +28,7 @@ export class Registry<Context = any> {
       browserSession: BrowserSession,
       pageUrl: String,
       cdpClient: null, // CDPClient type not available in TS
-      pageExtractionLlm: BaseChatModel,
+      pageExtractionLlm: null, // BaseChatModel is abstract class, can't validate type
       availableFilePaths: Array,
       hasSensitiveData: Boolean,
       fileSystem: FileSystem,
@@ -168,6 +168,8 @@ export class Registry<Context = any> {
         hasSensitiveData: actionName === 'inputText' && Boolean(sensitiveData),
         fileSystem,
         sensitiveData,
+        pageUrl: undefined as string | undefined,
+        cdpClient: undefined as any,
       };
 
       // Add page URL if browser session is available
