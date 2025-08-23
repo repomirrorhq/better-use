@@ -36,7 +36,7 @@ import {
 import { EnhancedDOMTreeNode } from '../dom/views';
 import { FileSystem } from '../filesystem/index';
 import { BaseChatModel } from '../llm/base';
-import { UserMessage } from '../llm/messages';
+import { UserMessage, createUserMessage } from '../llm/messages';
 import { NodeHtmlMarkdown } from 'node-html-markdown';
 
 function extractLlmErrorMessage(error: Error): string {
@@ -1316,7 +1316,7 @@ Provide the extracted information in a clear, structured format.`;
 
       try {
         const response = await Promise.race([
-          pageExtractionLlm.ainvoke([new UserMessage(prompt)]),
+          pageExtractionLlm.ainvoke([createUserMessage(prompt)]),
           new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Timeout after 120 seconds')), 120000)
           )

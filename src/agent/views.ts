@@ -157,7 +157,45 @@ export const ActionResultSchema = z.object({
   return true;
 });
 
-export type ActionResult = z.infer<typeof ActionResultSchema>;
+export type ActionResultType = z.infer<typeof ActionResultSchema>;
+
+// ActionResult class for creating instances
+export class ActionResult {
+  public is_done: boolean | null;
+  public success: boolean | null;
+  public error: string | null;
+  public attachments: string[] | null;
+  public long_term_memory: string | null;
+  public extracted_content: string | null;
+  public include_extracted_content_only_once: boolean;
+  public metadata: Record<string, any> | null;
+  public include_in_memory: boolean;
+
+  constructor(data: Partial<ActionResultType> = {}) {
+    const validated = ActionResultSchema.parse({
+      is_done: false,
+      success: null,
+      error: null,
+      attachments: null,
+      long_term_memory: null,
+      extracted_content: null,
+      include_extracted_content_only_once: false,
+      metadata: null,
+      include_in_memory: false,
+      ...data
+    });
+
+    this.is_done = validated.is_done;
+    this.success = validated.success;
+    this.error = validated.error;
+    this.attachments = validated.attachments;
+    this.long_term_memory = validated.long_term_memory;
+    this.extracted_content = validated.extracted_content;
+    this.include_extracted_content_only_once = validated.include_extracted_content_only_once;
+    this.metadata = validated.metadata;
+    this.include_in_memory = validated.include_in_memory;
+  }
+}
 
 // Step Metadata schema
 export const StepMetadataSchema = z.object({

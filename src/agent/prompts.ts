@@ -7,7 +7,8 @@ import {
   UserMessage, 
   ContentPartTextParam, 
   ContentPartImageParam, 
-  ImageURL 
+  ImageURL,
+  createUserMessage
 } from '../llm/messages';
 import type { 
   BrowserStateSummary, 
@@ -348,9 +349,9 @@ ${finalTodoContents}
         );
       }
 
-      return new UserMessage({ content: contentParts, cache: true });
+      return createUserMessage(contentParts, { cache: true });
     }
 
-    return new UserMessage({ content: stateDescription, cache: true });
+    return createUserMessage(stateDescription, { cache: true });
   }
 }
