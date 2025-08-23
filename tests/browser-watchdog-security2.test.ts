@@ -1,6 +1,5 @@
 import { BrowserProfile } from '../src/browser/profile';
 import { BrowserSession } from '../src/browser/session';
-import { EventBus } from '../src/browser/events';
 import { SecurityWatchdog } from '../src/browser/watchdogs/security';
 
 describe('URL Allowlist Security Tests', () => {
@@ -8,13 +7,12 @@ describe('URL Allowlist Security Tests', () => {
     test('URL allowlist cannot be bypassed using authentication credentials', () => {
       // Create a context config with a sample allowed domain
       const browserProfile = new BrowserProfile({
-        allowedDomains: ['example.com'],
+        allowed_domains: ['example.com'],
         headless: true,
-        userDataDir: null,
+        user_data_dir: null,
       });
       const browserSession = new BrowserSession(browserProfile);
-      const eventBus = new EventBus();
-      const watchdog = new SecurityWatchdog(browserSession, eventBus);
+      const watchdog = new SecurityWatchdog(browserSession);
 
       // Security vulnerability test cases
       // These should all be detected as malicious despite containing "example.com"
@@ -32,13 +30,12 @@ describe('URL Allowlist Security Tests', () => {
     test('glob patterns in allowed_domains work correctly', () => {
       // Test *.example.com pattern (should match subdomains and main domain)
       let browserProfile = new BrowserProfile({
-        allowedDomains: ['*.example.com'],
+        allowed_domains: ['*.example.com'],
         headless: true,
-        userDataDir: null,
+        user_data_dir: null,
       });
       let browserSession = new BrowserSession(browserProfile);
-      let eventBus = new EventBus();
-      let watchdog = new SecurityWatchdog(browserSession, eventBus);
+      let watchdog = new SecurityWatchdog(browserSession);
 
       // Should match subdomains
       expect(watchdog._isUrlAllowed('https://sub.example.com')).toBe(true);
@@ -53,7 +50,7 @@ describe('URL Allowlist Security Tests', () => {
 
       // Test more complex glob patterns
       browserProfile = new BrowserProfile({
-        allowedDomains: [
+        allowed_domains: [
           '*.google.com',
           'https://wiki.org',
           'https://good.com',
@@ -61,11 +58,10 @@ describe('URL Allowlist Security Tests', () => {
           'brave://*',
         ],
         headless: true,
-        userDataDir: null,
+        user_data_dir: null,
       });
       browserSession = new BrowserSession(browserProfile);
-      eventBus = new EventBus();
-      watchdog = new SecurityWatchdog(browserSession, eventBus);
+      watchdog = new SecurityWatchdog(browserSession);
 
       // Should match domains ending with google.com
       expect(watchdog._isUrlAllowed('https://google.com')).toBe(true);
@@ -101,13 +97,12 @@ describe('URL Allowlist Security Tests', () => {
     test('edge cases for glob pattern matching', () => {
       // Test with domains containing glob pattern in the middle
       let browserProfile = new BrowserProfile({
-        allowedDomains: ['*.google.com', 'https://wiki.org'],
+        allowed_domains: ['*.google.com', 'https://wiki.org'],
         headless: true,
-        userDataDir: null,
+        user_data_dir: null,
       });
       let browserSession = new BrowserSession(browserProfile);
-      let eventBus = new EventBus();
-      let watchdog = new SecurityWatchdog(browserSession, eventBus);
+      let watchdog = new SecurityWatchdog(browserSession);
 
       // Verify that 'wiki*' pattern doesn't match domains that merely contain 'wiki' in the middle
       expect(watchdog._isUrlAllowed('https://notawiki.com')).toBe(false);
@@ -119,13 +114,12 @@ describe('URL Allowlist Security Tests', () => {
 
       // Create context with potentially risky glob pattern that demonstrates security concerns
       browserProfile = new BrowserProfile({
-        allowedDomains: ['*.google.com', '*.google.co.uk'],
+        allowed_domains: ['*.google.com', '*.google.co.uk'],
         headless: true,
-        userDataDir: null,
+        user_data_dir: null,
       });
       browserSession = new BrowserSession(browserProfile);
-      eventBus = new EventBus();
-      watchdog = new SecurityWatchdog(browserSession, eventBus);
+      watchdog = new SecurityWatchdog(browserSession);
 
       // Should match legitimate Google domains
       expect(watchdog._isUrlAllowed('https://www.google.com')).toBe(true);
