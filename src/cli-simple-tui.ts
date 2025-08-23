@@ -19,13 +19,13 @@ import { ChatDeepseek } from './llm/providers/deepseek';
 import { ChatGroq } from './llm/providers/groq';
 import { ChatOllama } from './llm/providers/ollama';
 import { ChatOpenRouter } from './llm/providers/openrouter';
-import { getBrowserUseVersion } from './utils';
+import { getBetterUseVersion } from './utils';
 import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-function getBrowserLogo() {
+function getBetterLogo() {
   return `
 ${chalk.white('                   ++++++   +++++++++                                   ')}
 ${chalk.white('                 +++     +++++     +++                                ')}
@@ -39,20 +39,20 @@ ${chalk.white('                 ++    ++++   ++    ++                           
 ${chalk.white('                 +++     ++++++    +++                                ')}
 ${chalk.white('                   ++++++    +++++++                                  ')}
 
-${chalk.blue('██████╗ ██████╗  ██████╗ ██╗    ██╗███████╗███████╗██████╗')}     ${chalk.yellow('██╗   ██╗███████╗███████╗')}
-${chalk.blue('██╔══██╗██╔══██╗██╔═══██╗██║    ██║██╔════╝██╔════╝██╔══██╗')}    ${chalk.yellow('██║   ██║██╔════╝██╔════╝')}
-${chalk.blue('██████╔╝██████╔╝██║   ██║██║ █╗ ██║███████╗█████╗  ██████╔╝')}    ${chalk.yellow('██║   ██║███████╗█████╗')}  
-${chalk.blue('██╔══██╗██╔══██╗██║   ██║██║███╗██║╚════██║██╔══╝  ██╔══██╗')}    ${chalk.yellow('██║   ██║╚════██║██╔══╝')}  
-${chalk.blue('██████╔╝██║  ██║╚██████╔╝╚███╔███╔╝███████║███████╗██║  ██║')}    ${chalk.yellow('╚██████╔╝███████║███████╗')}
-${chalk.blue('╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝')}     ${chalk.yellow('╚═════╝ ╚══════╝╚══════╝')}
+${chalk.blue('██████╗ ███████╗████████╗████████╗███████╗██████╗')}     ${chalk.yellow('██╗   ██╗███████╗███████╗')}
+${chalk.blue('██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗')}    ${chalk.yellow('██║   ██║██╔════╝██╔════╝')}
+${chalk.blue('██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝')}    ${chalk.yellow('██║   ██║███████╗█████╗')}  
+${chalk.blue('██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗')}    ${chalk.yellow('██║   ██║╚════██║██╔══╝')}  
+${chalk.blue('██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║')}    ${chalk.yellow('╚██████╔╝███████║███████╗')}
+${chalk.blue('╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝')}     ${chalk.yellow('╚═════╝ ╚══════╝╚══════╝')}
 `;
 }
 
 const LINKS_INFO = [
-  { label: 'Documentation:        📚', url: 'https://docs.browser-use.com' },
+  { label: 'Documentation:        📚', url: 'https://docs.better-use.com' },
   { label: 'Discord Community:    🚀', url: 'https://discord.gg/ESAUZAdxXY' },
-  { label: 'Awesome Prompts:      🦸', url: 'https://github.com/browser-use/awesome-prompts' },
-  { label: 'Report Issues:        🐛', url: 'https://github.com/browser-use/browser-use/issues' }
+  { label: 'Awesome Prompts:      🦸', url: 'https://github.com/better-use/awesome-prompts' },
+  { label: 'Report Issues:        🐛', url: 'https://github.com/better-use/better-use/issues' }
 ];
 
 interface CLIConfig {
@@ -139,8 +139,8 @@ export class SimpleTUI extends EventEmitter {
     // Clear screen
     console.clear();
     
-    console.log(getBrowserLogo());
-    console.log(chalk.gray(`Browser automation powered by AI - TypeScript Edition v${getBrowserUseVersion()}\n`));
+    console.log(getBetterLogo());
+    console.log(chalk.gray(`Better browser automation powered by AI - TypeScript Excellence v${getBetterUseVersion()}\n`));
     
     // Display links
     console.log(chalk.blue.bold('┌─ Resources & Links ───────────────────────────────────────────────┐'));

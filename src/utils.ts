@@ -166,9 +166,9 @@ export function mergeDicts(a: Record<string, any>, b: Record<string, any>, path:
 }
 
 /**
- * Get the browser-use package version
+ * Get the better-use package version
  */
-export function getBrowserUseVersion(): string {
+export function getBetterUseVersion(): string {
   try {
     const packageJsonPath = join(__dirname, '../package.json');
     if (existsSync(packageJsonPath)) {
@@ -179,9 +179,17 @@ export function getBrowserUseVersion(): string {
     }
     return 'unknown';
   } catch (error) {
-    console.debug(`Error detecting browser-use version: ${error}`);
+    console.debug(`Error detecting better-use version: ${error}`);
     return 'unknown';
   }
+}
+
+/**
+ * Legacy function for backward compatibility
+ * @deprecated Use getBetterUseVersion instead
+ */
+export function getBrowserUseVersion(): string {
+  return getBetterUseVersion();
 }
 
 /**

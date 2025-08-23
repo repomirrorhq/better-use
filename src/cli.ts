@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Browser-Use TypeScript CLI
+ * Better-Use TypeScript CLI
  * Simple command-line interface for browser automation
  */
 
@@ -19,21 +19,21 @@ import { ChatDeepseek } from './llm/providers/deepseek';
 import { ChatGroq } from './llm/providers/groq';
 import { ChatOllama } from './llm/providers/ollama';
 import { ChatOpenRouter } from './llm/providers/openrouter';
-import { getBrowserUseVersion } from './utils';
+import { getBetterUseVersion } from './utils';
 import { runSimpleTUI } from './cli-simple-tui';
 
 const program = new Command();
 
 // ASCII Logo
 const LOGO = `
-${chalk.blue('██████╗ ██████╗  ██████╗ ██╗    ██╗███████╗███████╗██████╗')}     ${chalk.yellow('████████╗███████╗')}
-${chalk.blue('██╔══██╗██╔══██╗██╔═══██╗██║    ██║██╔════╝██╔════╝██╔══██╗')}    ${chalk.yellow('╚══██╔══╝██╔════╝')}
-${chalk.blue('██████╔╝██████╔╝██║   ██║██║ █╗ ██║███████╗█████╗  ██████╔╝')}       ${chalk.yellow('██║   ███████╗')}
-${chalk.blue('██╔══██╗██╔══██╗██║   ██║██║███╗██║╚════██║██╔══╝  ██╔══██╗')}       ${chalk.yellow('██║   ╚════██║')}
-${chalk.blue('██████╔╝██║  ██║╚██████╔╝╚███╔███╔╝███████║███████╗██║  ██║')}       ${chalk.yellow('██║   ███████║')}
-${chalk.blue('╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝')}       ${chalk.yellow('╚═╝   ╚══════╝')}
+${chalk.blue('██████╗ ███████╗████████╗████████╗███████╗██████╗')}     ${chalk.yellow('██╗   ██╗███████╗███████╗')}
+${chalk.blue('██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗')}    ${chalk.yellow('██║   ██║██╔════╝██╔════╝')}
+${chalk.blue('██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝')}    ${chalk.yellow('██║   ██║███████╗█████╗')}
+${chalk.blue('██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗')}    ${chalk.yellow('██║   ██║╚════██║██╔══╝')}
+${chalk.blue('██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║')}    ${chalk.yellow('╚██████╔╝███████║███████╗')}
+${chalk.blue('╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝')}     ${chalk.yellow('╚═════╝ ╚══════╝╚══════╝')}
 
-${chalk.gray('Browser automation powered by AI - TypeScript Edition')}
+${chalk.gray('Better browser automation powered by AI - TypeScript Excellence')}
 `;
 
 interface CLIConfig {
@@ -49,7 +49,7 @@ interface CLIConfig {
 
 function displayLogo() {
   console.log(LOGO);
-  console.log(chalk.gray(`v${getBrowserUseVersion()}\n`));
+  console.log(chalk.gray(`v${getBetterUseVersion()}\n`));
 }
 
 function createLLMProvider(config: CLIConfig) {
@@ -244,9 +244,9 @@ async function runSingleCommand(task: string, config: CLIConfig) {
 }
 
 program
-  .name('browser-use')
+  .name('better-use')
   .description('AI-powered browser automation')
-  .version(getBrowserUseVersion());
+  .version(getBetterUseVersion());
 
 program
   .command('run')
@@ -329,7 +329,7 @@ program
   .description('Show version information')
   .action(() => {
     displayLogo();
-    console.log(chalk.gray(`Browser-Use TypeScript v${getBrowserUseVersion()}`));
+    console.log(chalk.gray(`Better-Use TypeScript v${getBetterUseVersion()}`));
     console.log(chalk.gray('AI-powered browser automation framework'));
   });
 

@@ -17,7 +17,7 @@ import { ChatDeepseek } from './llm/providers/deepseek';
 import { ChatGroq } from './llm/providers/groq';
 import { ChatOllama } from './llm/providers/ollama';
 import { ChatOpenRouter } from './llm/providers/openrouter';
-import { getBrowserUseVersion } from './utils';
+import { getBetterUseVersion } from './utils';
 import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -368,7 +368,7 @@ export class BrowserUseTUI extends EventEmitter {
       left: 0,
       width: '100%',
       height: 3,
-      content: ` {bold}Browser-Use TypeScript v${getBrowserUseVersion()}{/} | ESC/Q: Quit | F1: Toggle Debug | Enter: Submit Task`,
+      content: ` {bold}Better-Use TypeScript v${getBetterUseVersion()}{/} | ESC/Q: Quit | F1: Toggle Debug | Enter: Submit Task`,
       tags: true,
       style: {
         fg: 'white',

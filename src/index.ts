@@ -1,5 +1,5 @@
 /**
- * Browser-Use TypeScript - Main entry point
+ * Better-Use TypeScript - Main entry point
  */
 
 export * from './exceptions';
@@ -23,4 +23,4 @@ export { Controller } from './controller/service';
 export { BrowserSession } from './browser/session';
 
 // Version info
-export { getBrowserUseVersion } from './utils';
+export { getBetterUseVersion, getBrowserUseVersion } from './utils';
