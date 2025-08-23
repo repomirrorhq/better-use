@@ -1,5 +1,5 @@
 /**
- * GIF generation system for browser-use TypeScript
+ * GIF generation system for better-use TypeScript
  * 
  * This module provides comprehensive GIF creation capabilities including:
  * - Creates animated GIFs from agent execution history
@@ -17,7 +17,7 @@ import GIFEncoder from 'gif-encoder-2';
 import { CONFIG } from '../config';
 import { getLogger } from '../logging';
 
-const logger = getLogger('browser_use.agent.gif');
+const logger = getLogger('better_use.agent.gif');
 
 // GIF generation configuration
 export interface GIFGenerationConfig {

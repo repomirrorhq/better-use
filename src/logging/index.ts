@@ -1,5 +1,5 @@
 /**
- * Advanced logging configuration for browser-use TypeScript
+ * Advanced logging configuration for better-use TypeScript
  * 
  * This module provides comprehensive logging capabilities including:
  * - Custom log levels (RESULT level)
@@ -40,12 +40,12 @@ const customLevels = {
 winston.addColors(customLevels.colors);
 
 /**
- * Custom formatter for browser-use logs
+ * Custom formatter for better-use logs
  */
-function createBrowserUseFormatter(logLevel: string) {
+function createBetterUseFormatter(logLevel: string) {
   return winston.format((info: any) => {
     // Only clean up names in non-debug modes, keep everything in debug mode
-    if (logLevel !== 'debug' && info.label && typeof info.label === 'string' && info.label.startsWith('browser_use.')) {
+    if (logLevel !== 'debug' && info.label && typeof info.label === 'string' && (info.label.startsWith('better_use.') || info.label.startsWith('browser_use.'))) {
       // Extract clean component names from logger names
       if (info.label.includes('Agent')) {
         info.label = 'Agent';
@@ -55,8 +55,8 @@ function createBrowserUseFormatter(logLevel: string) {
         info.label = 'controller';
       } else if (info.label.includes('dom')) {
         info.label = 'dom';
-      } else if (info.label.startsWith('browser_use.')) {
-        // For other browser_use modules, use the last part
+      } else if (info.label.startsWith('better_use.') || info.label.startsWith('browser_use.')) {
+        // For other better_use/browser_use modules, use the last part
         const parts = info.label.split('.');
         if (parts.length >= 2) {
           info.label = parts[parts.length - 1];
@@ -138,7 +138,7 @@ let isLoggingSetup = false;
 const loggers = new Map<string, winston.Logger>();
 
 /**
- * Setup logging configuration for browser-use
+ * Setup logging configuration for better-use
  * 
  * @param stream - Output stream (not used in winston, but kept for compatibility)
  * @param logLevel - Override log level
@@ -150,7 +150,7 @@ export function setupLogging(
   forceSetup = false
 ): winston.Logger {
   if (isLoggingSetup && !forceSetup) {
-    return getLogger('browser_use');
+    return getLogger('better_use');
   }
 
   const logType = logLevel || CONFIG.BROWSER_USE_LOGGING_LEVEL;
@@ -180,7 +180,7 @@ export function setupLogging(
           winston.format.timestamp(),
           winston.format.errors({ stack: true }),
           winston.format.colorize({ all: true }),
-          createBrowserUseFormatter(logType),
+          createBetterUseFormatter(logType),
           logType === 'result' 
             ? winston.format.printf(({ message }: any) => message || '')
             : winston.format.printf(({ level, label, message }: any) => {
@@ -193,7 +193,7 @@ export function setupLogging(
   });
 
   isLoggingSetup = true;
-  const logger = getLogger('browser_use');
+  const logger = getLogger('better_use');
   
   return logger;
 }
@@ -261,7 +261,7 @@ export function setupLogPipes(sessionId: string, baseDir?: string): void {
   const eventHandler = new FIFOHandler(eventPipePath);
 
   // Add custom transports to existing loggers
-  const agentLoggerNames = ['browser_use.agent', 'browser_use.controller'];
+  const agentLoggerNames = ['better_use.agent', 'better_use.controller', 'browser_use.agent', 'browser_use.controller'];
   for (const loggerName of agentLoggerNames) {
     const logger = getLogger(loggerName);
     
@@ -287,7 +287,7 @@ export function setupLogPipes(sessionId: string, baseDir?: string): void {
 }
 
 // Export the main logger for convenience
-export const logger = getLogger('browser_use');
+export const logger = getLogger('better_use');
 
 // Export types for external use
 export type Logger = winston.Logger;
