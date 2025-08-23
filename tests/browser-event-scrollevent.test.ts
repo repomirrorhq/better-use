@@ -5,7 +5,7 @@ import { Controller } from '../src/controller/service';
 import { GoToUrlAction, ScrollAction } from '../src/controller/views';
 import { ScrollEvent } from '../src/browser/events';
 import * as http from 'http';
-import * as express from 'express';
+import express from 'express';
 
 describe('ScrollEvent Tests', () => {
   let server: http.Server;

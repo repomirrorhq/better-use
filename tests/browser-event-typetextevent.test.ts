@@ -6,7 +6,7 @@ import { GoToUrlAction, InputTextAction } from '../src/controller/views';
 import { TypeTextEvent } from '../src/browser/events';
 import { EnhancedDOMTreeNode, NodeType } from '../src/dom/views';
 import * as http from 'http';
-import * as express from 'express';
+import express from 'express';
 
 describe('TypeTextEvent Tests', () => {
   let server: http.Server;
