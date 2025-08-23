@@ -7,7 +7,7 @@ import {
   TokenCostCalculatedHelper
 } from '../src/tokens/views';
 import { AbstractChatModel } from '../src/llm/base';
-import { ChatInvokeResponse, ChatInvokeUsage } from '../src/llm/views';
+import { ChatInvokeCompletion, ChatInvokeUsage, createCompletion } from '../src/llm/views';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
@@ -31,18 +31,16 @@ describe('Token Cost Service Tests', () => {
       return 'test';
     }
 
-    async ainvoke(messages: any[], outputFormat?: any): Promise<ChatInvokeResponse> {
-      return {
-        content: 'test response',
+    async ainvoke<T = string>(messages: any[], outputFormat?: any): Promise<ChatInvokeCompletion<T>> {
+      return createCompletion('test response' as T, {
         usage: {
           prompt_tokens: 100,
           completion_tokens: 50,
           total_tokens: 150,
           prompt_cached_tokens: 0,
           prompt_cache_creation_tokens: 0,
-        },
-        usage_metadata: {},
-      };
+        }
+      });
     }
   }
 
@@ -184,9 +182,13 @@ describe('Token Cost Service Tests', () => {
       expect(registeredLlm).toBe(llm); // Should return the same instance
 
       // Call the LLM method - usage should be tracked automatically
-      const result = await registeredLlm.ainvoke(['test message']);
+      const result = await registeredLlm.ainvoke([{
+        role: 'user' as const,
+        content: 'test message',
+        cache: false
+      }]);
 
-      expect(result.content).toBe('test response');
+      expect(result.completion).toBe('test response');
       
       // Check that usage was recorded
       const tokens = tokenCost.getUsageTokensForModel('registered-model');
