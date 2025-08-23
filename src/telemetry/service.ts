@@ -16,6 +16,7 @@ import { BaseTelemetryEvent, TelemetryConfig, TelemetryEvent } from './types';
  * like PostHog, Mixpanel, or custom analytics endpoints.
  */
 export class TelemetryService extends EventEmitter {
+  private static instance: TelemetryService | null = null;
   private config: TelemetryConfig & { userIdPath?: string };
   private userId: string | null = null;
   private sessionId: string;
@@ -41,6 +42,16 @@ export class TelemetryService extends EventEmitter {
       this.initializeUserId();
       this.startFlushTimer();
     }
+  }
+
+  /**
+   * Get singleton instance of TelemetryService
+   */
+  static getInstance(config?: Partial<TelemetryConfig & { userIdPath?: string }>): TelemetryService {
+    if (!TelemetryService.instance) {
+      TelemetryService.instance = new TelemetryService(config);
+    }
+    return TelemetryService.instance;
   }
 
   /**

@@ -170,12 +170,17 @@ export function setupLogging(
     winstonLogLevel = 'info';
   }
 
+  // Check if we're in MCP mode and use stderr if we are
+  const isMCPMode = process.env.BROWSER_USE_MCP_MODE === 'true';
+  const outputStream = isMCPMode ? process.stderr : process.stdout;
+
   // Configure winston with custom levels
   winston.configure({
     levels: customLevels.levels,
     transports: [
       new winston.transports.Console({
         level: winstonLogLevel,
+        stderrLevels: isMCPMode ? Object.keys(customLevels.levels) : ['error', 'fatal', 'critical'], // In MCP mode, all levels go to stderr
         format: winston.format.combine(
           winston.format.timestamp(),
           winston.format.errors({ stack: true }),
@@ -210,6 +215,9 @@ export function getLogger(name: string): winston.Logger {
     setupLogging();
   }
 
+  // Check if we're in MCP mode
+  const isMCPMode = process.env.BROWSER_USE_MCP_MODE === 'true';
+
   const logger = winston.createLogger({
     levels: customLevels.levels,
     level: 'debug', // Set to debug by default, will be filtered by transports
@@ -220,6 +228,7 @@ export function getLogger(name: string): winston.Logger {
     ),
     transports: [
       new winston.transports.Console({
+        stderrLevels: isMCPMode ? Object.keys(customLevels.levels) : ['error', 'fatal', 'critical'], // In MCP mode, all levels go to stderr
         format: winston.format.combine(
           winston.format.colorize({ all: true }),
           winston.format.printf(({ level, label, message }: any) => {

@@ -109,6 +109,18 @@ export const MCPClientEventSchema = BaseTelemetryEventSchema.extend({
 
 export type MCPClientEvent = z.infer<typeof MCPClientEventSchema>;
 
+export const MCPServerEventSchema = BaseTelemetryEventSchema.extend({
+  name: z.literal('mcp_server'),
+  properties: z.object({
+    version: z.string(),
+    action: z.string(), // 'start', 'stop'
+    duration_seconds: z.number().optional(),
+    parent_process_cmdline: z.string().optional(),
+  }),
+});
+
+export type MCPServerEvent = z.infer<typeof MCPServerEventSchema>;
+
 // Union type for all telemetry events
 export type TelemetryEvent = 
   | AgentStartEvent
@@ -116,4 +128,5 @@ export type TelemetryEvent =
   | AgentCompleteEvent
   | BrowserActionEvent
   | LLMCallEvent
-  | MCPClientEvent;
+  | MCPClientEvent
+  | MCPServerEvent;

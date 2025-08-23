@@ -8,7 +8,8 @@ import {
   AgentStepEvent, 
   BrowserActionEvent, 
   LLMCallEvent, 
-  MCPClientEvent 
+  MCPClientEvent,
+  MCPServerEvent 
 } from './types';
 
 /**
@@ -171,4 +172,45 @@ export function createMCPClientEvent(properties: {
     sessionId: properties.sessionId,
     userId: properties.userId,
   };
+}
+
+/**
+ * Create an MCP server event
+ */
+export function createMCPServerEvent(properties: {
+  version: string;
+  action: string;
+  duration_seconds?: number;
+  parent_process_cmdline?: string;
+  sessionId?: string;
+  userId?: string;
+}): MCPServerEvent {
+  return {
+    name: 'mcp_server',
+    properties: {
+      version: properties.version,
+      action: properties.action,
+      duration_seconds: properties.duration_seconds,
+      parent_process_cmdline: properties.parent_process_cmdline,
+    },
+    timestamp: new Date(),
+    sessionId: properties.sessionId,
+    userId: properties.userId,
+  };
+}
+
+/**
+ * MCP Server Telemetry Event class for backward compatibility
+ */
+export class MCPServerTelemetryEvent {
+  constructor(private properties: {
+    version: string;
+    action: string;
+    duration_seconds?: number;
+    parent_process_cmdline?: string;
+  }) {}
+
+  toJSON(): MCPServerEvent {
+    return createMCPServerEvent(this.properties);
+  }
 }

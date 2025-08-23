@@ -246,7 +246,8 @@ async function runSingleCommand(task: string, config: CLIConfig) {
 program
   .name('better-use')
   .description('AI-powered browser automation')
-  .version(getBetterUseVersion());
+  .version(getBetterUseVersion())
+  .option('--mcp', 'Run as MCP server (Model Context Protocol)');
 
 program
   .command('run')
@@ -325,6 +326,44 @@ program
   });
 
 program
+  .command('mcp')
+  .description('Run as MCP server (Model Context Protocol)')
+  .action(async () => {
+    // Disable all console output to stdout for MCP mode
+    const originalConsoleLog = console.log;
+    const originalConsoleInfo = console.info;
+    const originalConsoleWarn = console.warn;
+    const originalConsoleError = console.error;
+    
+    // Redirect all console output to stderr to prevent JSON RPC interference
+    console.log = (...args: any[]) => {
+      process.stderr.write(args.join(' ') + '\n');
+    };
+    console.info = (...args: any[]) => {
+      process.stderr.write(args.join(' ') + '\n');
+    };
+    console.warn = (...args: any[]) => {
+      process.stderr.write(args.join(' ') + '\n');
+    };
+    console.error = (...args: any[]) => {
+      process.stderr.write(args.join(' ') + '\n');
+    };
+    
+    // Set environment for MCP mode
+    process.env.BROWSER_USE_LOGGING_LEVEL = 'error';
+    process.env.BROWSER_USE_MCP_MODE = 'true';
+    
+    try {
+      // Import and run MCP server
+      const { runMCPServer } = await import('./mcp/index.js');
+      await runMCPServer();
+    } catch (error) {
+      process.stderr.write(`Failed to start MCP server: ${error}\n`);
+      process.exit(1);
+    }
+  });
+
+program
   .command('version')
   .description('Show version information')
   .action(() => {
@@ -351,5 +390,43 @@ process.on('SIGINT', () => {
 });
 
 if (require.main === module) {
-  program.parse();
+  // Check for --mcp flag before parsing commands
+  if (process.argv.includes('--mcp')) {
+    // Disable all console output to stdout for MCP mode
+    const originalConsoleLog = console.log;
+    const originalConsoleInfo = console.info;
+    const originalConsoleWarn = console.warn;
+    const originalConsoleError = console.error;
+    
+    // Redirect all console output to stderr to prevent JSON RPC interference
+    console.log = (...args: any[]) => {
+      process.stderr.write(args.join(' ') + '\n');
+    };
+    console.info = (...args: any[]) => {
+      process.stderr.write(args.join(' ') + '\n');
+    };
+    console.warn = (...args: any[]) => {
+      process.stderr.write(args.join(' ') + '\n');
+    };
+    console.error = (...args: any[]) => {
+      process.stderr.write(args.join(' ') + '\n');
+    };
+    
+    // Set environment for MCP mode
+    process.env.BROWSER_USE_LOGGING_LEVEL = 'error';
+    process.env.BROWSER_USE_MCP_MODE = 'true';
+    
+    // Import and run MCP server
+    import('./mcp/index.js').then(({ runMCPServer }) => {
+      runMCPServer().catch((error: any) => {
+        process.stderr.write(`Failed to start MCP server: ${error}\n`);
+        process.exit(1);
+      });
+    }).catch((error: any) => {
+      process.stderr.write(`Failed to import MCP module: ${error}\n`);
+      process.exit(1);
+    });
+  } else {
+    program.parse();
+  }
 }
