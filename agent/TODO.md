@@ -61,7 +61,7 @@
 ### Repository Health
 - **Python Repo:** Synced with commit 1173e2c3 (No new changes)
 - **TypeScript Repo:** ✅ Rebranded to Better-Use, production ready
-- **Test Coverage:** 57/59 tests ported (96.6%)
+- **Test Coverage:** 58/59 tests ported (98.3%)
 - **GitHub Issues:** None open (4 closed issues resolved)
 - **Build Status:** ✅ Working (compile before running)
 - **MCP Mode:** ✅ Fixed logging to stderr (addresses Python issue #2748)
@@ -114,12 +114,12 @@
 12. StorageState (cookies/storage)
 
 ### Test Coverage Summary
-- **Total Tests:** 57 tests ported from Python (added llm-schema-optimizer test)
+- **Total Tests:** 58 tests ported from Python (added 2 LLM tests this session)
 - **Core Tests:** 29/29 passing ✅ (added schema optimizer test)
 - **Watchdog Tests:** 8/8 passing ✅
 - **LLM Provider Tests:** All 9 providers tested ✅
 - **Registry Tests:** 3/6 ported ✅ (registry, parameter injection, search google)
-- **Schema Tests:** 1/1 ported ✅ (llm-schema-optimizer)
+- **Schema Tests:** 2/2 ported ✅ (llm-schema-optimizer, llm-gemini-type-field-fix)
 - **Test Naming:** Tests use kebab-case in TypeScript (e.g., browser-event-clickelement.test.ts)
 - **Note:** Many Python tests are actually ported but with different naming conventions
 
@@ -156,7 +156,7 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 - **Result:** Successfully ported llm-schema-optimizer test
 
 ### Accomplishments
-✅ **New Test Ported:**
+✅ **New Tests Ported:**
 1. **llm-schema-optimizer.test.ts** - Schema optimization tests
    - Tests that SchemaOptimizer preserves all fields in structured output
    - Tests basic type handling (string, number, boolean, arrays, enums)
@@ -164,10 +164,17 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
    - Adapted test structure to match TypeScript implementation
    - **All 3 test cases passing**
 
+2. **llm-gemini-type-field-fix.test.ts** - Gemini provider schema fixes
+   - Tests Gemini schema processing handles dict 'type' fields gracefully
+   - Tests nested dict types, null types, empty properties handling
+   - Tests consistency between Gemini and OpenAI providers
+   - Reproduces and verifies fix for GitHub issue #2470
+   - **All 8 test cases passing**
+
 **Test Coverage Progress:**
 - Previous: 56/59 tests (95%)
-- Current: 57/59 tests (96.6%)
-- Remaining: 2 sync/cloud tests (lower priority)
+- Current: 58/59 tests (98.3%)
+- Remaining: 1 sync/cloud test (lower priority)
 
 ## 📅 Latest Maintenance Session (Aug 23, 2025 - Session 5)
 
