@@ -134,6 +134,18 @@ Based on the current repository state, the TypeScript port appears to have subst
    - Added tests for scrollToText event handling
    - Tests verify key integration points work correctly
 
+8. **✅ TypeScript Compilation Fixes (GitHub Issue #3)**
+   - Fixed missing `fast_mode_v2` and `include_recent_events` properties in AgentSettings
+   - Changed system message properties from nullable to optional types
+   - Fixed LLM method call from `chatCompletion` to `ainvoke`
+   - Fixed import paths to use .js extensions for ES modules
+
+9. **✅ Runtime Error Fixes (GitHub Issue #3)**
+   - Fixed `dom_state.llmRepresentation is not a function` error
+   - Updated browser session to use `createSerializedDOMStateWithLLMRepresentation`
+   - Fixed DOMSelectorMap type conversion from plain object to Map
+   - Fixed MessageManager null/undefined type issues
+
 ### Resolved TODO Items
 - ✅ Agent service FileSystem integration (was: `fileSystem: null, // TODO: Implement FileSystem`)
 - ✅ Usage tracking implementation (was: `usage: null, // TODO: Implement usage tracking`)
@@ -143,6 +155,8 @@ Based on the current repository state, the TypeScript port appears to have subst
 - ✅ ScrollToText method (was: `// TODO: Implement scrollToText method`)
 - ✅ Download tracking infrastructure (was: `// TODO: Implement proper download tracking`)
 - ✅ Event emission in finalizeStep (was: `// TODO: Emit events`)
+- ✅ TypeScript compilation errors (GitHub Issue #3)
+- ✅ Runtime DOM state errors (GitHub Issue #3)
 
 ## Next Steps
 
