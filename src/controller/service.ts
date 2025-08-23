@@ -9,6 +9,7 @@ import {
   NavigateToUrlEvent,
   ScrollEvent,
   ScrollToTextEvent,
+  SelectDropdownOptionEvent,
   SendKeysEvent,
   SwitchTabEvent,
   TypeTextEvent,
@@ -788,27 +789,121 @@ export class Controller<Context = any> {
   }
 
   private registerGetDropdownOptionsAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Get dropdown options action not yet implemented' });
+    const actionFunction = async (
+      params: z.infer<typeof GetDropdownOptionsActionSchema>,
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      return this.getDropdownOptions(params, { browserSession });
     };
+
     this.registry.actions['getDropdownOptions'] = {
       name: 'getDropdownOptions',
-      description: 'Get dropdown options (not yet implemented)',
+      description: 'Get list of option values exposed by a specific dropdown input field. Only works on dropdown-style form elements (<select>, Semantic UI/aria-labeled select, etc.).',
       function: actionFunction,
       paramSchema: GetDropdownOptionsActionSchema,
     };
   }
 
+  private async getDropdownOptions(
+    params: z.infer<typeof GetDropdownOptionsActionSchema>,
+    { browserSession }: { browserSession: BrowserSession }
+  ): Promise<ActionResult> {
+    try {
+      // Look up the node from the selector map
+      const node = await browserSession.getElementByIndex(params.index);
+      if (node === null) {
+        throw new Error(`Element index ${params.index} not found in DOM`);
+      }
+
+      // Dispatch GetDropdownOptionsEvent to the event handler
+      const event = browserSession.eventBus.dispatch(new GetDropdownOptionsEvent({ node }));
+      const dropdownData = await event.eventResult();
+
+      if (!dropdownData) {
+        throw new Error('Failed to get dropdown options - no data returned');
+      }
+
+      // Extract the message from the returned data
+      const msg = dropdownData.message || '';
+      const optionsStr = dropdownData.options || '[]';
+      let optionsCount = 0;
+      
+      try {
+        const options = JSON.parse(optionsStr);
+        optionsCount = Array.isArray(options) ? options.length : 0;
+      } catch {
+        // If parsing fails, estimate from string length
+        optionsCount = (optionsStr.match(/"/g) || []).length / 2;
+      }
+
+      return new ActionResult({
+        extractedContent: msg,
+        includeInMemory: true,
+        longTermMemory: `Found ${optionsCount} dropdown options for index ${params.index}`,
+        includeExtractedContentOnlyOnce: true,
+      });
+    } catch (e) {
+      console.error(`Failed to get dropdown options: ${e}`);
+      const cleanMsg = extractLlmErrorMessage(e as Error);
+      return new ActionResult({ error: `Failed to get dropdown options for element ${params.index}: ${cleanMsg}` });
+    }
+  }
+
   private registerSelectDropdownOptionAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Select dropdown option action not yet implemented' });
+    const actionFunction = async (
+      params: z.infer<typeof SelectDropdownOptionActionSchema>,
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      return this.selectDropdownOption(params, { browserSession });
     };
+
     this.registry.actions['selectDropdownOption'] = {
       name: 'selectDropdownOption',
-      description: 'Select dropdown option (not yet implemented)',
+      description: 'Select dropdown option by exact text from any dropdown type (native <select>, ARIA menus, or custom dropdowns). Searches target element and children to find selectable options.',
       function: actionFunction,
       paramSchema: SelectDropdownOptionActionSchema,
     };
+  }
+
+  private async selectDropdownOption(
+    params: z.infer<typeof SelectDropdownOptionActionSchema>,
+    { browserSession }: { browserSession: BrowserSession }
+  ): Promise<ActionResult> {
+    try {
+      // Look up the node from the selector map
+      const node = await browserSession.getElementByIndex(params.index);
+      if (node === null) {
+        throw new Error(`Element index ${params.index} not found in DOM`);
+      }
+
+      // Dispatch SelectDropdownOptionEvent to the event handler
+      const event = browserSession.eventBus.dispatch(new SelectDropdownOptionEvent({
+        node,
+        text: params.text,
+      }));
+      const selectionData = await event.eventResult();
+
+      if (!selectionData) {
+        throw new Error('Failed to select dropdown option - no data returned');
+      }
+
+      // Extract the message from the returned data
+      const msg = selectionData.message || `Selected option: ${params.text}`;
+
+      return new ActionResult({
+        extractedContent: msg,
+        includeInMemory: true,
+        longTermMemory: `Selected dropdown option '${params.text}' at index ${params.index}`,
+      });
+    } catch (e) {
+      console.error(`Failed to select dropdown option: ${e}`);
+      const cleanMsg = extractLlmErrorMessage(e as Error);
+      return new ActionResult({ 
+        error: `Failed to select dropdown option '${params.text}' for element ${params.index}: ${cleanMsg}` 
+      });
+    }
   }
 
   private registerWriteFileAction() {
