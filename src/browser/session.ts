@@ -702,7 +702,12 @@ export class BrowserSession extends EventEmitter {
 
   async getOrCreateCdpSession(): Promise<any> {
     // Create a CDP-compatible client using Playwright's CDP functionality
-    const currentPage = this.getCurrentPage();
+    let currentPage;
+    try {
+      currentPage = this.getCurrentPage();
+    } catch (error) {
+      return null;
+    }
     if (!currentPage) {
       return null;
     }
@@ -734,7 +739,12 @@ export class BrowserSession extends EventEmitter {
   // Add cdpClient getter for compatibility
   get cdpClient(): any {
     // Return a synchronous wrapper that creates the session on demand
-    const currentPage = this.getCurrentPage();
+    let currentPage;
+    try {
+      currentPage = this.getCurrentPage();
+    } catch (error) {
+      return null;
+    }
     if (!currentPage) {
       return null;
     }
