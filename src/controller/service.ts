@@ -432,15 +432,46 @@ export class Controller<Context = any> {
   }
 
   private registerSendKeysAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Send keys action not yet implemented' });
+    const actionFunction = async (
+      params: z.infer<typeof SendKeysActionSchema>,
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      return this.sendKeys(params, { browserSession });
     };
+
     this.registry.actions['sendKeys'] = {
       name: 'sendKeys',
-      description: 'Send keyboard keys (not yet implemented)',
+      description: 'Send strings of special keys to use Playwright page.keyboard.press - examples include Escape, Backspace, Insert, PageDown, Delete, Enter, or Shortcuts such as `Control+o`, `Control+Shift+T`',
       function: actionFunction,
       paramSchema: SendKeysActionSchema,
     };
+  }
+
+  private async sendKeys(
+    params: z.infer<typeof SendKeysActionSchema>,
+    { browserSession }: { browserSession: BrowserSession }
+  ): Promise<ActionResult> {
+    try {
+      const event = browserSession.eventBus.dispatch(new SendKeysEvent({ keys: params.keys }));
+      await event;
+      await event.eventResult();
+      
+      const memory = `Sent keys: ${params.keys}`;
+      const msg = `⌨️ ${memory}`;
+      console.log(msg);
+      
+      return new ActionResult({
+        extractedContent: memory,
+        includeInMemory: true,
+        longTermMemory: memory,
+      });
+    } catch (e) {
+      console.error(`Failed to dispatch SendKeysEvent: ${(e as Error).constructor.name}: ${e}`);
+      const cleanMsg = extractLlmErrorMessage(e as Error);
+      const errorMsg = `Failed to send keys: ${cleanMsg}`;
+      return new ActionResult({ error: errorMsg });
+    }
   }
 
   private registerScrollToTextAction() {

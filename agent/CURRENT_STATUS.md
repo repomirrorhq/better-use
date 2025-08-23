@@ -66,22 +66,25 @@
 
 ## Next Priority Tasks 🎯
 
-### PRIORITY 1: Complete Action Implementations
-1. **Implement remaining browser actions (click, input text, scroll, dropdown)**
-2. **Port file system actions (read, write, replace)**
-3. **Port content extraction and structured data actions**
-4. **Add proper error handling and validation for all actions**
+### PRIORITY 1: Complete Action Implementations (ACTIVE)
+1. **Port click element action (NEXT TASK)**
+2. **Port input text action** 
+3. **Port scroll actions (scroll, scrollToText)**
+4. **Port dropdown actions (getDropdownOptions, selectDropdownOption)**
+5. **Port tab management actions (switchTab, closeTab)**
+6. **Port file upload action**
+7. **Port send keys action**
+8. **Port content extraction action**
 
-### PRIORITY 2: Browser-Agent Integration  
-1. **Implement getBrowserStateSummary in BrowserSession**
-2. **Wire controller with agent system for complete workflows**
-3. **Complete browser state history and screenshot management**
-4. **Add proper event handling and action result processing**
-
-### PRIORITY 3: FileSystem Integration
+### PRIORITY 2: FileSystem Integration
 1. **Port FileSystem service for file operations**
-2. **Integrate with controller file actions**
+2. **Implement file actions (writeFile, readFile, replaceFileStr)**
 3. **Add todo.md and results.md management**
+
+### PRIORITY 3: Browser-Agent Integration  
+1. **Wire controller with agent system for complete workflows**
+2. **Complete browser state history and screenshot management**
+3. **Add proper event handling and action result processing**
 
 ### PRIORITY 4: Testing & Examples
 1. **Unit tests for controller and registry modules**
