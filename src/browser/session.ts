@@ -621,6 +621,11 @@ export class BrowserSession extends EventEmitter {
     return this.getOrCreateCdpSession();
   }
 
+  // Add browserProfile getter for watchdogs
+  get browserProfile(): BrowserProfile {
+    return this.profile;
+  }
+
   /**
    * Get list of downloaded files
    * TODO: Implement proper download tracking

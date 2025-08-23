@@ -6,6 +6,7 @@ export { BaseWatchdog, type WatchdogConfig } from './base';
 export { CrashWatchdog, type CrashWatchdogConfig } from './crash';
 export { SecurityWatchdog, type SecurityWatchdogConfig } from './security';
 export { DownloadsWatchdog, type DownloadsWatchdogConfig } from './downloads';
+export { PermissionsWatchdog, type PermissionsWatchdogConfig } from './permissions';
 
 // Watchdog registry for easy initialization
 import { BrowserSession } from '../session';
@@ -13,11 +14,13 @@ import { BaseWatchdog } from './base';
 import { CrashWatchdog, CrashWatchdogConfig } from './crash';
 import { SecurityWatchdog, SecurityWatchdogConfig } from './security';
 import { DownloadsWatchdog, DownloadsWatchdogConfig } from './downloads';
+import { PermissionsWatchdog, PermissionsWatchdogConfig } from './permissions';
 
 export interface WatchdogRegistry {
   crash?: CrashWatchdogConfig | boolean;
   security?: SecurityWatchdogConfig | boolean;
   downloads?: DownloadsWatchdogConfig | boolean;
+  permissions?: PermissionsWatchdogConfig | boolean;
 }
 
 /**
@@ -46,6 +49,12 @@ export function createWatchdogs(
     const downloadsConfig = config.downloads === true ? {} : config.downloads || {};
     const downloadsWatchdog = new DownloadsWatchdog(browserSession, downloadsConfig);
     watchdogs.push(downloadsWatchdog);
+  }
+
+  if (config.permissions !== false) {
+    const permissionsConfig = config.permissions === true ? {} : config.permissions || {};
+    const permissionsWatchdog = new PermissionsWatchdog(browserSession, permissionsConfig);
+    watchdogs.push(permissionsWatchdog);
   }
 
   // Attach all watchdogs to the session

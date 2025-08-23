@@ -96,6 +96,9 @@ export const BrowserProfileSchema = z.object({
   // Timeout settings
   timeout: z.number().default(30000).describe('Default timeout in milliseconds'),
   navigation_timeout: z.number().default(30000).describe('Navigation timeout in milliseconds'),
+  
+  // Permission settings
+  permissions: z.array(z.string()).default(['clipboardReadWrite', 'notifications']).describe('Browser permissions to grant (CDP Browser.grantPermissions)'),
 });
 
 export type BrowserProfileConfig = z.infer<typeof BrowserProfileSchema>;
@@ -150,6 +153,10 @@ export class BrowserProfile {
 
   get navigationTimeout(): number {
     return this.config.navigation_timeout;
+  }
+
+  get permissions(): string[] {
+    return this.config.permissions;
   }
 
   // Generate Chrome launch arguments

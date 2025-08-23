@@ -24,10 +24,11 @@ describe('Watchdog Tests', () => {
     it('should create default watchdogs', () => {
       const watchdogs = createWatchdogs(browserSession);
       
-      expect(watchdogs).toHaveLength(3); // crash, security, downloads
+      expect(watchdogs).toHaveLength(4); // crash, security, downloads, permissions
       expect(watchdogs[0].constructor.name).toBe('CrashWatchdog');
       expect(watchdogs[1].constructor.name).toBe('SecurityWatchdog'); 
       expect(watchdogs[2].constructor.name).toBe('DownloadsWatchdog');
+      expect(watchdogs[3].constructor.name).toBe('PermissionsWatchdog');
       
       destroyWatchdogs(watchdogs);
     });
