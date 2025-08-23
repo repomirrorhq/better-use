@@ -348,15 +348,74 @@ export class Controller<Context = any> {
 
   // Placeholder implementations for remaining actions - will be fully implemented in subsequent commits
   private registerClickElementAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Click element action not yet implemented' });
+    const actionFunction = async (
+      params: z.infer<typeof ClickElementActionSchema>,
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      return this.clickElement(params, { browserSession });
     };
+
     this.registry.actions['clickElement'] = {
       name: 'clickElement',
-      description: 'Click element by index (not yet implemented)',
+      description: 'Click element by index, set while_holding_ctrl=True to open any resulting navigation in a new tab. Only click on indices that are inside your current browser_state. Never click or assume not existing indices.',
       function: actionFunction,
       paramSchema: ClickElementActionSchema,
     };
+  }
+
+  private async clickElement(
+    params: z.infer<typeof ClickElementActionSchema>,
+    { browserSession }: { browserSession: BrowserSession }
+  ): Promise<ActionResult> {
+    try {
+      if (params.index === 0) {
+        throw new Error('Cannot click on element with index 0. If there are no interactive elements use scroll(), wait(), refresh(), etc. to troubleshoot');
+      }
+
+      // Look up the node from the selector map
+      const node = await browserSession.getElementByIndex(params.index);
+      if (node === null) {
+        throw new Error(`Element index ${params.index} not found in DOM`);
+      }
+
+      const event = browserSession.eventBus.dispatch(new ClickElementEvent({
+        node,
+        whileHoldingCtrl: params.whileHoldingCtrl ?? false,
+      }));
+      await event;
+      
+      // Wait for handler to complete and get any exception or metadata
+      const clickMetadata = await event.eventResult();
+      const memory = `Clicked element with index ${params.index}`;
+      const msg = `🖱️ ${memory}`;
+      console.log(msg);
+
+      return new ActionResult({
+        extractedContent: memory,
+        includeInMemory: true,
+        longTermMemory: memory,
+        metadata: typeof clickMetadata === 'object' ? clickMetadata : undefined,
+      });
+    } catch (e) {
+      console.error(`Failed to execute ClickElementEvent: ${(e as Error).constructor.name}: ${e}`);
+      const cleanMsg = extractLlmErrorMessage(e as Error);
+      const errorMsg = `Failed to click element ${params.index}: ${cleanMsg}`;
+
+      // If it's a select dropdown error, automatically get the dropdown options
+      if (e instanceof Error && e.message.includes('dropdown')) {
+        try {
+          // TODO: Implement dropdown options fallback after implementing getDropdownOptions
+          console.log('Dropdown detected but getDropdownOptions not yet implemented');
+        } catch (dropdownError) {
+          console.error(
+            `Failed to get dropdown options as shortcut during click_element_by_index on dropdown: ${(dropdownError as Error).constructor.name}: ${dropdownError}`
+          );
+        }
+      }
+
+      return new ActionResult({ error: errorMsg });
+    }
   }
 
   private registerInputTextAction() {
