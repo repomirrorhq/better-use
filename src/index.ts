@@ -7,13 +7,20 @@ export * from './utils';
 export * from './config';
 export * from './llm';
 export * from './browser';
-export * from './agent';
+export * from './dom';
+export * from './screenshots';
+export * from './tokens';
+export * from './filesystem';
 
-// Re-export main classes (only if not already exported via export *)
-export { Agent } from './agent';
-// BrowserSession is already exported via export * from './browser'
-// export { DomService } from './dom';
-// export { Controller } from './controller';
+// New modules
+export * from './mcp';
+export * from './telemetry';
+export * from './sync';
+
+// Re-export main classes for convenience (avoid conflicts)
+export { Agent } from './agent/service';
+export { Controller } from './controller/service';
+export { BrowserSession } from './browser/session';
 
 // Version info
 export { getBrowserUseVersion } from './utils';

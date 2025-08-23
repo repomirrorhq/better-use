@@ -293,17 +293,21 @@ export class TokenCost {
     }
 
     // ANSI color codes
-    const C_CYAN = '\033[96m';
-    const C_YELLOW = '\033[93m';
-    const C_GREEN = '\033[92m';
-    const C_BLUE = '\033[94m';
-    const C_RESET = '\033[0m';
+    const C_CYAN = '\x1b[96m';
+    const C_YELLOW = '\x1b[93m';
+    const C_GREEN = '\x1b[92m';
+    const C_BLUE = '\x1b[94m';
+    const C_RESET = '\x1b[0m';
 
     // Always get cost breakdown for token details (even if not showing costs)
-    const cost = await this.calculateCost(model, usage.usage);
+    const usageWithTotal = {
+      ...usage.usage,
+      total_tokens: usage.usage.total_tokens || (usage.usage.prompt_tokens + usage.usage.completion_tokens)
+    };
+    const cost = await this.calculateCost(model, usageWithTotal);
 
     // Build input tokens breakdown
-    const inputPart = this.buildInputTokensDisplay(usage.usage, cost);
+    const inputPart = this.buildInputTokensDisplay(usageWithTotal, cost);
 
     // Build output tokens display
     const completionTokensFmt = this.formatTokens(usage.usage.completion_tokens);
@@ -318,9 +322,9 @@ export class TokenCost {
    * Build a clear display of input tokens breakdown with emojis and optional costs
    */
   private buildInputTokensDisplay(usage: ChatInvokeUsage, cost: TokenCostCalculatedHelper | null): string {
-    const C_YELLOW = '\033[93m';
-    const C_BLUE = '\033[94m';
-    const C_RESET = '\033[0m';
+    const C_YELLOW = '\x1b[93m';
+    const C_BLUE = '\x1b[94m';
+    const C_RESET = '\x1b[0m';
 
     const parts: string[] = [];
 
@@ -488,7 +492,11 @@ export class TokenCost {
 
       if (this.include_cost) {
         // Calculate cost record by record
-        const cost = await this.calculateCost(entry.model, entry.usage);
+        const usageWithTotal = {
+          ...entry.usage,
+          total_tokens: entry.usage.total_tokens || (entry.usage.prompt_tokens + entry.usage.completion_tokens)
+        };
+        const cost = await this.calculateCost(entry.model, usageWithTotal);
         if (cost) {
           stats.cost += cost.total_cost;
           totalPromptCost += cost.prompt_cost;
@@ -550,13 +558,13 @@ export class TokenCost {
     }
 
     // ANSI color codes
-    const C_CYAN = '\033[96m';
-    const C_YELLOW = '\033[93m';
-    const C_GREEN = '\033[92m';
-    const C_BLUE = '\033[94m';
-    const C_MAGENTA = '\033[95m';
-    const C_RESET = '\033[0m';
-    const C_BOLD = '\033[1m';
+    const C_CYAN = '\x1b[96m';
+    const C_YELLOW = '\x1b[93m';
+    const C_GREEN = '\x1b[92m';
+    const C_BLUE = '\x1b[94m';
+    const C_MAGENTA = '\x1b[95m';
+    const C_RESET = '\x1b[0m';
+    const C_BOLD = '\x1b[1m';
 
     // Log overall summary
     const totalTokensFmt = this.formatTokens(summary.total_tokens);
@@ -602,7 +610,11 @@ export class TokenCost {
 
         for (const entry of this.usage_history) {
           if (entry.model === modelName) {
-            const cost = await this.calculateCost(entry.model, entry.usage);
+            const usageWithTotal = {
+              ...entry.usage,
+              total_tokens: entry.usage.total_tokens || (entry.usage.prompt_tokens + entry.usage.completion_tokens)
+            };
+            const cost = await this.calculateCost(entry.model, usageWithTotal);
             if (cost) {
               modelPromptCost += cost.prompt_cost;
               modelCompletionCost += cost.completion_cost;
