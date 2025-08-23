@@ -30,7 +30,11 @@ export class DOMWatchdog extends BaseWatchdog {
 
   // Internal DOM service
   private domService: DomService | null = null;
-  protected logger = getLogger('DOMWatchdog');
+  private customLogger = getLogger('DOMWatchdog');
+  
+  protected get logger() {
+    return this.customLogger;
+  }
 
   constructor(
     browserSession: BrowserSession,
