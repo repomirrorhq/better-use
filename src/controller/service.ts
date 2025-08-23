@@ -475,15 +475,88 @@ export class Controller<Context = any> {
   }
 
   private registerUploadFileAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Upload file action not yet implemented' });
+    const actionFunction = async (
+      params: z.infer<typeof UploadFileActionSchema>,
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      const availableFilePaths = (specialParams.availableFilePaths as string[]) || [];
+      const fileSystem = specialParams.fileSystem as FileSystem | undefined;
+      return this.uploadFile(params, { browserSession, availableFilePaths, fileSystem });
     };
+
     this.registry.actions['uploadFile'] = {
       name: 'uploadFile',
-      description: 'Upload file to element (not yet implemented)',
+      description: 'Upload file to interactive element with file path',
       function: actionFunction,
       paramSchema: UploadFileActionSchema,
     };
+  }
+
+  private async uploadFile(
+    params: z.infer<typeof UploadFileActionSchema>,
+    { 
+      browserSession, 
+      availableFilePaths = [], 
+      fileSystem 
+    }: { 
+      browserSession: BrowserSession; 
+      availableFilePaths?: string[]; 
+      fileSystem?: FileSystem;
+    }
+  ): Promise<ActionResult> {
+    try {
+      // Basic file path validation (simplified version)
+      if (!availableFilePaths.includes(params.path)) {
+        // Check if it's a downloaded file
+        const downloadedFiles = await browserSession.getDownloadedFiles();
+        if (!downloadedFiles.includes(params.path)) {
+          // TODO: Add FileSystem integration when implemented
+          if (fileSystem) {
+            console.log('FileSystem integration needed for complete upload file functionality');
+          }
+          throw new Error(
+            `File path ${params.path} is not available. Must be in available_file_paths or downloaded_files.`
+          );
+        }
+      }
+
+      // Check if file exists (basic Node.js fs check)
+      const fs = await import('fs');
+      if (!fs.existsSync(params.path)) {
+        throw new Error(`File ${params.path} does not exist`);
+      }
+
+      // Get the element from the selector map
+      const node = await browserSession.getElementByIndex(params.index);
+      if (node === null) {
+        throw new Error(`Element with index ${params.index} not found in DOM`);
+      }
+
+      // TODO: Implement sophisticated file input finding logic from Python version
+      // For now, assume the element is the file input or dispatch to let the event handler figure it out
+
+      // Dispatch upload file event
+      const event = browserSession.eventBus.dispatch(new UploadFileEvent({
+        node,
+        filePath: params.path,
+      }));
+      await event;
+      await event.eventResult();
+      
+      const msg = `Successfully uploaded file to index ${params.index}`;
+      console.log(`📁 ${msg}`);
+      
+      return new ActionResult({
+        extractedContent: msg,
+        includeInMemory: true,
+        longTermMemory: `Uploaded file ${params.path} to element ${params.index}`,
+      });
+    } catch (e) {
+      console.error(`Failed to upload file: ${e}`);
+      const cleanMsg = extractLlmErrorMessage(e as Error);
+      return new ActionResult({ error: `Failed to upload file: ${cleanMsg}` });
+    }
   }
 
   private registerSwitchTabAction() {
