@@ -10,6 +10,7 @@
 import { EventEmitter } from 'events';
 import { BrowserSession } from '../session';
 import { BaseEvent } from '../events';
+import { getLogger } from '../../logging';
 
 export interface WatchdogConfig {
   checkIntervalSeconds?: number;
@@ -191,11 +192,11 @@ export abstract class BaseWatchdog extends EventEmitter {
   }
 
   /**
-   * Get logger from browser session.
+   * Get logger for this watchdog.
    */
   protected get logger() {
-    // Use console for now since logger might be private
-    return console;
+    // Create a logger for the specific watchdog class
+    return getLogger(`browser_use.${this.constructor.name}`);
   }
 
   /**

@@ -8,7 +8,6 @@
 import { BaseWatchdog } from './base';
 import { BrowserSession } from '../session';
 import { BrowserLaunchEvent, BrowserKillEvent, BrowserStopEvent } from '../events-classes';
-import { getLogger } from '../../logging';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
@@ -26,7 +25,6 @@ export class LocalBrowserWatchdog extends BaseWatchdog {
   private ownsBrowserResources = true;
   private tempDirsToCleanup: string[] = [];
   private originalUserDataDir: string | null = null;
-  protected logger = getLogger('LocalBrowserWatchdog');
 
   constructor(
     browserSession: BrowserSession,

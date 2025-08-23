@@ -13,7 +13,6 @@ import { BrowserStateSummary, PageInfo, createPageInfo, createBrowserStateSummar
 import { DomService } from '../../dom/service';
 import { SerializedDOMState, EnhancedDOMTreeNode } from '../../dom/views';
 import { sleep } from '../../utils';
-import { getLogger } from '../../logging';
 
 export interface DOMWatchdogConfig {
   enabled?: boolean;
@@ -30,11 +29,6 @@ export class DOMWatchdog extends BaseWatchdog {
 
   // Internal DOM service
   private domService: DomService | null = null;
-  private customLogger = getLogger('DOMWatchdog');
-  
-  protected get logger() {
-    return this.customLogger;
-  }
 
   constructor(
     browserSession: BrowserSession,
