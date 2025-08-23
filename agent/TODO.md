@@ -55,14 +55,15 @@
 
 ---
 
-## 📅 Latest Status (Updated: 2025-08-23 - Current Session)
+## 📅 Latest Status (Updated: 2025-08-23 - Maintenance Session 4)
 
 ### Repository Health
-- **Python Repo:** Synced with commit 1173e2c3 (No new changes - checked just now)
+- **Python Repo:** Synced with commit 1173e2c3 (No new changes)
 - **TypeScript Repo:** ✅ Rebranded to Better-Use, production ready
 - **Test Coverage:** 53/59 tests ported (90%)
 - **GitHub Issues:** None open (4 closed issues resolved)
 - **Build Status:** ✅ Working (compile before running)
+- **MCP Mode:** ✅ Fixed logging to stderr (addresses Python issue #2748)
 - ✅ Watchdog organization: Already reflected in TypeScript structure
 - ✅ Logging improvements: Target ID tracking already implemented
 - ✅ Minor fixes: Pre-commit versions, test naming - not applicable to TS
@@ -143,7 +144,28 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 
 ---
 
-## 📅 Latest Maintenance Session (Aug 23, 2025 - Session 3)
+## 📅 Latest Maintenance Session (Aug 23, 2025 - Session 4)
+
+### Session Summary: MCP Server Mode Fix
+- **Time:** Completed
+- **Agent:** Claude Code automated maintenance bot
+- **Task:** Fix MCP server mode logging issues
+- **Result:** Successfully implemented stderr redirection for MCP mode
+
+### Accomplishments
+✅ **MCP Server Mode Fix:**
+- Added `--mcp` flag and `mcp` command support to CLI
+- Redirected all console output to stderr in MCP mode to prevent JSON-RPC interference
+- Configured winston logging to use stderr when BROWSER_USE_MCP_MODE is set
+- Added MCPServerEvent telemetry type and event factory
+- Implemented runMCPServer function with proper stdio transport
+- Fixed import paths for ES module compatibility
+- **Addresses Python issue #2748** - MCP stdio broken by INFO logs on stdout
+
+This ensures that when Better-Use runs as an MCP server, all logging goes to stderr,
+leaving stdout clean for JSON-RPC communication with MCP clients like Claude Desktop.
+
+## 📅 Previous Maintenance Session (Aug 23, 2025 - Session 3)
 
 ### Session Summary: Repository Maintenance and Test Porting
 - **Time:** Completed
