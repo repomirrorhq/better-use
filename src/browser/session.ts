@@ -700,15 +700,65 @@ export class BrowserSession extends EventEmitter {
     return false;
   }
 
-  getOrCreateCdpSession(): any {
-    // This would need to be implemented with CDP integration
-    // For now, return null
-    return null;
+  async getOrCreateCdpSession(): Promise<any> {
+    // Create a CDP-compatible client using Playwright's CDP functionality
+    const currentPage = this.getCurrentPage();
+    if (!currentPage) {
+      return null;
+    }
+
+    const cdpSession = await currentPage.context().newCDPSession(currentPage);
+    
+    return {
+      cdpClient: {
+        send: {
+          Runtime: {
+            evaluate: async (params: any, sessionId?: string) => {
+              return await cdpSession.send('Runtime.evaluate', params);
+            }
+          },
+          DOM: {
+            getDocument: async (params = {}, sessionId?: string) => {
+              return await cdpSession.send('DOM.getDocument', params);
+            },
+            getOuterHTML: async (params: any, sessionId?: string) => {
+              return await cdpSession.send('DOM.getOuterHTML', params);
+            }
+          }
+        }
+      },
+      sessionId: 'playwright-session'
+    };
   }
 
   // Add cdpClient getter for compatibility
   get cdpClient(): any {
-    return this.getOrCreateCdpSession();
+    // Return a synchronous wrapper that creates the session on demand
+    const currentPage = this.getCurrentPage();
+    if (!currentPage) {
+      return null;
+    }
+
+    return {
+      send: {
+        Runtime: {
+          evaluate: async (params: any, sessionId?: string) => {
+            const cdpSession = await currentPage.context().newCDPSession(currentPage);
+            return await cdpSession.send('Runtime.evaluate', params);
+          }
+        },
+        DOM: {
+          getDocument: async (params = {}, sessionId?: string) => {
+            const cdpSession = await currentPage.context().newCDPSession(currentPage);
+            return await cdpSession.send('DOM.getDocument', params);
+          },
+          getOuterHTML: async (params: any, sessionId?: string) => {
+            const cdpSession = await currentPage.context().newCDPSession(currentPage);
+            return await cdpSession.send('DOM.getOuterHTML', params);
+          }
+        }
+      }
+    };
   }
 
 
