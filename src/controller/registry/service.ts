@@ -345,10 +345,45 @@ export class Registry<Context = any> {
       return z.object({});
     }
 
-    // Create a union of all action schemas
-    const actionSchema = z.object(actionSchemas).partial();
+    // Create individual action schemas - each action should be its own object
+    // This ensures LLM selects ONE action, not multiple actions simultaneously
+    const actionObjects = Object.entries(actionSchemas).map(([name, schema]) => {
+      return z.object({ [name]: schema });
+    });
     
-    return actionSchema as z.ZodType<ActionModel>;
+    if (actionObjects.length === 1) {
+      return actionObjects[0] as z.ZodType<ActionModel>;
+    }
+    
+    // Use discriminated union approach with z.discriminatedUnion if all actions have a discriminator,
+    // otherwise fall back to z.union with explicit type assertion
+    try {
+      // For multiple actions, create a union - using type assertion to work with Zod's union types
+      const [first, second, ...rest] = actionObjects;
+      const actionSchema = rest.length > 0 
+        ? z.union([first, second, ...rest] as any)
+        : z.union([first, second]);
+      
+      return actionSchema as z.ZodType<ActionModel>;
+    } catch (error) {
+      // Fallback: create a discriminated union using action names
+      console.warn('Failed to create union schema, falling back to discriminated union approach');
+      
+      // Create discriminated union based on action names
+      const discriminatedSchemas = Object.entries(actionSchemas).map(([name, schema]) => {
+        return z.object({ 
+          action_type: z.literal(name),
+          params: schema 
+        });
+      });
+      
+      const [first, second, ...rest] = discriminatedSchemas;
+      const discriminatedSchema = rest.length > 0
+        ? z.discriminatedUnion('action_type', [first, second, ...rest] as any)
+        : z.discriminatedUnion('action_type', [first, second]);
+        
+      return discriminatedSchema as z.ZodType<ActionModel>;
+    }
   }
 
   public getPromptDescription(pageUrl?: string): string {
