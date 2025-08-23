@@ -15,7 +15,7 @@ import { ChatAnthropic } from './llm/providers/anthropic';
 import { ChatGoogle } from './llm/providers/google';
 import { ChatAWSBedrock } from './llm/providers/aws';
 import { ChatAzureOpenAI } from './llm/providers/azure';
-import { ChatDeeseek } from './llm/providers/deepseek';
+import { ChatDeepseek } from './llm/providers/deepseek';
 import { getBrowserUseVersion } from './utils';
 
 const program = new Command();
@@ -79,7 +79,7 @@ function createLLMProvider(config: CLIConfig) {
         temperature: config.temperature,
       });
     case 'deepseek':
-      return new ChatDeeseek({
+      return new ChatDeepseek({
         model: config.model,
         api_key: config.apiKey || process.env.DEEPSEEK_API_KEY,
         temperature: config.temperature,
