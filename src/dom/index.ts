@@ -20,3 +20,7 @@ export * from './serializer/clickable_elements';
 
 // Utilities
 export * from './utils';
+
+// Debug and testing tools
+export * from './debug';
+export * from './playground';

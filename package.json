@@ -15,6 +15,7 @@
     "build:watch": "tsc --watch",
     "dev": "ts-node src/index.ts",
     "cli": "ts-node src/cli.ts",
+    "playground": "ts-node src/dom/playground/cli.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
