@@ -130,7 +130,7 @@ describe('Browser Session Tests', () => {
         });
 
         const state = await browserSession.getBrowserState();
-        expect(state.url).toBe(baseUrl);
+        expect(state.url).toMatch(new RegExp(`^${baseUrl}/?$`)); // Allow trailing slash
         expect(state.title).toBe('Test Home Page');
       } finally {
         await browserSession.stop();
@@ -208,7 +208,7 @@ describe('Browser Session Tests', () => {
         expect(browserSession.currentTabId).toBe(tab1Id);
         
         const state = await browserSession.getBrowserState();
-        expect(state.url).toBe(baseUrl);
+        expect(state.url).toMatch(new RegExp(`^${baseUrl}/?$`)); // Allow trailing slash
         expect(state.title).toBe('Test Home Page');
       } finally {
         await browserSession.stop();
