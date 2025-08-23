@@ -119,3 +119,34 @@ The TypeScript port now has all core browser automation functionality working an
 7. Update documentation and examples
 
 **Impact:** High
+
+---
+
+## 🚨 URGENT FIX REQUIRED - Import Path Issue
+
+### Critical Import Error in session.ts
+**Date Added:** 2025-08-23  
+**Priority:** CRITICAL - Blocking browser session startup
+
+**Issue:**
+```
+Error: Cannot find module '/Users/yonom/GitHub/browser-use-ts/src/browser/watchdogs/defaultaction.js'
+```
+
+**Location:** `/src/browser/session.ts:120`
+
+**Problem:** Import statement uses `.js` extension but TypeScript files have `.ts` extension
+
+**Current (Broken):**
+```typescript
+const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction.js');
+```
+
+**Fix Required:**
+```typescript
+const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction');
+```
+
+**Impact:** Browser sessions cannot start - completely blocks all automation functionality
+
+**ACTION REQUIRED:** Remove the `.js` extension from the dynamic import statement immediately!

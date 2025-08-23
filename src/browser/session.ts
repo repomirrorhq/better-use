@@ -117,8 +117,8 @@ export class BrowserSession extends EventEmitter {
 
     try {
       // Import watchdogs dynamically
-      const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction.js');
-      const { ScreenshotWatchdog } = await import('./watchdogs/screenshot.js');
+      const { DefaultActionWatchdog } = await import('./watchdogs/defaultaction');
+      const { ScreenshotWatchdog } = await import('./watchdogs/screenshot');
       
       // Initialize DefaultActionWatchdog - handles scroll, click, type, etc.
       const defaultActionWatchdog = new DefaultActionWatchdog(this, {
