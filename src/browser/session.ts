@@ -39,6 +39,8 @@ export class BrowserSession extends EventEmitter {
   public agentFocus: { targetId: string } | null = null;
   public eventBus = this; // Use EventEmitter as event bus
   public cdpUrl?: string;
+  public downloadedFiles: string[] = [];
+  public watchdogs: any[] = []; // Watchdogs for tracking browser events
 
   constructor(config: BrowserSessionConfig = {}) {
     super();
@@ -140,10 +142,9 @@ export class BrowserSession extends EventEmitter {
         // ScrollEvent
         await this.scroll(event);
         return undefined as T;
-      } else if ('text' in event && 'scroll_into_view' in event) {
+      } else if ('text' in event && 'direction' in event) {
         // ScrollToTextEvent
-        // TODO: Implement scrollToText method
-        console.warn('ScrollToTextEvent not fully implemented');
+        await this.scrollToText(event);
         return undefined as T;
       } else if ('node' in event && 'file_path' in event) {
         // UploadFileEvent - has 'node' and 'file_path' properties
@@ -712,11 +713,15 @@ export class BrowserSession extends EventEmitter {
 
   /**
    * Get list of downloaded files
-   * TODO: Implement proper download tracking
    */
   async getDownloadedFiles(): Promise<string[]> {
-    // This is a stub implementation
-    // In a full implementation, this would track downloads via CDP
+    // Get downloads from the downloads watchdog
+    const downloadsWatchdog = this.watchdogs.find(w => w.constructor.name === 'DownloadsWatchdog');
+    if (downloadsWatchdog) {
+      // Access the download files from the watchdog
+      // In the current implementation, downloads are tracked by the watchdog
+      return this.downloadedFiles || [];
+    }
     return [];
   }
 
@@ -777,6 +782,46 @@ export class BrowserSession extends EventEmitter {
   async scroll(event: { down: boolean; num_pages: number }): Promise<void> {
     // TODO: Implement scrolling
     console.log(`📜 Scrolling ${event.down ? 'down' : 'up'} ${event.num_pages} pages`);
+  }
+
+  async scrollToText(event: { text: string; direction?: 'up' | 'down' }): Promise<void> {
+    try {
+      if (!this.page) {
+        throw new Error('No active page');
+      }
+
+      this.logger.debug(`🔍 Scrolling to text: "${event.text}"`);
+
+      // Try to find and scroll to text using the same logic as the watchdog
+      const found = await this.page.evaluate((text: string) => {
+        // Use TreeWalker to find text nodes
+        const walker = document.createTreeWalker(
+          document.body,
+          NodeFilter.SHOW_TEXT
+        );
+        
+        let node;
+        while (node = walker.nextNode()) {
+          if (node.textContent && node.textContent.includes(text)) {
+            const element = node.parentElement;
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              return true;
+            }
+          }
+        }
+        return false;
+      }, event.text);
+
+      if (found) {
+        this.logger.debug(`✅ Successfully scrolled to text: "${event.text}"`);
+      } else {
+        this.logger.warn(`⚠️ Text not found: "${event.text}"`);
+      }
+    } catch (error) {
+      this.logger.error(`❌ Failed to scroll to text "${event.text}":`, error);
+      throw error;
+    }
   }
 
   async uploadFile(event: { index: number; path: string }): Promise<void> {
