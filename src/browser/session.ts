@@ -526,4 +526,14 @@ export class BrowserSession extends EventEmitter {
   get cdpClient(): any {
     return this.getOrCreateCdpSession();
   }
+
+  /**
+   * Get list of downloaded files
+   * TODO: Implement proper download tracking
+   */
+  async getDownloadedFiles(): Promise<string[]> {
+    // This is a stub implementation
+    // In a full implementation, this would track downloads via CDP
+    return [];
+  }
 }

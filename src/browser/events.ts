@@ -382,3 +382,12 @@ export function createSwitchTabEvent(options: { targetId?: TargetID | null } = {
     timestamp: Date.now()
   };
 }
+
+// Factory function for GoBackEvent
+export function createGoBackEvent(options: Partial<GoBackEvent> = {}): GoBackEvent {
+  return {
+    event_timeout: options.event_timeout || 15.0,
+    id: `go_back_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now()
+  };
+}

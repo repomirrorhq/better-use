@@ -459,7 +459,7 @@ export class MessageManager {
           };
         }
         return item;
-      });
+      }) as any; // Type assertion to handle complex union types
     }
 
     return filteredMessage;

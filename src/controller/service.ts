@@ -14,6 +14,10 @@ import {
   SwitchTabEvent,
   TypeTextEvent,
   createSwitchTabEvent,
+  createNavigateToUrlEvent,
+  createGoBackEvent,
+  createClickElementEvent,
+  createTypeTextEvent,
   UploadFileEvent,
 } from '../browser/events';
 import { BrowserError } from '../browser/views';
@@ -184,10 +188,12 @@ export class Controller<Context = any> {
 
     // Dispatch navigation event
     try {
-      const event = browserSession.eventBus.dispatch(new NavigateToUrlEvent({
-        url: searchUrl,
-        newTab: useNewTab,
-      }));
+      const event = browserSession.eventBus.dispatch(createNavigateToUrlEvent(
+        searchUrl,
+        {
+          new_tab: useNewTab,
+        }
+      ));
       await event;
       await event.eventResult();
       
@@ -198,7 +204,7 @@ export class Controller<Context = any> {
       return new ActionResult({
         extracted_content: memory,
         include_in_memory: true,
-        longTermMemory: memory,
+        long_term_memory: memory,
       });
     } catch (e) {
       console.error(`Failed to search Google: ${e}`);
@@ -232,10 +238,12 @@ export class Controller<Context = any> {
   ): Promise<ActionResult> {
     try {
       // Dispatch navigation event
-      const event = browserSession.eventBus.dispatch(new NavigateToUrlEvent({
-        url: params.url,
-        newTab: params.newTab,
-      }));
+      const event = browserSession.eventBus.dispatch(createNavigateToUrlEvent(
+        params.url,
+        {
+          new_tab: params.newTab,
+        }
+      ));
       await event;
       await event.eventResult();
 
@@ -253,7 +261,7 @@ export class Controller<Context = any> {
       return new ActionResult({
         extracted_content: msg,
         include_in_memory: true,
-        longTermMemory: memory,
+        long_term_memory: memory,
       });
     } catch (e) {
       const errorMsg = (e as Error).message;
@@ -308,7 +316,7 @@ export class Controller<Context = any> {
     { browserSession }: { browserSession: BrowserSession }
   ): Promise<ActionResult> {
     try {
-      const event = browserSession.eventBus.dispatch(new GoBackEvent());
+      const event = browserSession.eventBus.dispatch(createGoBackEvent());
       await event;
       const memory = 'Navigated back';
       const msg = `🔙 ${memory}`;
@@ -345,7 +353,7 @@ export class Controller<Context = any> {
     await new Promise(resolve => setTimeout(resolve, actualSeconds * 1000));
     return new ActionResult({
       extracted_content: memory,
-      longTermMemory: memory,
+      long_term_memory: memory,
     });
   }
 
@@ -382,10 +390,12 @@ export class Controller<Context = any> {
         throw new Error(`Element index ${params.index} not found in DOM`);
       }
 
-      const event = browserSession.eventBus.dispatch(new ClickElementEvent({
+      const event = browserSession.eventBus.dispatch(createClickElementEvent(
         node,
-        whileHoldingCtrl: params.whileHoldingCtrl ?? false,
-      }));
+        {
+          while_holding_ctrl: params.whileHoldingCtrl ?? false,
+        }
+      ));
       await event;
       
       // Wait for handler to complete and get any exception or metadata
@@ -397,7 +407,7 @@ export class Controller<Context = any> {
       return new ActionResult({
         extracted_content: memory,
         include_in_memory: true,
-        longTermMemory: memory,
+        long_term_memory: memory,
         metadata: typeof clickMetadata === 'object' ? clickMetadata : undefined,
       });
     } catch (e) {
@@ -451,11 +461,13 @@ export class Controller<Context = any> {
       }
 
       // Dispatch type text event with node
-      const event = browserSession.eventBus.dispatch(new TypeTextEvent({
+      const event = browserSession.eventBus.dispatch(createTypeTextEvent(
         node,
-        text: params.text,
-        clearExisting: params.clearExisting ?? true,
-      }));
+        params.text,
+        {
+          clear_existing: params.clearExisting ?? true,
+        }
+      ));
       await event;
       
       const inputMetadata = await event.eventResult();
@@ -465,7 +477,7 @@ export class Controller<Context = any> {
       return new ActionResult({
         extracted_content: msg,
         include_in_memory: true,
-        longTermMemory: `Input '${params.text}' into element ${params.index}.`,
+        long_term_memory: `Input '${params.text}' into element ${params.index}.`,
         metadata: typeof inputMetadata === 'object' ? inputMetadata : undefined,
       });
     } catch (e) {
@@ -570,7 +582,7 @@ export class Controller<Context = any> {
       return new ActionResult({
         extracted_content: msg,
         include_in_memory: true,
-        longTermMemory: `Uploaded file ${params.path} to element ${params.index}`,
+        long_term_memory: `Uploaded file ${params.path} to element ${params.index}`,
       });
     } catch (e) {
       console.error(`Failed to upload file: ${e}`);
@@ -625,7 +637,7 @@ export class Controller<Context = any> {
       return new ActionResult({
         extracted_content: memory,
         include_in_memory: true,
-        longTermMemory: memory,
+        long_term_memory: memory,
       });
     } catch (e) {
       console.error(`Failed to switch tab: ${(e as Error).constructor.name}: ${e}`);
@@ -687,7 +699,7 @@ export class Controller<Context = any> {
       return new ActionResult({
         extracted_content: memory,
         include_in_memory: true,
-        longTermMemory: memory,
+        long_term_memory: memory,
       });
     } catch (e) {
       console.error(`Failed to close tab: ${e}`);
@@ -780,20 +792,20 @@ If you called extract_structured_data in the last step and the result was not go
         ? 'the page'
         : `element ${params.frameElementIndex}`;
 
-      let longTermMemory: string;
+      let long_term_memory: string;
       if (params.numPages === 1.0) {
-        longTermMemory = `Scrolled ${direction} ${target} by one page`;
+        long_term_memory = `Scrolled ${direction} ${target} by one page`;
       } else {
-        longTermMemory = `Scrolled ${direction} ${target} by ${params.numPages} pages`;
+        long_term_memory = `Scrolled ${direction} ${target} by ${params.numPages} pages`;
       }
 
-      const msg = `🔍 ${longTermMemory}`;
+      const msg = `🔍 ${long_term_memory}`;
       console.log(msg);
       
       return new ActionResult({
         extracted_content: msg,
         include_in_memory: true,
-        longTermMemory: longTermMemory,
+        long_term_memory: long_term_memory,
       });
     } catch (e) {
       console.error(`Failed to dispatch ScrollEvent: ${(e as Error).constructor.name}: ${e}`);
@@ -836,7 +848,7 @@ If you called extract_structured_data in the last step and the result was not go
       return new ActionResult({
         extracted_content: memory,
         include_in_memory: true,
-        longTermMemory: memory,
+        long_term_memory: memory,
       });
     } catch (e) {
       console.error(`Failed to dispatch SendKeysEvent: ${(e as Error).constructor.name}: ${e}`);
@@ -882,7 +894,7 @@ If you called extract_structured_data in the last step and the result was not go
       return new ActionResult({
         extracted_content: memory,
         include_in_memory: true,
-        longTermMemory: memory,
+        long_term_memory: memory,
       });
     } catch (e) {
       // Text not found
@@ -892,7 +904,7 @@ If you called extract_structured_data in the last step and the result was not go
       return new ActionResult({
         extracted_content: msg,
         include_in_memory: true,
-        longTermMemory: `Tried scrolling to text '${params.text}' but it was not found`,
+        long_term_memory: `Tried scrolling to text '${params.text}' but it was not found`,
       });
     }
   }
@@ -949,7 +961,7 @@ If you called extract_structured_data in the last step and the result was not go
       return new ActionResult({
         extracted_content: msg,
         include_in_memory: true,
-        longTermMemory: `Found ${optionsCount} dropdown options for index ${params.index}`,
+        long_term_memory: `Found ${optionsCount} dropdown options for index ${params.index}`,
         includeExtractedContentOnlyOnce: true,
       });
     } catch (e) {
@@ -1004,7 +1016,7 @@ If you called extract_structured_data in the last step and the result was not go
       return new ActionResult({
         extracted_content: msg,
         include_in_memory: true,
-        longTermMemory: `Selected dropdown option '${params.text}' at index ${params.index}`,
+        long_term_memory: `Selected dropdown option '${params.text}' at index ${params.index}`,
       });
     } catch (e) {
       console.error(`Failed to select dropdown option: ${e}`);
@@ -1096,7 +1108,7 @@ If you called extract_structured_data in the last step and the result was not go
           isDone: true,
           success: params.success,
           extracted_content: JSON.stringify(outputDict),
-          longTermMemory: `Task completed. Success Status: ${params.success}`,
+          long_term_memory: `Task completed. Success Status: ${params.success}`,
         });
       };
 
@@ -1162,7 +1174,7 @@ If you called extract_structured_data in the last step and the result was not go
           isDone: true,
           success: params.success,
           extracted_content: userMessage,
-          longTermMemory: memory,
+          long_term_memory: memory,
           attachments: fullAttachmentPaths,
         });
       };
@@ -1342,7 +1354,7 @@ Provide the extracted information in a clear, structured format.`;
         return new ActionResult({
           extracted_content,
           includeExtractedContentOnlyOnce,
-          longTermMemory: memory,
+          long_term_memory: memory,
         });
       } catch (error) {
         console.error(`Error extracting content: ${error}`);
@@ -1389,7 +1401,7 @@ Provide the extracted information in a clear, structured format.`;
       return new ActionResult({
         extracted_content: result,
         include_in_memory: true,
-        longTermMemory: result,
+        long_term_memory: result,
       });
     } catch (error) {
       console.error(`Failed to write file: ${(error as Error).constructor.name}: ${error}`);
@@ -1410,7 +1422,7 @@ Provide the extracted information in a clear, structured format.`;
       return new ActionResult({
         extracted_content: result,
         include_in_memory: true,
-        longTermMemory: result,
+        long_term_memory: result,
       });
     } catch (error) {
       console.error(`Failed to replace file string: ${(error as Error).constructor.name}: ${error}`);
@@ -1461,7 +1473,7 @@ Provide the extracted information in a clear, structured format.`;
       return new ActionResult({
         extracted_content: result,
         include_in_memory: true,
-        longTermMemory: memory,
+        long_term_memory: memory,
         includeExtractedContentOnlyOnce: true,
       });
     } catch (error) {
