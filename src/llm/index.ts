@@ -12,6 +12,7 @@ export * from './providers/google';
 export * from './providers/aws';
 export * from './providers/azure';
 export * from './providers/deepseek';
+export * from './providers/groq';
 
 // Re-export commonly used types
 export type { 
