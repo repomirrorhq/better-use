@@ -38,6 +38,7 @@ describe('Watchdog Tests', () => {
         crash: true,
         security: false,
         downloads: true,
+        permissions: false,
       });
       
       expect(watchdogs).toHaveLength(2); // crash and downloads only
@@ -60,6 +61,7 @@ describe('Watchdog Tests', () => {
           downloadsPath: '/tmp/test-downloads',
           maxDownloadTimeoutMs: 60000,
         },
+        permissions: false,
       });
       
       expect(watchdogs).toHaveLength(3);
@@ -74,6 +76,7 @@ describe('Watchdog Tests', () => {
         crash: true,
         security: false,
         downloads: false,
+        permissions: false,
       });
       
       const crashWatchdog = watchdogs[0] as any;
