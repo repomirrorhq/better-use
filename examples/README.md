@@ -1,6 +1,6 @@
-# Browser-Use TypeScript Examples
+# Better-Use TypeScript Examples
 
-This directory contains example scripts demonstrating how to use browser-use with TypeScript.
+This directory contains example scripts demonstrating how to use Better-Use with TypeScript.
 
 ## Prerequisites
 

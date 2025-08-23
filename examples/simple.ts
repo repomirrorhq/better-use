@@ -1,8 +1,8 @@
 /**
- * Simple browser-use example - the most basic way to run an agent
+ * Simple Better-Use example - the most basic way to run an agent
  * 
- * This is the shortest possible way to use browser-use TypeScript.
- * The agent will use default settings and search for information about browser-use founders.
+ * This is the shortest possible way to use Better-Use TypeScript.
+ * The agent will use default settings and search for information about Better-Use features.
  */
 
 import { Agent } from '../src/agent/index.js';
@@ -10,7 +10,7 @@ import { Agent } from '../src/agent/index.js';
 // Create and run an agent with a simple task
 // Uses default LLM provider (usually OpenAI GPT-4) if OPENAI_API_KEY is available
 const agent = new Agent({
-  task: 'Find the founders of browser-use'
+  task: 'Find information about Better-Use TypeScript browser automation'
 });
 
 // Run the agent synchronously (blocking)
