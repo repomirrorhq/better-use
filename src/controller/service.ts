@@ -444,11 +444,11 @@ export class Controller<Context = any> {
             { browserSession }
           );
           
-          if (dropdownResult.data?.options) {
+          if (dropdownResult.extracted_content) {
             // Return error with dropdown options for LLM to make the next decision
             return new ActionResult({
-              error: `${errorMsg}\n\nAvailable dropdown options:\n${JSON.stringify(dropdownResult.data.options, null, 2)}`,
-              extractedContent: dropdownResult.data.options
+              error: `${errorMsg}\n\nAvailable dropdown options:\n${dropdownResult.extracted_content}`,
+              extracted_content: dropdownResult.extracted_content
             });
           }
         } catch (dropdownError) {

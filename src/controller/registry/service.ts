@@ -79,6 +79,40 @@ export class Registry<Context = any> {
     };
   }
 
+  /**
+   * Register an action programmatically (without decorator)
+   * This is useful for dynamic action registration like MCP tools
+   */
+  public registerAction(
+    name: string,
+    func: Function,
+    description: string,
+    options: {
+      paramSchema?: z.ZodType<any>;
+      domains?: string[];
+    } = {}
+  ): void {
+    const { paramSchema, domains } = options;
+
+    // Skip registration if action is in excludeActions
+    if (this.excludeActions.includes(name)) {
+      return;
+    }
+
+    // Create a normalized function wrapper
+    const normalizedFunc = this.createNormalizedFunction(func, paramSchema);
+
+    const action: RegisteredAction = {
+      name,
+      description,
+      function: normalizedFunc,
+      paramSchema: paramSchema ?? z.object({}),
+      domains,
+    };
+
+    this.registry.actions[name] = action;
+  }
+
   private createNormalizedFunction(
     originalFunc: Function,
     paramSchema?: z.ZodType<any>

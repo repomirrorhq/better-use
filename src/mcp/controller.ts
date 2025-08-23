@@ -229,8 +229,16 @@ export class MCPToolWrapper {
     // Register the action with browser-use
     const description = tool.description || `MCP tool: ${toolName}`;
 
-    // FIXME: Registry action method expects decorator pattern
-    console.warn(`MCP tool ${toolName} registration temporarily disabled due to registry API mismatch`);
+    // Register the action programmatically
+    this.registry.registerAction(
+      toolName,
+      mcpActionWrapper,
+      description,
+      {
+        paramSchema: paramSchema,
+        domains: domains,
+      }
+    );
 
     this.registeredActions.add(toolName);
     console.info(`✅ Registered MCP tool as action: ${toolName}`);

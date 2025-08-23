@@ -66,10 +66,13 @@
 - **Dropdown Options Fallback:** Automatically fetches dropdown options on click failure
 - **File Input Finding Logic:** Added proper file input validation using DOM watchdog
 
-### Issue #8: MCP Controller Registry Problem
-**Location:** `/src/mcp/controller.ts:232`  
-**Problem:** `// FIXME: Registry action method expects decorator pattern`
-**Impact:** MCP actions may not register correctly
+### ✅ Issue #8: MCP Controller Registry Problem - FIXED
+**Resolution:** Added programmatic registration method to Registry class
+**Fixed:** 2025-08-23 (current session)
+- **Root Cause:** Registry.action() was a decorator, but MCP tools need programmatic registration
+- **Fix:** Added Registry.registerAction() method for dynamic registration
+- **Test:** Created mcp-registration.test.ts to verify functionality
+- **Verification:** MCP tools can now be registered and executed successfully
 
 ---
 
@@ -223,8 +226,9 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 ### Current Status Check
 - ✅ **Python Repository:** No new commits since 1173e2c3 (checked just now)
 - ✅ **GitHub Issues:** All 4 issues remain closed, no new issues opened
-- ✅ **TypeScript Repository:** Clean working tree, latest commit 5442fb8
+- ✅ **TypeScript Repository:** Clean working tree, latest commit e372606
 - ✅ **Build Status:** Production ready, all tests passing
+- ✅ **MCP Registry Issue:** Fixed with programmatic registration support
 
 ### Previous Session Accomplishments (Earlier Aug 23)
 - ✅ **Test Coverage Expansion:** Added 4 critical missing tests
