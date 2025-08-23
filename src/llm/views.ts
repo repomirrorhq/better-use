@@ -22,6 +22,13 @@ export interface ChatInvokeCompletion<T = string> {
   usage?: ChatInvokeUsage;
 }
 
+// Legacy alias for backward compatibility
+export interface ChatInvokeResponse<T = string> {
+  content: T;
+  usage?: ChatInvokeUsage;
+  usage_metadata?: Record<string, any>;
+}
+
 export const ChatInvokeCompletionSchema = <T extends z.ZodTypeAny>(completionSchema: T) => z.object({
   completion: completionSchema,
   thinking: z.string().optional(),
