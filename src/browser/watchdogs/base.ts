@@ -25,8 +25,8 @@ export abstract class BaseWatchdog extends EventEmitter {
   protected isAttached = false;
 
   // Static contract declarations (override in subclasses)
-  static LISTENS_TO: string[] = [];
-  static EMITS: string[] = [];
+  static LISTENS_TO: any[] = [];
+  static EMITS: any[] = [];
 
   constructor(browserSession: BrowserSession, config: WatchdogConfig = {}) {
     super();

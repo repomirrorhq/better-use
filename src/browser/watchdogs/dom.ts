@@ -367,7 +367,7 @@ export class DOMWatchdog extends BaseWatchdog {
       this.logger.debug('🔍 DOMWatchdog.buildDomTree: Calling DomService.getSerializedDomTree...');
       const start = Date.now();
       
-      const [domState, enhancedDomTree, timing] = await this.domService.getSerializedDOMTree(previousState);
+      const [domState, enhancedDomTree, timing] = await this.domService.getSerializedDOMTree(previousState || undefined);
       this.currentDomState = domState;
       this.enhancedDomTree = enhancedDomTree;
       

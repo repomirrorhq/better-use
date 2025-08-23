@@ -30,6 +30,12 @@ export const PageInfoSchema = z.object({
   scroll_x: z.number(),
   scroll_y: z.number(),
   
+  // Calculated scroll information
+  pixels_above: z.number(),
+  pixels_below: z.number(),
+  pixels_left: z.number(),
+  pixels_right: z.number(),
+  
   // Scrollable range
   max_scroll_x: z.number(),
   max_scroll_y: z.number(),
@@ -59,13 +65,19 @@ export const BrowserStateSummarySchema = z.object({
   dom_state: z.any().optional().describe('DOM state information'),
   
   // Recent events
-  recent_events: z.array(z.any()).default([]).describe('Recent browser events'),
+  recent_events: z.string().nullable().optional().describe('Text summary of recent browser events'),
   
   // Timestamp
   timestamp: z.number().describe('Unix timestamp when state was captured'),
   
-  // PDF viewer status
-  isPdfViewer: z.boolean().default(false).describe('Whether the current page is a PDF viewer'),
+  // Legacy compatibility fields
+  pixels_above: z.number().default(0).describe('Legacy: pixels above viewport'),
+  pixels_below: z.number().default(0).describe('Legacy: pixels below viewport'),
+  browser_errors: z.array(z.string()).default([]).describe('Browser error messages'),
+  is_pdf_viewer: z.boolean().default(false).describe('Whether the current page is a PDF viewer'),
+  
+  // PDF viewer status (legacy)
+  isPdfViewer: z.boolean().default(false).describe('Legacy: Whether the current page is a PDF viewer'),
 });
 
 export type BrowserStateSummary = z.infer<typeof BrowserStateSummarySchema>;
@@ -99,6 +111,10 @@ export function createPageInfo(
     page_height,
     scroll_x: 0,
     scroll_y: 0,
+    pixels_above: 0,
+    pixels_below: 0,
+    pixels_left: 0,
+    pixels_right: 0,
     max_scroll_x: Math.max(0, page_width - viewport_width),
     max_scroll_y: Math.max(0, page_height - viewport_height),
     ...options,
