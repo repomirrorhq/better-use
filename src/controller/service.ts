@@ -374,8 +374,8 @@ export class Controller<Context = any> {
       return this.clickElement(params, { browserSession });
     };
 
-    this.registry.actions['clickElement'] = {
-      name: 'clickElement',
+    this.registry.actions['clickElementByIndex'] = {
+      name: 'clickElementByIndex',
       description: 'Click element by index, set while_holding_ctrl=True to open any resulting navigation in a new tab. Only click on indices that are inside your current browser_state. Never click or assume not existing indices.',
       function: actionFunction,
       paramSchema: ClickElementActionSchema,

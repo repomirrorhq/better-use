@@ -97,7 +97,7 @@ export const ActionModelBaseSchema = z.object({});
 export const ActionSchemas = {
   searchGoogle: SearchGoogleActionSchema,
   goToUrl: GoToUrlActionSchema,
-  clickElement: ClickElementActionSchema,
+  clickElementByIndex: ClickElementActionSchema,
   inputText: InputTextActionSchema,
   done: DoneActionSchema,
   switchTab: SwitchTabActionSchema,
