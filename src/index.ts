@@ -5,6 +5,7 @@
 export * from './exceptions';
 export * from './utils';
 export * from './config';
+export * from './llm';
 
 // Re-export main classes (will be added as we port them)
 // export { Agent } from './agent';
