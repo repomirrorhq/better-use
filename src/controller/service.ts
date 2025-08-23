@@ -475,15 +475,54 @@ export class Controller<Context = any> {
   }
 
   private registerScrollToTextAction() {
-    const actionFunction = async (params: any, specialParams: Record<string, any>): Promise<ActionResult> => {
-      return new ActionResult({ error: 'Scroll to text action not yet implemented' });
+    const actionFunction = async (
+      params: { text: string },
+      specialParams: Record<string, any>
+    ): Promise<ActionResult> => {
+      const browserSession = specialParams.browserSession as BrowserSession;
+      return this.scrollToText(params, { browserSession });
     };
+
     this.registry.actions['scrollToText'] = {
       name: 'scrollToText',
-      description: 'Scroll to specific text (not yet implemented)',
+      description: 'Scroll to a text in the current page',
       function: actionFunction,
       paramSchema: z.object({ text: z.string() }),
     };
+  }
+
+  private async scrollToText(
+    params: { text: string },
+    { browserSession }: { browserSession: BrowserSession }
+  ): Promise<ActionResult> {
+    try {
+      // Dispatch scroll to text event
+      const event = browserSession.eventBus.dispatch(new ScrollToTextEvent({ text: params.text }));
+      await event;
+      
+      // The handler returns None on success or raises an exception if text not found
+      await event.eventResult();
+      
+      const memory = `Scrolled to text: ${params.text}`;
+      const msg = `🔍 ${memory}`;
+      console.log(msg);
+      
+      return new ActionResult({
+        extractedContent: memory,
+        includeInMemory: true,
+        longTermMemory: memory,
+      });
+    } catch (e) {
+      // Text not found
+      const msg = `Text '${params.text}' not found or not visible on page`;
+      console.log(msg);
+      
+      return new ActionResult({
+        extractedContent: msg,
+        includeInMemory: true,
+        longTermMemory: `Tried scrolling to text '${params.text}' but it was not found`,
+      });
+    }
   }
 
   private registerGetDropdownOptionsAction() {
