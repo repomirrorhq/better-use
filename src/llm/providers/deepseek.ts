@@ -27,7 +27,7 @@ export const DeepseekChatModelSchema = z.object({
 
 type DeepseekChatModelConfig = z.infer<typeof DeepseekChatModelSchema>;
 
-export class ChatDeeseek extends AbstractChatModel {
+export class ChatDeepseek extends AbstractChatModel {
   private config: DeepseekChatModelConfig;
   private client: OpenAI;
 

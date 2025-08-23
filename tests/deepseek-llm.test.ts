@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { ChatDeeseek } from '../src/llm/providers/deepseek';
+import { ChatDeepseek } from '../src/llm/providers/deepseek';
 import { BaseMessage, createUserMessage, createSystemMessage, createAssistantMessage } from '../src/llm/messages';
 
 // Mock the OpenAI client (Deepseek uses OpenAI-compatible API)
@@ -20,12 +20,12 @@ jest.mock('openai', () => ({
 
 import OpenAI from 'openai';
 
-describe('ChatDeeseek', () => {
-  let deepseekChat: ChatDeeseek;
+describe('ChatDeepseek', () => {
+  let deepseekChat: ChatDeepseek;
   let mockClient: jest.Mocked<OpenAI>;
 
   beforeEach(() => {
-    deepseekChat = new ChatDeeseek({
+    deepseekChat = new ChatDeepseek({
       model: 'deepseek-chat',
       api_key: 'test-api-key',
       base_url: 'https://api.deepseek.com/v1'
@@ -49,7 +49,7 @@ describe('ChatDeeseek', () => {
     it('should use environment variables when not provided', () => {
       process.env.DEEPSEEK_API_KEY = 'env-api-key';
 
-      const envChat = new ChatDeeseek();
+      const envChat = new ChatDeepseek();
 
       expect(OpenAI).toHaveBeenCalledWith({
         apiKey: 'env-api-key',
@@ -62,7 +62,7 @@ describe('ChatDeeseek', () => {
     });
 
     it('should use default model when not specified', () => {
-      const defaultChat = new ChatDeeseek({
+      const defaultChat = new ChatDeepseek({
         api_key: 'test-key'
       });
 
@@ -70,7 +70,7 @@ describe('ChatDeeseek', () => {
     });
 
     it('should use custom base URL', () => {
-      const customChat = new ChatDeeseek({
+      const customChat = new ChatDeepseek({
         api_key: 'test-key',
         base_url: 'https://custom.deepseek.com/v1'
       });
@@ -147,7 +147,7 @@ describe('ChatDeeseek', () => {
     });
 
     it('should handle custom model parameters', async () => {
-      const customChat = new ChatDeeseek({
+      const customChat = new ChatDeepseek({
         model: 'deepseek-coder',
         api_key: 'test-key',
         temperature: 0.7,
@@ -231,7 +231,7 @@ describe('ChatDeeseek', () => {
     });
 
     it('should handle structured output with system prompt', async () => {
-      const schemaChat = new ChatDeeseek({
+      const schemaChat = new ChatDeepseek({
         model: 'deepseek-chat',
         api_key: 'test-key',
         add_schema_to_system_prompt: true
@@ -441,13 +441,13 @@ describe('ChatDeeseek', () => {
 
   describe('configuration validation', () => {
     it('should validate temperature range', () => {
-      expect(() => new ChatDeeseek({
+      expect(() => new ChatDeepseek({
         model: 'deepseek-chat',
         temperature: -1,
         api_key: 'test'
       })).toThrow();
 
-      expect(() => new ChatDeeseek({
+      expect(() => new ChatDeepseek({
         model: 'deepseek-chat', 
         temperature: 3,
         api_key: 'test'
@@ -455,13 +455,13 @@ describe('ChatDeeseek', () => {
     });
 
     it('should validate top_p range', () => {
-      expect(() => new ChatDeeseek({
+      expect(() => new ChatDeepseek({
         model: 'deepseek-chat',
         top_p: -0.1,
         api_key: 'test'
       })).toThrow();
 
-      expect(() => new ChatDeeseek({
+      expect(() => new ChatDeepseek({
         model: 'deepseek-chat',
         top_p: 1.1,
         api_key: 'test'
@@ -469,7 +469,7 @@ describe('ChatDeeseek', () => {
     });
 
     it('should accept valid configuration', () => {
-      expect(() => new ChatDeeseek({
+      expect(() => new ChatDeepseek({
         model: 'deepseek-coder',
         temperature: 0.7,
         max_completion_tokens: 2048,
