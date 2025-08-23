@@ -130,7 +130,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     maxSteps: number = 100,
     onStepStart?: AgentHookFunc<this>,
     onStepEnd?: AgentHookFunc<this>
-  ): Promise<AgentHistoryList> {
+  ): Promise<AgentHistoryListHelper> {
     logger.info(`🤖 Starting agent run - Task: ${this.task}`);
     logger.debug(`🔧 Agent Session ID: ${this.sessionId.slice(-4)}, Task ID: ${this.taskId.slice(-4)}`);
     
