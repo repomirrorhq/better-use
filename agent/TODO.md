@@ -90,13 +90,67 @@ Based on the current repository state, the TypeScript port appears to have subst
 - Track progress in this TODO.md file
 - Maintain feature parity with Python version
 
+## Current Session Progress ✅
+
+### Completed Tasks
+
+1. **✅ FileSystem Integration**
+   - Implemented proper FileSystem initialization in Agent service
+   - FileSystem is now passed to MessageManager and Controller
+   - Added availableFilePaths support from FileSystem.listFiles()
+   - Added tests to verify FileSystem integration works correctly
+
+2. **✅ Usage Tracking Implementation** 
+   - Integrated TokenCost service for proper usage tracking
+   - LLM is automatically registered with TokenCost on Agent creation
+   - Agent.getHistory() now returns proper usage statistics
+   - Agent.run() includes usage summary in returned history
+   - Added tests to verify token cost tracking functionality
+
+3. **✅ SystemPrompt Class Integration**
+   - Replaced hardcoded system message with proper SystemPrompt class
+   - SystemPrompt supports different modes (flash, thinking, etc.)
+   - Properly configured with Agent settings (max_actions_per_step, etc.)
+
+4. **✅ AgentMessagePrompt Implementation**
+   - Replaced placeholder MessageManager implementation with proper AgentMessagePrompt
+   - MessageManager now uses AgentMessagePrompt.getUserMessage() for state creation
+   - Removed outdated placeholder TODO comments
+
+5. **✅ Browser Session Improvements**
+   - Implemented scrollToText method with proper text finding logic
+   - Fixed ScrollToTextEvent detection (checking 'direction' vs 'scroll_into_view')
+   - Added downloadedFiles tracking support
+   - Added watchdogs property for integration with download tracking
+
+6. **✅ Event System Enhancements**
+   - Added proper event emission from Agent.finalizeStep()
+   - Added placeholder support for conversation saving and GIF generation
+   - Events are emitted for stepCompleted with relevant data
+
+7. **✅ Testing Infrastructure**
+   - Added integration tests for FileSystem functionality
+   - Added integration tests for token cost tracking
+   - Added tests for scrollToText event handling
+   - Tests verify key integration points work correctly
+
+### Resolved TODO Items
+- ✅ Agent service FileSystem integration (was: `fileSystem: null, // TODO: Implement FileSystem`)
+- ✅ Usage tracking implementation (was: `usage: null, // TODO: Implement usage tracking`)
+- ✅ Recent events support (was: `includeRecentEvents: false, // TODO: Implement recent events`)
+- ✅ SystemPrompt class usage (was: `// TODO: Implement proper SystemPrompt class`)
+- ✅ AgentMessagePrompt implementation (was: `// TODO: Implement AgentMessagePrompt equivalent`)
+- ✅ ScrollToText method (was: `// TODO: Implement scrollToText method`)
+- ✅ Download tracking infrastructure (was: `// TODO: Implement proper download tracking`)
+- ✅ Event emission in finalizeStep (was: `// TODO: Emit events`)
+
 ## Next Steps
 
-1. Begin comprehensive comparison between Python and TypeScript versions
-2. Identify specific gaps or missing features
-3. Prioritize implementation tasks
-4. Start development work with proper testing
+1. **Monitor for GitHub Issues** - Continue checking for user-reported bugs or feature requests
+2. **Performance Optimization** - Address remaining architectural TODOs as needed
+3. **Documentation Updates** - Sync documentation with completed features
+4. **Advanced Features** - Implement remaining placeholder features (GIF generation, conversation saving)
 
 ---
 
-**Note:** This file will be updated throughout the session to track progress and maintain context for future sessions.
+**Note:** This session has successfully resolved the core TODO items and improved the TypeScript port's functionality. The repository is now in much better shape with proper integration of key components like FileSystem, usage tracking, and improved browser session handling.
