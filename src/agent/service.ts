@@ -251,39 +251,8 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     
     this.logger.debug(`🌐 Step ${this.state.n_steps + 1}: Getting browser state...`);
     
-    // Get browser state with screenshot
-    // TODO: Implement getBrowserStateSummary method in BrowserSession
-    const browserStateSummary: BrowserStateSummary = {
-      url: 'http://example.com', // Placeholder
-      title: 'Example Page',
-      screenshot: this.settings.use_vision ? 'base64screenshot' : '',
-      tabs: [],
-      current_tab_id: 'tab1',
-      page_info: {
-        viewport_width: 1280,
-        viewport_height: 720,
-        page_width: 1280,
-        page_height: 1080,
-        scroll_x: 0,
-        scroll_y: 0,
-        pixels_above: 0,
-        pixels_below: 360,
-        pixels_left: 0,
-        pixels_right: 0,
-        max_scroll_x: 0,
-        max_scroll_y: 360,
-        device_pixel_ratio: 1,
-        zoom_level: 1,
-      },
-      recent_events: null,
-      timestamp: Date.now(),
-      // Required fields for interface compliance
-      pixels_above: 0,
-      pixels_below: 360,
-      browser_errors: [],
-      is_pdf_viewer: false,
-      isPdfViewer: false,
-    };
+    // Get actual browser state from the browser session
+    const browserStateSummary = await this.browserSession.getBrowserState();
     
     if (browserStateSummary.screenshot) {
       this.logger.debug(`📸 Got browser state WITH screenshot`);
@@ -321,24 +290,46 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.logger.debug(`📨 Sending ${messages.length} messages to LLM`);
     
     try {
-      // TODO: Implement proper LLM call with structured output
-      // For now, create a mock response
-      const response: AgentOutput = {
-        thinking: this.settings.use_thinking ? 'I need to analyze the current page and take the next action.' : null,
+      // Make actual LLM call - for now using simple text completion
+      // TODO: Add proper structured output with action schemas
+      const response = await this.llm.chatCompletion(messages);
+      
+      // For now, create a simple action to test functionality
+      // TODO: Parse actual LLM response into structured actions
+      const agentOutput = {
+        thinking: this.settings.use_thinking ? 'Attempting to navigate to Google to begin the task.' : null,
         evaluation_previous_goal: this.state.n_steps > 0 ? 'Previous step completed' : null,
-        memory: `Currently on: ${logPrettyUrl(browserStateSummary.url)}`,
-        next_goal: 'Continue with the task',
-        action: [], // TODO: Implement action parsing
+        memory: `Currently on: ${logPrettyUrl(browserStateSummary.url)}. Task: ${this.task}`,
+        next_goal: 'Navigate to Google to start task',
+        action: [{
+          search_google: {
+            query: 'test search'
+          }
+        }]
       };
       
-      this.state.last_model_output = response;
+      this.state.last_model_output = agentOutput;
       this.logger.debug('✅ Got LLM response');
-      
-      // TODO: Log response details
+      this.logger.debug(`🎯 Created ${agentOutput.action.length} action(s) for testing`);
       
     } catch (error) {
       this.logger.error('❌ LLM call failed:', error);
-      throw error;
+      
+      // Create fallback response to prevent infinite loop
+      const fallbackResponse = {
+        thinking: this.settings.use_thinking ? `LLM call failed: ${error}` : null,
+        evaluation_previous_goal: null,
+        memory: `Currently on: ${logPrettyUrl(browserStateSummary.url)}`,
+        next_goal: 'Handle LLM error',
+        action: [{
+          action: 'done',
+          text: `LLM call failed: ${error instanceof Error ? error.message : String(error)}`,
+          success: false
+        }]
+      };
+      
+      this.state.last_model_output = fallbackResponse;
+      this.logger.debug('🚨 Using fallback response due to LLM error');
     }
   }
   
@@ -355,17 +346,42 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     
     const results: ActionResult[] = [];
     
-    // TODO: Implement actual action execution
+    // Import and create controller for action execution
+    const { Controller } = await import('../controller/service');
+    const controller = new Controller();
+    
+    // Execute each action through the controller
     for (const action of this.state.last_model_output.action) {
       this.logger.debug(`🎯 Executing action: ${JSON.stringify(action)}`);
       
-      // Mock result for now
-      const result = createActionResult({
-        success: true,
-        long_term_memory: `Executed action successfully`,
-      });
-      
-      results.push(result);
+      try {
+        // Execute the action using the Controller's act method
+        const result = await controller.act(action, this.browserSession!, {
+          pageExtractionLlm: this.llm,
+          fileSystem: null, // TODO: Implement FileSystem
+          sensitiveData: this.sensitiveData || {},
+          availableFilePaths: [], // TODO: Get available file paths
+          context: this.context,
+        });
+        
+        // The controller.act returns an ActionResult directly
+        results.push(result);
+        
+        // Get action name for logging
+        const actionName = Object.keys(action).find(key => action[key] !== null && action[key] !== undefined) || 'unknown';
+        this.logger.debug(`✅ Action ${actionName} completed successfully`);
+        
+      } catch (error) {
+        this.logger.error(`❌ Action execution failed:`, error);
+        
+        const errorResult = createActionResult({
+          success: false,
+          long_term_memory: null,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        
+        results.push(errorResult);
+      }
     }
     
     this.state.last_result = results;
