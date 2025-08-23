@@ -22,7 +22,7 @@ export const ScrollDirectionSchema = z.enum(['up', 'down', 'left', 'right']);
 export type ScrollDirection = z.infer<typeof ScrollDirectionSchema>;
 
 // Re-export EnhancedDOMTreeNode from dom/views to ensure consistency
-export { EnhancedDOMTreeNode } from '../dom/views';
+export type { EnhancedDOMTreeNode } from '../dom/views';
 
 // Base Event interface
 export interface BaseEvent<T = any> {
