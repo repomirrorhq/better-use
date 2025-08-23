@@ -37,6 +37,7 @@ import { getLogger } from '../logging';
 import * as path from 'path';
 import { FileSystem } from '../filesystem';
 import { TokenCost } from '../tokens';
+import { Controller } from '../controller/service.js';
 
 // Dynamic logger is defined as a getter in Agent class
 
@@ -354,8 +355,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     
     const results: ActionResult[] = [];
     
-    // Import and create controller for action execution
-    const { Controller } = await import('../controller/service.js');
+    // Create controller for action execution
     const controller = new Controller();
     
     // Execute each action through the controller
