@@ -1,5 +1,10 @@
+#!/usr/bin/env tsx
+
 import { Agent } from '../../src/agent';
 import { ChatOpenAI } from '../../src/llm/providers/openai';
+import { config } from 'dotenv';
+
+config();
 
 async function main() {
     const agent = new Agent(
@@ -12,7 +17,7 @@ async function main() {
     );
     
     const result = await agent.run();
-    console.log('Agent result:', result);
+    console.log(result);
 }
 
 if (require.main === module) {
