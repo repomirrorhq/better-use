@@ -175,7 +175,7 @@ describe('ScrollEvent Tests', () => {
   describe('TestScrollActions', () => {
     test('test_scroll_actions', async () => {
       // Navigate to scrollable page
-      const gotoAction = { go_to_url: new GoToUrlAction({ url: `${baseUrl}/scrollable`, newTab: false }) };
+      const gotoAction = { go_to_url: { url: `${baseUrl}/scrollable`, newTab: false } as GoToUrlAction };
       
       class GoToUrlActionModel extends ActionModel {
         go_to_url?: GoToUrlAction = undefined;
@@ -184,7 +184,7 @@ describe('ScrollEvent Tests', () => {
       await controller.act(new GoToUrlActionModel(gotoAction), browserSession);
 
       // Test 1: Basic page scroll down
-      const scrollAction = { scroll: new ScrollAction({ down: true, num_pages: 1.0 }) };
+      const scrollAction = { scroll: { down: true, num_pages: 1.0 } as ScrollAction };
       
       class ScrollActionModel extends ActionModel {
         scroll?: ScrollAction = undefined;
@@ -201,7 +201,7 @@ describe('ScrollEvent Tests', () => {
       expect(result.includeInMemory).toBe(true);
 
       // Test 2: Basic page scroll up
-      const scrollUpAction = { scroll: new ScrollAction({ down: false, num_pages: 0.5 }) };
+      const scrollUpAction = { scroll: { down: false, num_pages: 0.5 } as ScrollAction };
       result = await controller.act(new ScrollActionModel(scrollUpAction), browserSession);
 
       expect(result).toBeInstanceOf(ActionResult);
@@ -211,7 +211,7 @@ describe('ScrollEvent Tests', () => {
       expect(result.extractedContent).toContain('0.5 pages');
 
       // Test 3: Test with invalid element index (should error)
-      const invalidScrollAction = { scroll: new ScrollAction({ down: true, num_pages: 1.0, frame_element_index: 999 }) };
+      const invalidScrollAction = { scroll: { down: true, num_pages: 1.0, frame_element_index: 999 } as ScrollAction };
       result = await controller.act(new ScrollActionModel(invalidScrollAction), browserSession);
 
       // This should fail with error about element not found
@@ -220,12 +220,12 @@ describe('ScrollEvent Tests', () => {
       expect(result.error).toMatch(/Element index 999 not found|Failed to scroll/);
 
       // Test 4: Model parameter validation
-      const scrollWithIndex = new ScrollAction({ down: true, num_pages: 1.0, frame_element_index: 5 });
+      const scrollWithIndex = { down: true, num_pages: 1.0, frame_element_index: 5 } as ScrollAction;
       expect(scrollWithIndex.down).toBe(true);
       expect(scrollWithIndex.num_pages).toBe(1.0);
       expect(scrollWithIndex.frame_element_index).toBe(5);
 
-      const scrollWithoutIndex = new ScrollAction({ down: false, num_pages: 0.25 });
+      const scrollWithoutIndex = { down: false, num_pages: 0.25 } as ScrollAction;
       expect(scrollWithoutIndex.down).toBe(false);
       expect(scrollWithoutIndex.num_pages).toBe(0.25);
       expect(scrollWithoutIndex.frame_element_index).toBeUndefined();
@@ -233,7 +233,7 @@ describe('ScrollEvent Tests', () => {
 
     test('test_scroll_with_cross_origin_disabled', async () => {
       // Navigate to a page
-      await browserSession._cdpNavigate(`${baseUrl}/scrollable`);
+      await browserSession.page.goto(`${baseUrl}/scrollable`);
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Test simple scroll - should not hang
@@ -267,7 +267,7 @@ describe('ScrollEvent Tests', () => {
 
     test('test_scroll_non_scrollable_page', async () => {
       // Navigate to non-scrollable page
-      await browserSession._cdpNavigate(`${baseUrl}/non-scrollable`);
+      await browserSession.page.goto(`${baseUrl}/non-scrollable`);
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get initial scroll position
@@ -299,7 +299,7 @@ describe('ScrollEvent Tests', () => {
 
     test('test_scroll_very_long_page', async () => {
       // Navigate to very long page
-      await browserSession._cdpNavigate(`${baseUrl}/very-long`);
+      await browserSession.page.goto(`${baseUrl}/very-long`);
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get initial scroll position
@@ -357,7 +357,7 @@ describe('ScrollEvent Tests', () => {
 
     test('test_scroll_iframe_content', async () => {
       // Navigate to page with iframe
-      await browserSession._cdpNavigate(`${baseUrl}/page-with-iframe`);
+      await browserSession.page.goto(`${baseUrl}/page-with-iframe`);
       await new Promise(resolve => setTimeout(resolve, 1000)); // Give iframe time to load
 
       // Get initial scroll position of main page and iframe
