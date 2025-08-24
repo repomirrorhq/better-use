@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { BrowserSession } from '../src/browser/session';
 import { BrowserProfile } from '../src/browser/profile';
-import { Controller } from '../src/controller/controller';
-import { GoToUrlAction } from '../src/controller/actions';
+import { Controller } from '../src/controller';
+import { GoToUrlAction } from '../src/controller/registry/views';
 import { NavigationCompleteEvent } from '../src/browser/events';
 import * as http from 'http';
 import * as express from 'express';
