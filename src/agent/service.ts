@@ -412,15 +412,8 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.logger.debug(`📨 Sending ${messages.length} messages to LLM`);
     
     try {
-      // Make actual LLM call with structured output
-      if (!this.AgentOutputSchema) {
-        throw new Error('AgentOutputSchema not initialized. Call setupActionModels() first.');
-      }
-      
-      const response = await this.llm.ainvoke(messages, this.AgentOutputSchema);
-      
-      // Parse the structured LLM response
-      const agentOutput = response.completion as AgentOutput;
+      // Make actual LLM call with structured output and retry logic
+      const agentOutput = await this.getModelOutputWithRetry(messages);
       
       // Limit actions to max_actions_per_step if needed
       if (agentOutput.action.length > this.settings.max_actions_per_step) {
@@ -450,6 +443,56 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       this.state.last_model_output = fallbackResponse;
       this.logger.debug('🚨 Using fallback response due to LLM error');
     }
+  }
+  
+  /**
+   * Get model output with retry logic
+   */
+  private async getModelOutputWithRetry(messages: any[]): Promise<AgentOutput> {
+    if (!this.AgentOutputSchema) {
+      throw new Error('AgentOutputSchema not initialized. Call setupActionModels() first.');
+    }
+    
+    const maxRetries = 3;
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        this.logger.debug(`🔄 LLM call attempt ${attempt}/${maxRetries}`);
+        
+        // Add timeout to LLM call
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error(`LLM call timed out after ${this.settings.llm_timeout}s`)), 
+            this.settings.llm_timeout * 1000);
+        });
+        
+        const llmPromise = this.llm.ainvoke(messages, this.AgentOutputSchema);
+        const response = await Promise.race([llmPromise, timeoutPromise]);
+        
+        // Parse the structured LLM response
+        const agentOutput = response.completion as AgentOutput;
+        
+        // Validate the response has required fields
+        if (!agentOutput.action || !Array.isArray(agentOutput.action)) {
+          throw new Error('Invalid LLM response: missing action array');
+        }
+        
+        return agentOutput;
+        
+      } catch (error: any) {
+        lastError = error;
+        this.logger.warn(`⚠️ LLM call attempt ${attempt} failed: ${error.message}`);
+        
+        if (attempt < maxRetries) {
+          // Wait before retry with exponential backoff
+          const waitTime = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+          this.logger.debug(`⏳ Waiting ${waitTime}ms before retry...`);
+          await sleep(waitTime);
+        }
+      }
+    }
+    
+    throw lastError || new Error('LLM call failed after all retries');
   }
   
   /**
@@ -564,6 +607,29 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
       this.logger.warn(`⚠️ Step had errors. Consecutive failures: ${this.state.consecutive_failures}`);
     } else {
       this.state.consecutive_failures = 0;
+      this.logger.debug(`🔄 Step ${this.state.n_steps}: Consecutive failures reset to: ${this.state.consecutive_failures}`);
+    }
+    
+    // Log completion results if task is done
+    if (this.state.last_result && this.state.last_result.length > 0) {
+      const lastResult = this.state.last_result[this.state.last_result.length - 1];
+      if (lastResult.is_done) {
+        const success = lastResult.success;
+        if (success) {
+          // Green color for success
+          this.logger.info(`📄 \x1b[32mResult:\x1b[0m\n${lastResult.extracted_content}\n`);
+        } else {
+          // Red color for failure
+          this.logger.info(`📄 \x1b[31mResult:\x1b[0m\n${lastResult.extracted_content}\n`);
+        }
+        if (lastResult.attachments && lastResult.attachments.length > 0) {
+          const totalAttachments = lastResult.attachments.length;
+          lastResult.attachments.forEach((filePath, i) => {
+            const attachmentNum = totalAttachments > 1 ? `${i + 1} ` : '';
+            this.logger.info(`👉 Attachment ${attachmentNum}: ${filePath}`);
+          });
+        }
+      }
     }
     
     this.logger.debug(`📈 Step ${this.state.n_steps} completed in ${metadata.durationSeconds.toFixed(2)}s`);
