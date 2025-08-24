@@ -61,7 +61,7 @@
 ### Repository Health
 - **Python Repo:** Synced with commit 1173e2c3 (No new changes to port)
 - **TypeScript Repo:** ✅ Rebranded to Better-Use, production ready
-- **Test Coverage:** 75 tests (Python has 57 test files in ci/, TS has 75 tests - exceeding Python coverage by 18!)
+- **Test Coverage:** 76 tests (Python has 57 test files in ci/, TS has 76 tests - exceeding Python coverage by 19!)
 - **GitHub Issues:** None open (4 closed issues resolved)
 - **Build Status:** ✅ Working (compile before running)
 - **MCP Mode:** ✅ Fixed logging to stderr (addresses Python issue #2748)
@@ -74,6 +74,9 @@
 - ✅ Checked Python repository - no new updates (still at commit 1173e2c3)
 - ✅ Monitored GitHub issues in TypeScript repository - none open, 4 remain closed
 - ✅ No new changes to port from Python to TypeScript
+- ✅ Added comprehensive test for self-referencing iframe protection (addresses Python issue #2715)
+- ✅ Verified iframe recursion protection with MAX_IFRAME_DEPTH limit
+- ✅ Reviewed Python open issues - no critical bugs requiring immediate porting
 - ✅ Repository fully synchronized and maintained
 
 ### Previous Session Progress (2025-08-24 - Session 22)
@@ -204,9 +207,9 @@ Note: We have 72 tests in TypeScript vs 57 in Python's ci/ folder, so we're exce
 12. StorageState (cookies/storage)
 
 ### Test Coverage Summary
-- **Total Tests:** 75 tests (exceeding Python parity by 18 additional tests!)
+- **Total Tests:** 76 tests (exceeding Python parity by 19 additional tests!)
 - **Core Tests:** 31/31 passing ✅ (added watchdog-base and custom-structured-output tests)
-- **Watchdog Tests:** 10/10 passing ✅ (added browser-watchdog-storage-state test)
+- **Watchdog Tests:** 11/11 passing ✅ (added browser-watchdog-storage-state and iframe recursion tests)
 - **LLM Provider Tests:** All 9 providers tested ✅
 - **Registry Tests:** 3/3 ported ✅ (registry, parameter injection, search google)
 - **Schema Tests:** 3/3 ported ✅ (llm-schema-optimizer, llm-gemini-type-field-fix, llm-custom-structured-output)
