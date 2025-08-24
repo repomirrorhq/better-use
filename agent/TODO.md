@@ -74,6 +74,12 @@
 - ✅ Started new porting/maintenance session
 - ✅ Checked Python repository - no new updates (still at commit 1173e2c3)
 - ✅ Monitored GitHub issues in TypeScript repository - none open, 4 remain closed
+- ✅ Fixed test setup to respect HEADLESS environment variable for CI/headless environments
+- ✅ Fixed import paths in test files (BrowserProfile imports)
+- ✅ Fixed ActionModel implementation in registry tests
+- ✅ Verified Python open issues are already addressed in TypeScript:
+  - Issue #2715 (self-referencing iframe) - ✅ Already fixed with MAX_IFRAME_DEPTH protection
+  - Issue #2748 (MCP stdio logging) - ✅ Already fixed with stderr redirection in MCP mode
 - ✅ No new changes to port from Python to TypeScript
 - ✅ Repository fully synchronized and maintained
 
