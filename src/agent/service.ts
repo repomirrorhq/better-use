@@ -84,6 +84,11 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
   private sessionStartTime: number = 0;
   private taskStartTime: number = 0;
   
+  // Additional properties for enhanced functionality
+  public initialActions?: any[];
+  public preload: boolean = true;
+  public registerDoneCallback?: (history: AgentHistoryList) => void | Promise<void>;
+  
   constructor(options: {
     task: string;
     llm: BaseChatModel;
@@ -93,6 +98,9 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     context?: TContext;
     sensitiveData?: SensitiveData;
     agentDirectory?: string;
+    initialActions?: any[];
+    preload?: boolean;
+    registerDoneCallback?: (history: AgentHistoryList) => void | Promise<void>;
   }) {
     super();
     
@@ -103,6 +111,9 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.browserSession = options.browserSession;
     this.context = options.context;
     this.sensitiveData = options.sensitiveData;
+    this.initialActions = options.initialActions;
+    this.preload = options.preload ?? true;
+    this.registerDoneCallback = options.registerDoneCallback;
     
     // Initialize token cost tracking
     this.tokenCost = new TokenCost(this.settings.calculate_cost);
@@ -202,11 +213,54 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
         throw new Error('BrowserSession is required but not provided');
       }
       
+      // Start browser session
+      this.logger.debug('🌐 Starting browser session...');
+      await this.browserSession.start();
+      this.logger.debug('🔧 Browser session started with watchdogs attached');
+      
+      // Check if task contains a URL and add it as an initial action (only if preload is enabled)
+      if (this.preload) {
+        const initialUrl = this.extractUrlFromTask(this.task);
+        if (initialUrl) {
+          this.logger.info(`🔗 Found URL in task: ${initialUrl}, adding as initial action...`);
+          
+          // Create a go_to_url action for the initial URL
+          const goToUrlAction = {
+            go_to_url: {
+              url: initialUrl,
+              new_tab: false, // Navigate in current tab
+            }
+          };
+          
+          // Add to initial_actions or create new list if none exist
+          if (this.initialActions) {
+            // Prepend the go_to_url action
+            this.initialActions = [goToUrlAction, ...this.initialActions];
+          } else {
+            // Create new initial_actions with just the go_to_url
+            this.initialActions = [goToUrlAction];
+          }
+          
+          this.logger.debug(`✅ Added navigation to ${initialUrl} as initial action`);
+        }
+      }
+      
+      // Execute initial actions if provided
+      if (this.initialActions && this.initialActions.length > 0) {
+        this.logger.debug(`⚡ Executing ${this.initialActions.length} initial actions...`);
+        const result = await this.multiAct(this.initialActions, false);
+        this.state.last_result = result;
+        this.logger.debug('✅ Initial actions completed');
+      }
+      
+      this.logger.debug(`🔄 Starting main execution loop with max ${maxSteps} steps...`);
+      
       // Main execution loop
       while (this.state.n_steps < maxSteps && !this.isDone() && !this.state.stopped) {
+        // Handle paused state
         if (this.state.paused) {
-          await sleep(1000); // Sleep 1 second if paused
-          continue;
+          this.logger.debug(`⏸️ Step ${this.state.n_steps}: Agent paused, waiting to resume...`);
+          await this.waitUntilResumed();
         }
         
         const stepInfo = createAgentStepInfo(this.state.n_steps, maxSteps);
@@ -231,20 +285,47 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
         }
       }
       
+      // Check if task was completed
+      if (this.isDone()) {
+        this.logger.info('✅ Agent completed successfully');
+        await this.logCompletion();
+        
+        // Call done callback if registered
+        if (this.registerDoneCallback) {
+          const historyList = await this.getHistory();
+          if (typeof this.registerDoneCallback === 'function') {
+            await this.registerDoneCallback(historyList);
+          }
+        }
+      } else if (this.state.n_steps >= maxSteps) {
+        this.logger.warn(`⚠️ Agent reached max steps (${maxSteps})`);
+        
+        // Add error to history
+        this.history.push({
+          model_output: null,
+          result: [createActionResult({ 
+            error: 'Failed to complete task in maximum steps',
+            include_in_memory: true 
+          })],
+          state: {
+            url: '',
+            title: '',
+            tabs: [],
+            interacted_element: [],
+            screenshot_path: null,
+          },
+          metadata: null,
+        });
+      } else if (this.state.stopped) {
+        this.logger.info('🛑 Agent was stopped');
+      }
+      
       // Create and return history list with usage tracking
       const usage = await this.tokenCost.getUsageSummary();
       const historyList = new AgentHistoryListHelper({
         history: this.history,
         usage,
       });
-      
-      if (this.isDone()) {
-        this.logger.info('✅ Agent completed successfully');
-      } else if (this.state.n_steps >= maxSteps) {
-        this.logger.warn(`⚠️ Agent reached max steps (${maxSteps})`);
-      } else if (this.state.stopped) {
-        this.logger.info('🛑 Agent was stopped');
-      }
       
       return historyList;
       
@@ -605,6 +686,84 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     this.task = newTask;
     this.messageManager.addNewTask(newTask);
     this.logger.info(`🔄 Task updated: ${newTask}`);
+  }
+  
+  /**
+   * Extract URL from task string
+   */
+  private extractUrlFromTask(task: string): string | null {
+    // Look for URLs in the task
+    const urlRegex = /(https?:\/\/[^\s]+)/gi;
+    const matches = task.match(urlRegex);
+    
+    if (matches && matches.length > 0) {
+      const url = matches[0];
+      this.logger.debug(`📍 Found URL in task: ${url}`);
+      return url;
+    }
+    
+    // If no URL found, check if task mentions Google or search
+    const taskLower = task.toLowerCase();
+    if (taskLower.includes('google') || taskLower.includes('search')) {
+      this.logger.debug('📍 Task mentions "google" or "search", defaulting to https://google.com');
+      return 'https://google.com';
+    }
+    
+    return null;
+  }
+  
+  /**
+   * Convert initial actions to ActionModel format
+   */
+  private convertInitialActions(actions: any[]): any[] {
+    // This will be implemented based on the ActionModel structure
+    // For now, return as-is
+    return actions;
+  }
+  
+  /**
+   * Execute multiple actions
+   */
+  private async multiAct(actions: any[], checkForNewElements: boolean = true): Promise<ActionResult[]> {
+    const results: ActionResult[] = [];
+    
+    for (const action of actions) {
+      try {
+        // Execute action through controller
+        const result = await this.controller.act(action, this.browserSession);
+        results.push(result);
+      } catch (error: any) {
+        results.push(createActionResult({ error: error.message }));
+      }
+    }
+    
+    return results;
+  }
+  
+  /**
+   * Wait until the agent is resumed from pause
+   */
+  private async waitUntilResumed(): Promise<void> {
+    while (this.state.paused) {
+      await sleep(200); // Small delay to prevent CPU spinning
+      if (this.state.stopped) {
+        break;
+      }
+    }
+  }
+  
+  /**
+   * Log completion message
+   */
+  private async logCompletion(): Promise<void> {
+    const duration = (Date.now() - this.taskStartTime) / 1000;
+    this.logger.info(`✅ Task completed in ${duration.toFixed(1)}s with ${this.state.n_steps} steps`);
+    
+    // Log token usage if available
+    const usage = await this.tokenCost.getUsageSummary();
+    if (usage) {
+      this.logger.info(`💰 Token usage - Input: ${usage.input_tokens}, Output: ${usage.output_tokens}, Total Cost: $${usage.total_cost.toFixed(4)}`);
+    }
   }
 }
 
