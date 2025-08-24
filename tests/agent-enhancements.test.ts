@@ -210,18 +210,20 @@ describe('Agent Service Enhancements', () => {
   
   describe('Enhanced Logging', () => {
     it('should log colored results for success', async () => {
-      const logger = (Agent as any).prototype.logger = {
-        info: jest.fn(),
-        debug: jest.fn(),
-        warn: jest.fn(),
-        error: jest.fn(),
-      };
-      
       const agent = new Agent({
         task: 'Test task',
         llm: mockLLM,
         browserSession: mockBrowserSession,
       });
+      
+      // Mock the logger on the agent instance
+      const mockLogger = {
+        info: jest.fn(),
+        debug: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      };
+      (agent as any).logger = mockLogger;
       
       // Set up successful result
       agent.state.last_result = [{
@@ -240,27 +242,29 @@ describe('Agent Service Enhancements', () => {
       });
       
       // Check for colored output (green for success)
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('\x1b[32m')
       );
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('Attachment')
       );
     });
     
     it('should log colored results for failure', async () => {
-      const logger = (Agent as any).prototype.logger = {
-        info: jest.fn(),
-        debug: jest.fn(),
-        warn: jest.fn(),
-        error: jest.fn(),
-      };
-      
       const agent = new Agent({
         task: 'Test task',
         llm: mockLLM,
         browserSession: mockBrowserSession,
       });
+      
+      // Mock the logger on the agent instance
+      const mockLogger = {
+        info: jest.fn(),
+        debug: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      };
+      (agent as any).logger = mockLogger;
       
       // Set up failed result
       agent.state.last_result = [{
@@ -278,7 +282,7 @@ describe('Agent Service Enhancements', () => {
       });
       
       // Check for colored output (red for failure)
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('\x1b[31m')
       );
     });
