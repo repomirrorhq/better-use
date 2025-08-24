@@ -34,53 +34,7 @@ function isRunningInDocker(): boolean {
   return false;
 }
 
-/**
- * Environment variable configuration schema
- */
-const FlatEnvConfigSchema = z.object({
-  // Logging and telemetry
-  BROWSER_USE_LOGGING_LEVEL: z.string().default('info'),
-  CDP_LOGGING_LEVEL: z.string().default('WARNING'),
-  ANONYMIZED_TELEMETRY: z.boolean().default(true),
-  BROWSER_USE_CLOUD_SYNC: z.boolean().nullable().default(null),
-  BROWSER_USE_CLOUD_API_URL: z.string().default('https://api.browser-use.com'),
-  BROWSER_USE_CLOUD_UI_URL: z.string().default(''),
-
-  // Path configuration
-  XDG_CACHE_HOME: z.string().default('~/.cache'),
-  XDG_CONFIG_HOME: z.string().default('~/.config'),
-  BROWSER_USE_CONFIG_DIR: z.string().nullable().default(null),
-
-  // LLM API keys
-  OPENAI_API_KEY: z.string().default(''),
-  ANTHROPIC_API_KEY: z.string().default(''),
-  GOOGLE_API_KEY: z.string().default(''),
-  DEEPSEEK_API_KEY: z.string().default(''),
-  GROK_API_KEY: z.string().default(''),
-  NOVITA_API_KEY: z.string().default(''),
-  AZURE_OPENAI_ENDPOINT: z.string().default(''),
-  AZURE_OPENAI_KEY: z.string().default(''),
-  SKIP_LLM_API_KEY_VERIFICATION: z.boolean().default(false),
-
-  // Runtime hints
-  IN_DOCKER: z.boolean().nullable().default(null),
-  IS_IN_EVALS: z.boolean().default(false),
-  WIN_FONT_DIR: z.string().default('C:\\Windows\\Fonts'),
-
-  // MCP-specific env vars
-  BROWSER_USE_CONFIG_PATH: z.string().nullable().default(null),
-  BROWSER_USE_HEADLESS: z.boolean().nullable().default(null),
-  BROWSER_USE_ALLOWED_DOMAINS: z.string().nullable().default(null),
-  BROWSER_USE_LLM_MODEL: z.string().nullable().default(null),
-
-  // Proxy env vars
-  BROWSER_USE_PROXY_URL: z.string().nullable().default(null),
-  BROWSER_USE_NO_PROXY: z.string().nullable().default(null),
-  BROWSER_USE_PROXY_USERNAME: z.string().nullable().default(null),
-  BROWSER_USE_PROXY_PASSWORD: z.string().nullable().default(null),
-});
-
-type FlatEnvConfig = z.infer<typeof FlatEnvConfigSchema>;
+// Note: FlatEnvConfig is now a class defined below
 
 /**
  * Database-style entry base schema
@@ -175,7 +129,7 @@ function createDefaultConfig(): DBStyleConfigJSON {
 /**
  * Load config.json or create fresh one if old format detected
  */
-function loadAndMigrateConfig(configPath: string): DBStyleConfigJSON {
+export function loadAndMigrateConfig(configPath: string): DBStyleConfigJSON {
   if (!existsSync(configPath)) {
     // Create fresh config with defaults
     const configDir = resolve(configPath, '..');
@@ -224,27 +178,103 @@ function loadAndMigrateConfig(configPath: string): DBStyleConfigJSON {
 }
 
 /**
+ * All environment variables in a flat namespace
+ */
+export class FlatEnvConfig {
+  // Logging and telemetry
+  BROWSER_USE_LOGGING_LEVEL: string = process.env.BROWSER_USE_LOGGING_LEVEL || 'info';
+  CDP_LOGGING_LEVEL: string = process.env.CDP_LOGGING_LEVEL || 'WARNING';
+  ANONYMIZED_TELEMETRY: boolean = process.env.ANONYMIZED_TELEMETRY !== 'false';
+  BROWSER_USE_CLOUD_SYNC: boolean | undefined = process.env.BROWSER_USE_CLOUD_SYNC === 'true' ? true : undefined;
+  BROWSER_USE_CLOUD_API_URL: string = process.env.BROWSER_USE_CLOUD_API_URL || 'https://api.browser-use.com';
+  BROWSER_USE_CLOUD_UI_URL: string = process.env.BROWSER_USE_CLOUD_UI_URL || '';
+
+  // Path configuration
+  XDG_CACHE_HOME: string = process.env.XDG_CACHE_HOME || '~/.cache';
+  XDG_CONFIG_HOME: string = process.env.XDG_CONFIG_HOME || '~/.config';
+  BROWSER_USE_CONFIG_DIR: string | undefined = process.env.BROWSER_USE_CONFIG_DIR;
+
+  // LLM API keys
+  OPENAI_API_KEY: string = process.env.OPENAI_API_KEY || '';
+  ANTHROPIC_API_KEY: string = process.env.ANTHROPIC_API_KEY || '';
+  GOOGLE_API_KEY: string = process.env.GOOGLE_API_KEY || '';
+  DEEPSEEK_API_KEY: string = process.env.DEEPSEEK_API_KEY || '';
+  GROK_API_KEY: string = process.env.GROK_API_KEY || '';
+  NOVITA_API_KEY: string = process.env.NOVITA_API_KEY || '';
+  AZURE_OPENAI_ENDPOINT: string = process.env.AZURE_OPENAI_ENDPOINT || '';
+  AZURE_OPENAI_KEY: string = process.env.AZURE_OPENAI_KEY || '';
+  SKIP_LLM_API_KEY_VERIFICATION: boolean = process.env.SKIP_LLM_API_KEY_VERIFICATION === 'true';
+
+  // Runtime hints
+  IN_DOCKER: boolean | undefined = process.env.IN_DOCKER === 'true' ? true : undefined;
+  IS_IN_EVALS: boolean = process.env.IS_IN_EVALS === 'true';
+  WIN_FONT_DIR: string = process.env.WIN_FONT_DIR || 'C:\\Windows\\Fonts';
+
+  // MCP-specific env vars
+  BROWSER_USE_CONFIG_PATH: string | undefined = process.env.BROWSER_USE_CONFIG_PATH;
+  BROWSER_USE_HEADLESS: boolean | undefined = process.env.BROWSER_USE_HEADLESS === 'true' ? true : process.env.BROWSER_USE_HEADLESS === 'false' ? false : undefined;
+  BROWSER_USE_ALLOWED_DOMAINS: string | undefined = process.env.BROWSER_USE_ALLOWED_DOMAINS;
+  BROWSER_USE_LLM_MODEL: string | undefined = process.env.BROWSER_USE_LLM_MODEL;
+
+  // Proxy env vars
+  BROWSER_USE_PROXY_URL: string | undefined = process.env.BROWSER_USE_PROXY_URL;
+  BROWSER_USE_NO_PROXY: string | undefined = process.env.BROWSER_USE_NO_PROXY;
+  BROWSER_USE_PROXY_USERNAME: string | undefined = process.env.BROWSER_USE_PROXY_USERNAME;
+  BROWSER_USE_PROXY_PASSWORD: string | undefined = process.env.BROWSER_USE_PROXY_PASSWORD;
+
+  constructor() {
+    // Reload env vars dynamically
+    this.reload();
+  }
+
+  reload() {
+    // Dynamically reload all env vars
+    this.BROWSER_USE_LOGGING_LEVEL = process.env.BROWSER_USE_LOGGING_LEVEL || 'info';
+    this.CDP_LOGGING_LEVEL = process.env.CDP_LOGGING_LEVEL || 'WARNING';
+    this.ANONYMIZED_TELEMETRY = process.env.ANONYMIZED_TELEMETRY !== 'false';
+    this.BROWSER_USE_CLOUD_SYNC = process.env.BROWSER_USE_CLOUD_SYNC === 'true' ? true : undefined;
+    this.BROWSER_USE_CLOUD_API_URL = process.env.BROWSER_USE_CLOUD_API_URL || 'https://api.browser-use.com';
+    this.BROWSER_USE_CLOUD_UI_URL = process.env.BROWSER_USE_CLOUD_UI_URL || '';
+    
+    this.XDG_CACHE_HOME = process.env.XDG_CACHE_HOME || '~/.cache';
+    this.XDG_CONFIG_HOME = process.env.XDG_CONFIG_HOME || '~/.config';
+    this.BROWSER_USE_CONFIG_DIR = process.env.BROWSER_USE_CONFIG_DIR;
+    
+    this.OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+    this.ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+    this.GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
+    this.DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
+    this.GROK_API_KEY = process.env.GROK_API_KEY || '';
+    this.NOVITA_API_KEY = process.env.NOVITA_API_KEY || '';
+    this.AZURE_OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT || '';
+    this.AZURE_OPENAI_KEY = process.env.AZURE_OPENAI_KEY || '';
+    this.SKIP_LLM_API_KEY_VERIFICATION = process.env.SKIP_LLM_API_KEY_VERIFICATION === 'true';
+    
+    this.IN_DOCKER = process.env.IN_DOCKER === 'true' ? true : undefined;
+    this.IS_IN_EVALS = process.env.IS_IN_EVALS === 'true';
+    this.WIN_FONT_DIR = process.env.WIN_FONT_DIR || 'C:\\Windows\\Fonts';
+    
+    this.BROWSER_USE_CONFIG_PATH = process.env.BROWSER_USE_CONFIG_PATH;
+    this.BROWSER_USE_HEADLESS = process.env.BROWSER_USE_HEADLESS === 'true' ? true : process.env.BROWSER_USE_HEADLESS === 'false' ? false : undefined;
+    this.BROWSER_USE_ALLOWED_DOMAINS = process.env.BROWSER_USE_ALLOWED_DOMAINS;
+    this.BROWSER_USE_LLM_MODEL = process.env.BROWSER_USE_LLM_MODEL;
+    
+    this.BROWSER_USE_PROXY_URL = process.env.BROWSER_USE_PROXY_URL;
+    this.BROWSER_USE_NO_PROXY = process.env.BROWSER_USE_NO_PROXY;
+    this.BROWSER_USE_PROXY_USERNAME = process.env.BROWSER_USE_PROXY_USERNAME;
+    this.BROWSER_USE_PROXY_PASSWORD = process.env.BROWSER_USE_PROXY_PASSWORD;
+  }
+}
+
+/**
  * Configuration class that merges all config sources
  */
 export class Config {
   private _dirsCreated = false;
 
   private _getEnvConfig(): FlatEnvConfig {
-    // Parse environment variables with defaults
-    const envConfig: any = {};
-    for (const [key, schema] of Object.entries(FlatEnvConfigSchema.shape)) {
-      const envValue = process.env[key];
-      if (envValue !== undefined) {
-        if (schema instanceof z.ZodBoolean) {
-          envConfig[key] = ['true', 'yes', '1', 'y'].includes(envValue.toLowerCase());
-        } else if (schema instanceof z.ZodNumber) {
-          envConfig[key] = Number(envValue);
-        } else {
-          envConfig[key] = envValue;
-        }
-      }
-    }
-    return FlatEnvConfigSchema.parse(envConfig);
+    // Return a FlatEnvConfig instance that reads from environment
+    return new FlatEnvConfig();
   }
 
   private _ensureDirs(): void {
@@ -455,7 +485,7 @@ export class Config {
     const envConfig = this._getEnvConfig();
 
     // Apply MCP-specific env var overrides
-    if (envConfig.BROWSER_USE_HEADLESS !== null) {
+    if (envConfig.BROWSER_USE_HEADLESS !== undefined) {
       config.browser_profile.headless = envConfig.BROWSER_USE_HEADLESS;
     }
 
