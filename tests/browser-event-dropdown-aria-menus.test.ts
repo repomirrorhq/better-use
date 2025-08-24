@@ -142,7 +142,7 @@ describe('ARIA Menu Dropdown Tests', () => {
 
   it.skip('should get dropdown options from ARIA menu', async () => {
     // Navigate to ARIA menu test page
-    const gotoAction = new GoToUrlAction({ url: `${baseUrl}/aria-menu`, newTab: false });
+    const gotoAction = { url: `${baseUrl}/aria-menu`, newTab: false } as GoToUrlAction;
     await controller.act({ goToUrl: gotoAction }, browserSession);
 
     // Wait for navigation to complete
@@ -199,7 +199,7 @@ describe('ARIA Menu Dropdown Tests', () => {
 
   it.skip('should select dropdown option from ARIA menu', async () => {
     // Navigate to ARIA menu test page
-    const gotoAction = new GoToUrlAction({ url: `${baseUrl}/aria-menu`, newTab: false });
+    const gotoAction = { url: `${baseUrl}/aria-menu`, newTab: false } as GoToUrlAction;
     await controller.act({ goToUrl: gotoAction }, browserSession);
 
     // Wait for navigation to complete
@@ -260,7 +260,7 @@ describe('ARIA Menu Dropdown Tests', () => {
 
   it.skip('should handle nested ARIA menu (Sort submenu)', async () => {
     // Navigate to ARIA menu test page
-    const gotoAction = new GoToUrlAction({ url: `${baseUrl}/aria-menu`, newTab: false });
+    const gotoAction = { url: `${baseUrl}/aria-menu`, newTab: false } as GoToUrlAction;
     await controller.act({ goToUrl: gotoAction }, browserSession);
 
     // Wait for navigation to complete

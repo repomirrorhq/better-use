@@ -147,7 +147,7 @@ describe('TypeTextEvent Advanced Tests', () => {
 
   it('should input text into form fields using InputTextAction', async () => {
     // Navigate to search form
-    const gotoAction = new GoToUrlAction({ url: `${baseUrl}/searchform`, newTab: false });
+    const gotoAction = { url: `${baseUrl}/searchform`, newTab: false } as GoToUrlAction;
     await controller.act({ goToUrl: gotoAction }, browserSession);
 
     // Wait for page to load

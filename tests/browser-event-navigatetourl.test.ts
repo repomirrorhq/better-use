@@ -29,10 +29,10 @@ describe('NavigateToUrlEvent Tests', () => {
   test('go to url action', async () => {
     // Test successful navigation to a valid page
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'https://example.com', 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -50,10 +50,10 @@ describe('NavigateToUrlEvent Tests', () => {
   test('go to url network error', async () => {
     // Create action model for go_to_url with an invalid domain
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'https://www.nonexistentdndbeyond.com/', 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     // Execute the action - should return soft error instead of throwing
@@ -89,10 +89,10 @@ describe('NavigateToUrlEvent Tests', () => {
     
     // Navigate to URL in new tab
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'https://example.com', 
         newTab: true 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -115,20 +115,20 @@ describe('NavigateToUrlEvent Tests', () => {
   test('navigate relative url', async () => {
     // First navigate to base URL
     const baseAction = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'https://example.com', 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     await controller.act(baseAction, browserSession);
     
     // Now navigate using relative URL
     const relativeAction = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: '/test', 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(relativeAction, browserSession);
@@ -145,20 +145,20 @@ describe('NavigateToUrlEvent Tests', () => {
   test('navigate javascript url', async () => {
     // Navigate to a normal page first
     const normalAction = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'https://example.com', 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     await controller.act(normalAction, browserSession);
     
     // Try to navigate to javascript: URL (should be handled gracefully)
     const jsAction = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'javascript:alert("test")', 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(jsAction, browserSession);
@@ -172,10 +172,10 @@ describe('NavigateToUrlEvent Tests', () => {
     const dataUrl = 'data:text/html,<html><head><title>Data URL Test</title></head><body><h1>Data URL Content</h1></body></html>';
     
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: dataUrl, 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -213,10 +213,10 @@ describe('NavigateToUrlEvent Tests', () => {
     
     // Navigate to hash
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: `${baseUrl}#section1`, 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -254,10 +254,10 @@ describe('NavigateToUrlEvent Tests', () => {
     
     // Navigate with query parameters
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: `${baseUrl}?q=test+query&page=1`, 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -281,30 +281,30 @@ describe('NavigateToUrlEvent Tests', () => {
   test('navigate multiple tabs', async () => {
     // Navigate to first page in current tab
     const action1 = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'https://example.com/page1', 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     await controller.act(action1, browserSession);
     
     // Open second page in new tab
     const action2 = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'https://example.com/page2', 
         newTab: true 
-      })
+      } as GoToUrlAction)
     });
     
     await controller.act(action2, browserSession);
     
     // Open home page in yet another new tab
     const action3 = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'https://example.com', 
         newTab: true 
-      })
+      } as GoToUrlAction)
     });
     
     await controller.act(action3, browserSession);
@@ -324,10 +324,10 @@ describe('NavigateToUrlEvent Tests', () => {
     const timeoutUrl = 'http://192.0.2.1:8080/timeout';
     
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: timeoutUrl, 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     // This should complete without hanging indefinitely
@@ -340,10 +340,10 @@ describe('NavigateToUrlEvent Tests', () => {
   test('navigate redirect', async () => {
     // For this test, we'll use a real redirect URL
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'http://google.com', // This redirects to https://www.google.com
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -367,7 +367,7 @@ describe('NavigateToUrlEvent Tests', () => {
       new NavigateToUrlEvent({ 
         url: 'https://example.com/page2', 
         newTab: true 
-      })
+      } as GoToUrlAction)
     );
     await navEvent;
     
@@ -394,7 +394,7 @@ describe('NavigateToUrlEvent Tests', () => {
       new NavigateToUrlEvent({ 
         url: 'https://example.com', 
         newTab: true 
-      })
+      } as GoToUrlAction)
     );
     await navEvent;
     
@@ -418,10 +418,10 @@ describe('NavigateToUrlEvent Tests', () => {
     
     // Navigate to another page on same domain
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'https://httpbin.org/cookies', 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -438,10 +438,10 @@ describe('NavigateToUrlEvent Tests', () => {
   
   test('navigate handles about:blank', async () => {
     const actionModel = new ActionModel({
-      goToUrl: new GoToUrlAction({ 
+      goToUrl: { 
         url: 'about:blank', 
         newTab: false 
-      })
+      } as GoToUrlAction)
     });
     
     const result = await controller.act(actionModel, browserSession);

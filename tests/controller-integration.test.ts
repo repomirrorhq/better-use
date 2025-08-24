@@ -190,7 +190,7 @@ describe('Controller Integration Tests', () => {
     }
 
     // Navigate to a page first
-    const gotoAction = { go_to_url: new GoToUrlAction({ url: `${baseUrl}/page1`, new_tab: false }) };
+    const gotoAction = { go_to_url: { url: `${baseUrl}/page1`, new_tab: false } as GoToUrlAction };
     
     class GoToUrlActionModel extends ActionModel {
       go_to_url?: GoToUrlAction;
@@ -241,7 +241,7 @@ describe('Controller Integration Tests', () => {
 
   test('go back action', async () => {
     // Navigate to first page
-    const gotoAction1 = { go_to_url: new GoToUrlAction({ url: `${baseUrl}/page1`, new_tab: false }) };
+    const gotoAction1 = { go_to_url: { url: `${baseUrl}/page1`, new_tab: false } as GoToUrlAction };
     
     class GoToUrlActionModel extends ActionModel {
       go_to_url?: GoToUrlAction;
@@ -253,7 +253,7 @@ describe('Controller Integration Tests', () => {
     const firstUrl = page1.url;
 
     // Navigate to second page
-    const gotoAction2 = { go_to_url: new GoToUrlAction({ url: `${baseUrl}/page2`, new_tab: false }) };
+    const gotoAction2 = { go_to_url: { url: `${baseUrl}/page2`, new_tab: false } as GoToUrlAction };
     await controller.act(new GoToUrlActionModel(gotoAction2), browserSession);
 
     const page2 = await browserSession.getCurrentPage();
@@ -286,7 +286,7 @@ describe('Controller Integration Tests', () => {
 
     // Navigate to each page
     for (const url of urls) {
-      const actionData = { go_to_url: new GoToUrlAction({ url, new_tab: false }) };
+      const actionData = { go_to_url: { url, new_tab: false } as GoToUrlAction };
       await controller.act(new GoToUrlActionModel(actionData), browserSession);
       
       const page = await browserSession.getCurrentPage();
@@ -341,7 +341,7 @@ describe('Controller Integration Tests', () => {
     const fileSystem = new FileSystem(tempDir);
 
     // Navigate to a page first
-    const gotoAction = { go_to_url: new GoToUrlAction({ url: `${baseUrl}/page1`, new_tab: false }) };
+    const gotoAction = { go_to_url: { url: `${baseUrl}/page1`, new_tab: false } as GoToUrlAction };
     
     class GoToUrlActionModel extends ActionModel {
       go_to_url?: GoToUrlAction;
@@ -380,7 +380,7 @@ describe('Controller Integration Tests', () => {
 
   test('send keys action', async () => {
     // Navigate to keyboard test page
-    const gotoAction = { go_to_url: new GoToUrlAction({ url: `${baseUrl}/keyboard`, new_tab: false }) };
+    const gotoAction = { go_to_url: { url: `${baseUrl}/keyboard`, new_tab: false } as GoToUrlAction };
     
     class GoToUrlActionModel extends ActionModel {
       go_to_url?: GoToUrlAction;

@@ -156,7 +156,7 @@ describe('TypeTextEvent Tests', () => {
   describe('TestTypeTextEvent', () => {
     test('test_input_text_action', async () => {
       // Navigate to a page with a form
-      const gotoAction = { go_to_url: new GoToUrlAction({ url: `${baseUrl}/searchform`, newTab: false }) };
+      const gotoAction = { go_to_url: { url: `${baseUrl}/searchform`, newTab: false } as GoToUrlAction };
       
       class GoToUrlActionModel extends ActionModel {
         go_to_url?: GoToUrlAction = undefined;
