@@ -98,7 +98,12 @@
   - MCP stdio mode logging (#2748) - Already fixed with MCPLogger utility
   - Self-referencing iframe protection (#2715) - Already implemented in DomService
   - Cross-origin iframe support - Already configurable via instance attribute
-- Python repository has 10 open issues that may need attention
+- Python repository has 10 open issues reviewed:
+  - #2730: BrowserSession args migration - TypeScript already uses proper separation
+  - #2760: Xinference support - Works via ChatOpenAILike with custom base_url
+  - #2769: MCP Server Schema Error - Needs investigation
+  - #2749: Documentation update needed (Playwright removal)
+  - #2746, #2745, #2734, #2720: Various runtime issues to monitor
 - TypeScript repository has no open issues
 
 ### Current Work Session
