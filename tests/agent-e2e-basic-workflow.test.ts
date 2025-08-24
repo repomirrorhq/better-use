@@ -58,7 +58,7 @@ describe('Agent E2E - Basic Workflow', () => {
     const agent = new Agent({
       task: 'Go to example.com and tell me the page title',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 5,
       includeGif: false,
     });
@@ -110,7 +110,7 @@ describe('Agent E2E - Basic Workflow', () => {
     const agent = new Agent({
       task: 'Test error handling',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 3,
       includeGif: false,
     });
@@ -146,7 +146,7 @@ describe('Agent E2E - Basic Workflow', () => {
     const agent = new Agent({
       task: 'Test max steps limit',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 3,
       includeGif: false,
     });
@@ -211,7 +211,7 @@ describe('Agent E2E - Basic Workflow', () => {
     const agent = new Agent({
       task: 'Fill out the form with name "Test User" and email "test@example.com"',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 10,
       includeGif: false,
     });
@@ -273,7 +273,7 @@ describe('Agent E2E - Basic Workflow', () => {
     const agent = new Agent({
       task: 'Navigate to example.com and take a screenshot',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 5,
       includeGif: false,
       includeScreenshot: true,
