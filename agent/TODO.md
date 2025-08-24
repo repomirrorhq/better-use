@@ -1,8 +1,9 @@
 # Browser-Use TypeScript Port - Status Tracker
 
 ## Current Status
-**Date:** 2025-08-24
+**Date:** 2025-08-24  
 **Overall Progress:** Core porting complete - 70% complete
+**Last Python Commit Checked:** 1173e2c3 (bump pre-commit check versions)
 
 ## Repository Structure Analysis
 
@@ -78,11 +79,12 @@
 - [ ] Fix bugs and implement improvements
 
 ## Next Immediate Steps
-1. ✅ Enhanced Agent service with missing methods
-2. ✅ Added retry logic and timeout handling for LLM calls
-3. ⏳ Port cloud events functionality
-4. ⏳ Port telemetry service
-5. ⏳ Port observability features
+1. Port recent Python updates (commits 9b67d026..1173e2c3):
+   - Update BrowserSession logging with unique IDs (session.py)
+   - Add cross-origin iframe option to DomService
+   - Minor config.py formatting updates
+2. Write E2E tests for main workflows
+3. Monitor and respond to GitHub issues
 
 ## Recent Accomplishments (2025-08-24)
 
