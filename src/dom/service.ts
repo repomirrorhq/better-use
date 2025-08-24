@@ -475,18 +475,32 @@ export class DomService {
       totalFrameOffset.y += snapshotData.bounds.y;
     }
 
-    // Process content document
+    // Process content document (with self-referencing iframe protection)
     if (node.contentDocument) {
-      domTreeNode.content_document = await this.constructEnhancedNode(
-        node.contentDocument,
-        updatedHtmlFrames,
-        totalFrameOffset,
-        axTreeLookup,
-        snapshotLookup,
-        enhancedDOMTreeNodeLookup,
-        targetId
-      );
-      domTreeNode.content_document.parent_node = domTreeNode;
+      // Prevent infinite recursion for self-referencing iframes
+      // Check if we've exceeded a reasonable iframe depth (GitHub issue #2715)
+      const MAX_IFRAME_DEPTH = 10;
+      const currentDepth = updatedHtmlFrames.filter(frame => 
+        DOMTreeNodeUtils.getTagName(frame) === 'iframe'
+      ).length;
+      
+      if (currentDepth < MAX_IFRAME_DEPTH) {
+        domTreeNode.content_document = await this.constructEnhancedNode(
+          node.contentDocument,
+          updatedHtmlFrames,
+          totalFrameOffset,
+          axTreeLookup,
+          snapshotLookup,
+          enhancedDOMTreeNodeLookup,
+          targetId
+        );
+        domTreeNode.content_document.parent_node = domTreeNode;
+      } else {
+        // Mark as max depth reached for debugging
+        domTreeNode.attributes = domTreeNode.attributes || {};
+        domTreeNode.attributes['data-max-iframe-depth-reached'] = 'true';
+        this.logger.debug(`Max iframe depth (${MAX_IFRAME_DEPTH}) reached, skipping content to prevent infinite recursion`);
+      }
     }
 
     // Process shadow roots
