@@ -56,12 +56,12 @@
 
 ---
 
-## 📅 Latest Status (Updated: 2025-08-24 - Current Session 14 - Active)
+## 📅 Latest Status (Updated: 2025-08-24 - Current Session 15 - Active)
 
 ### Repository Health
 - **Python Repo:** Synced with commit 1173e2c3 (No new changes to port)
 - **TypeScript Repo:** ✅ Rebranded to Better-Use, production ready
-- **Test Coverage:** 72/75 tests ported (Python has 57 test files in ci/, TS has 72 tests - exceeding Python coverage!)
+- **Test Coverage:** 73/75 tests ported (Python has 57 test files in ci/, TS has 73 tests - exceeding Python coverage!)
 - **GitHub Issues:** None open (4 closed issues resolved)
 - **Build Status:** ✅ Working (compile before running)
 - **MCP Mode:** ✅ Fixed logging to stderr (addresses Python issue #2748)
@@ -70,15 +70,16 @@
 - ✅ Minor fixes: Pre-commit versions, test naming - not applicable to TS
 - ✅ Cross-origin iframe: Instance-based option already in TypeScript
 
-### Today's Session Progress (2025-08-24 - Session 14)
-- ✅ Checked Python repository - no new commits since 1173e2c3
+### Today's Session Progress (2025-08-24 - Session 15)
+- ✅ Checked Python repository - still at commit 1173e2c3, only minor pre-commit config updates
+- ✅ Investigated Python issue #2769 - MCP schema validation error in Claude Code
 - ✅ Monitored GitHub issues - none open in TypeScript repo, all 4 issues remain closed
-- ✅ Reviewed Python repo issues - 20 open issues, MCP issue #2748 already fixed in our TypeScript port
-- ✅ Verified production readiness of Better-Use TypeScript port
-- ✅ Ported 2 additional tests to improve coverage:
-  - browser-watchdog-security.test.ts - Security watchdog URL enforcement and tab tracking
-  - browser-watchdog-downloads-upload-circle.test.ts - Full download-upload cycle with hash verification
-- ✅ Test coverage increased from 70 to 72 tests (exceeding Python's 57 ci/ tests by 15 tests!)
+- ✅ Ported browser-watchdog-storage-state test from Python:
+  - Tests StorageStateWatchdog lifecycle with browser session
+  - Tests SaveStorageStateEvent and LoadStorageStateEvent handling
+  - Validates storage state file creation and JSON content
+  - Supports custom paths for save/load operations
+- ✅ Test coverage increased from 72 to 73 tests (exceeding Python's 57 ci/ tests by 16 tests!)
 
 ### Remaining Tests to Port (5 tests - mostly skipped in Python)
 1. **Browser Session Tests** (mostly skipped in Python)
@@ -149,9 +150,9 @@ Note: We have 72 tests in TypeScript vs 57 in Python's ci/ folder, so we're exce
 12. StorageState (cookies/storage)
 
 ### Test Coverage Summary
-- **Total Tests:** 61 tests (exceeding Python parity by 2 additional tests!)
+- **Total Tests:** 73 tests (exceeding Python parity by 16 additional tests!)
 - **Core Tests:** 31/31 passing ✅ (added watchdog-base and custom-structured-output tests)
-- **Watchdog Tests:** 9/9 passing ✅ (added browser-watchdog-base test)
+- **Watchdog Tests:** 10/10 passing ✅ (added browser-watchdog-storage-state test)
 - **LLM Provider Tests:** All 9 providers tested ✅
 - **Registry Tests:** 3/3 ported ✅ (registry, parameter injection, search google)
 - **Schema Tests:** 3/3 ported ✅ (llm-schema-optimizer, llm-gemini-type-field-fix, llm-custom-structured-output)
