@@ -624,7 +624,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
         }
         if (lastResult.attachments && lastResult.attachments.length > 0) {
           const totalAttachments = lastResult.attachments.length;
-          lastResult.attachments.forEach((filePath, i) => {
+          lastResult.attachments.forEach((filePath: string, i: number) => {
             const attachmentNum = totalAttachments > 1 ? `${i + 1} ` : '';
             this.logger.info(`👉 Attachment ${attachmentNum}: ${filePath}`);
           });
@@ -796,7 +796,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     for (const action of actions) {
       try {
         // Execute action through controller
-        const result = await this.controller.act(action, this.browserSession);
+        const result = await this.controller.act(action, this.browserSession!);
         results.push(result);
       } catch (error: any) {
         results.push(createActionResult({ error: error.message }));
@@ -828,7 +828,7 @@ export class Agent<TContext = any, TStructuredOutput = any> extends EventEmitter
     // Log token usage if available
     const usage = await this.tokenCost.getUsageSummary();
     if (usage) {
-      this.logger.info(`💰 Token usage - Input: ${usage.input_tokens}, Output: ${usage.output_tokens}, Total Cost: $${usage.total_cost.toFixed(4)}`);
+      this.logger.info(`💰 Token usage - Input: ${usage.total_prompt_tokens}, Output: ${usage.total_completion_tokens}, Total Cost: $${usage.total_cost.toFixed(4)}`);
     }
   }
 }
