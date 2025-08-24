@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { Agent } from '../src/agent';
 import { BrowserSession } from '../src/browser/session';
+import { BrowserProfile } from '../src/browser/profile';
 import { MockLLM } from './test-utils/mockLLM';
 
 describe('Agent E2E - Multi-Tab Navigation', () => {
@@ -8,10 +9,10 @@ describe('Agent E2E - Multi-Tab Navigation', () => {
 
   beforeAll(async () => {
     browser = new BrowserSession({
-      profile: {
+      profile: new BrowserProfile({
         headless: true,
         disableImages: true,
-      },
+      }),
     });
     await browser.start();
   });
