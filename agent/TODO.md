@@ -87,9 +87,10 @@
    - All critical issues from Python already addressed
    - Build compiles successfully without errors
 2. Ongoing maintenance tasks:
-   - Monitor Python repository for new updates
-   - Address GitHub issues as they arise
+   - Monitor Python repository for new updates (20 open issues, mostly runtime/config)
+   - Address GitHub issues as they arise (currently 0 open)
    - Improve test coverage and stability
+   - Fixed popup window handling (Python issue #2639)
 3. Documentation improvements:
    - Update any references to Playwright (removed from Python)
    - Add migration guide for BrowserSession/BrowserProfile changes
