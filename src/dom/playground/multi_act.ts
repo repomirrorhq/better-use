@@ -1,10 +1,10 @@
 import { Agent } from '../../agent';
 import { BrowserProfile, BrowserSession } from '../../browser';
-import { ViewportSize } from '../../browser/views';
-import { AzureOpenAIChat } from '../../llm/providers/azure';
+// ViewportSize not needed - use inline type
+import { ChatAzureOpenAI } from '../../llm/providers/azure';
 
 // Initialize the Azure OpenAI client
-const llm = new AzureOpenAIChat({
+const llm = new ChatAzureOpenAI({
   model: 'gpt-4.1-mini',
   // Add your Azure OpenAI configuration here
   // apiKey: process.env.AZURE_OPENAI_API_KEY,
@@ -19,14 +19,15 @@ Go to https://browser-use.github.io/stress-tests/challenges/react-native-web-for
 async function main() {
   const browser = new BrowserSession({
     profile: new BrowserProfile({
-      viewport: { width: 1100, height: 1000 } as ViewportSize,
+      viewport_width: 1100,
+      viewport_height: 1000,
     }),
   });
 
   const agent = new Agent({
     task: TASK,
     llm,
-    browser,
+    browserSession: browser,
   });
 
   await agent.run();

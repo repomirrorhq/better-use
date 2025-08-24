@@ -1,20 +1,21 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { BrowserProfile, BrowserSession } from '../../browser';
-import { ViewportSize } from '../../browser/views';
+// ViewportSize not needed - use inline type
 import { NavigateToUrlEvent } from '../../browser/events';
 import { DomService } from '../service';
 import { EnhancedDOMTreeNode } from '../views';
-import { inject_highlighting_script, remove_highlighting_script } from '../debug';
+import { injectHighlightingScript, removeHighlightingScript } from '../debug';
 
 async function main() {
   const browser = new BrowserSession({
     profile: new BrowserProfile({
-      viewport: { width: 1100, height: 1000 } as ViewportSize,
-      disableSecurity: true,
-      waitForNetworkIdlePageLoadTime: 1,
+      viewport_width: 1100,
+      viewport_height: 1000,
+      disable_web_security: true,
+      wait_for_network_idle_page_load_time: 1,
       headless: false,
-      args: ['--incognito'],
+      chrome_args: ['--incognito'],
     }),
   });
 
@@ -22,9 +23,12 @@ async function main() {
 
   // Navigate to test page
   const navEvent = browser.eventBus.dispatch(
-    new NavigateToUrlEvent({
-      url: 'https://v0-website-with-clickable-elements.vercel.app/nested-iframe',
-    })
+    {
+      name: 'navigate_to_url',
+      args: {
+        url: 'https://v0-website-with-clickable-elements.vercel.app/nested-iframe',
+      }
+    } as any
   );
   await navEvent;
 
@@ -33,10 +37,10 @@ async function main() {
 
   while (true) {
     const domService = new DomService(browser);
-    await domService.connect();
+    // domService doesn't need connect() - it's initialized with browser
 
     try {
-      await remove_highlighting_script(domService);
+      await removeHighlightingScript(domService);
 
       const start = Date.now();
       
@@ -46,22 +50,22 @@ async function main() {
         targetId = browser.agentFocus.targetId;
       } else {
         // Get first available target
-        const targets = await browser._cdpGetAllPages();
+        const targets = await (browser as any)._cdpGetAllPages();
         if (!targets || targets.length === 0) {
           throw new Error('No targets available');
         }
         targetId = targets[0].targetId;
       }
 
-      const result = await domService.getDomTree(targetId);
+      const domResult = await domService.getDOMTree(targetId);
       let domTree: EnhancedDOMTreeNode;
       let domTiming: any = {};
       
-      if (Array.isArray(result)) {
-        domTree = result[0];
-        domTiming = result[1] || {};
+      if (Array.isArray(domResult)) {
+        domTree = domResult[0];
+        domTiming = domResult[1] || {};
       } else {
-        domTree = result;
+        domTree = domResult;
       }
 
       const end = Date.now();
@@ -73,7 +77,7 @@ async function main() {
 
       // Save DOM tree to file
       const outputPath = path.join(tmpDir, 'enhanced_dom_tree.json');
-      await fs.writeFile(outputPath, JSON.stringify(domTree.toJSON(), null, 2));
+      await fs.writeFile(outputPath, JSON.stringify(domTree, null, 2));
       console.log(`Saved enhanced dom tree to ${outputPath}`);
 
       // Count visible and clickable elements
@@ -81,15 +85,15 @@ async function main() {
       let totalWithSnapshot = 0;
 
       function countElements(node: EnhancedDOMTreeNode) {
-        if (node.snapshotNode) {
+        if (node.snapshot_node) {
           totalWithSnapshot++;
-          if (node.isVisible && node.snapshotNode.isClickable) {
+          if (node.is_visible && node.snapshot_node.is_clickable) {
             visibleClickableCount++;
           }
         }
 
-        if (node.childrenNodes) {
-          for (const child of node.childrenNodes) {
+        if (node.children_nodes) {
+          for (const child of node.children_nodes) {
             countElements(child);
           }
         }
@@ -100,21 +104,23 @@ async function main() {
         `Found ${visibleClickableCount} visible clickable elements out of ${totalWithSnapshot} elements with snapshot data`
       );
 
-      const { dom, timing } = await domService.getSerializedDomTree();
-      console.log('DOM serialization timing:', timing);
+      const serializedResult = await domService.getSerializedDOMTree();
+      const dom = serializedResult[0];
+      const timing = serializedResult[2];
+      console.log('DOM serialization timing:', timing || {});
 
       // Test highlight functionality
-      await inject_highlighting_script(domService);
+      await injectHighlightingScript(domService, []);
       console.log('Highlighting script injected');
       
       // Wait a bit to see highlights
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      await remove_highlighting_script(domService);
+      await removeHighlightingScript(domService);
       console.log('Highlighting script removed');
 
     } finally {
-      await domService.disconnect();
+      // domService doesn't need disconnect()
     }
 
     // Wait before next iteration
