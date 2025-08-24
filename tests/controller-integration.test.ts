@@ -260,7 +260,7 @@ describe('Controller Integration Tests', () => {
     expect(page2.url).toContain(`${baseUrl}/page2`);
 
     // Go back
-    const goBackAction = { go_back: new NoParamsAction() };
+    const goBackAction = { go_back: {} as NoParamsAction };
     
     class GoBackActionModel extends ActionModel {
       go_back?: NoParamsAction;
@@ -299,7 +299,7 @@ describe('Controller Integration Tests', () => {
     }
 
     for (const expectedUrl of urls.slice(0, -1).reverse()) {
-      const goBackAction = { go_back: new NoParamsAction() };
+      const goBackAction = { go_back: {} as NoParamsAction };
       await controller.act(new GoBackActionModel(goBackAction), browserSession);
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -321,7 +321,7 @@ describe('Controller Integration Tests', () => {
   test('search google action', async () => {
     await browserSession.getCurrentPage();
 
-    const searchAction = { search_google: new SearchGoogleAction({ query: 'Python web automation' }) };
+    const searchAction = { search_google: { query: 'Python web automation' } as SearchGoogleAction };
     
     class SearchGoogleActionModel extends ActionModel {
       search_google?: SearchGoogleAction;
@@ -351,7 +351,7 @@ describe('Controller Integration Tests', () => {
 
     // Test success done action
     const successDoneMessage = 'Successfully completed task';
-    const doneAction = { done: new DoneAction({ text: successDoneMessage, success: true }) };
+    const doneAction = { done: { text: successDoneMessage, success: true } as DoneAction };
     
     class DoneActionModel extends ActionModel {
       done?: DoneAction;
@@ -367,7 +367,7 @@ describe('Controller Integration Tests', () => {
 
     // Test failure done action
     const failedDoneMessage = 'Failed to complete task';
-    const failedDoneAction = { done: new DoneAction({ text: failedDoneMessage, success: false }) };
+    const failedDoneAction = { done: { text: failedDoneMessage, success: false } as DoneAction };
 
     const failedResult = await controller.act(new DoneActionModel(failedDoneAction), browserSession, { fileSystem });
 
@@ -396,7 +396,7 @@ describe('Controller Integration Tests', () => {
     expect(title).toBe('Keyboard Test');
 
     // Test Tab key
-    const tabKeysAction = { send_keys: new SendKeysAction({ keys: 'Tab' }) };
+    const tabKeysAction = { send_keys: { keys: 'Tab' } as SendKeysAction };
     
     class SendKeysActionModel extends ActionModel {
       send_keys?: SendKeysAction;
@@ -412,7 +412,7 @@ describe('Controller Integration Tests', () => {
 
     // Type text
     const testText = 'This is a test';
-    const typeAction = { send_keys: new SendKeysAction({ keys: testText }) };
+    const typeAction = { send_keys: { keys: testText } as SendKeysAction };
     const typeResult = await controller.act(new SendKeysActionModel(typeAction), browserSession);
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -422,7 +422,7 @@ describe('Controller Integration Tests', () => {
     expect(inputValue).toBe(testText);
 
     // Test Ctrl+A
-    const selectAllAction = { send_keys: new SendKeysAction({ keys: 'ControlOrMeta+a' }) };
+    const selectAllAction = { send_keys: { keys: 'ControlOrMeta+a' } as SendKeysAction };
     const selectAllResult = await controller.act(new SendKeysActionModel(selectAllAction), browserSession);
     await new Promise(resolve => setTimeout(resolve, 1000));
 

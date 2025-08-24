@@ -160,7 +160,7 @@ describe('TypeTextEvent Advanced Tests', () => {
     const mockInputIndex = 1;
 
     // Create input text action
-    const inputAction = new InputTextAction({ index: mockInputIndex, text: 'Python programming' });
+    const inputAction = { index: mockInputIndex, text: 'Python programming' } as InputTextAction;
     const result = await controller.act({ inputText: inputAction }, browserSession);
 
     // Verify result

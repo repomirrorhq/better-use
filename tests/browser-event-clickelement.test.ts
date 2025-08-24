@@ -492,10 +492,10 @@ describe('ClickElementEvent Tests', () => {
       
       // Upload the file
       const uploadAction = new ActionModel({
-        uploadFileToElement: new UploadFileAction({ 
+        uploadFileToElement: { 
           index: labelIndex!, 
           path: testFilePath 
-        })
+        } as UploadFileAction
       });
       
       const result = await controller.act(

@@ -174,7 +174,7 @@ describe('TypeTextEvent Tests', () => {
       const mockInputIndex = 1;
 
       // Create input text action
-      const inputAction = { input_text: new InputTextAction({ index: mockInputIndex, text: 'Python programming' }) };
+      const inputAction = { input_text: { index: mockInputIndex, text: 'Python programming' } as InputTextAction };
 
       class InputTextActionModel extends ActionModel {
         input_text?: InputTextAction = undefined;
