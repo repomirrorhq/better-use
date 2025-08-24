@@ -63,27 +63,32 @@ describe('Agent E2E - Basic Workflow', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify the agent completed the task
-    expect(history).toBeDefined();
-    expect(history.length).toBeGreaterThan(0);
+    expect(result).toBeDefined();
+    expect(result.length).toBeGreaterThan(0);
 
     // Check that navigation occurred
-    const navStep = history.find(
-      (step) => step.action?.name === 'navigate_to_url'
+    const navStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'navigate_to_url')
     );
     expect(navStep).toBeDefined();
-    expect(navStep?.action?.parameters?.url).toBe('https://example.com');
+    
+    // Check the URL parameter
+    const navAction = navStep?.model_output?.action?.find(a => a.name === 'navigate_to_url');
+    expect(navAction?.parameters?.url).toBe('https://example.com');
 
     // Check that extraction occurred
-    const extractStep = history.find(
-      (step) => step.action?.name === 'extract_page_info'
+    const extractStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'extract_page_info')
     );
     expect(extractStep).toBeDefined();
 
     // Check that the agent marked the task as done
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'done')
+    );
     expect(doneStep).toBeDefined();
   }, 30000);
 
@@ -115,18 +120,22 @@ describe('Agent E2E - Basic Workflow', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Agent should handle the error and continue
-    expect(history).toBeDefined();
-    expect(history.length).toBeGreaterThan(0);
+    expect(result).toBeDefined();
+    expect(result.length).toBeGreaterThan(0);
 
     // Should have an error in the history
-    const errorStep = history.find((step) => step.error !== undefined);
+    const errorStep = result.find((step) => 
+      step.result?.some(r => r.error !== null)
+    );
     expect(errorStep).toBeDefined();
 
     // Should still complete
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find((step) => 
+      step.model_output?.action?.some(a => a.name === 'done')
+    );
     expect(doneStep).toBeDefined();
   }, 30000);
 
@@ -151,10 +160,10 @@ describe('Agent E2E - Basic Workflow', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Should stop at maxStepsPerRun
-    expect(history.length).toBeLessThanOrEqual(3);
+    expect(result.length).toBeLessThanOrEqual(3);
   }, 30000);
 
   it('should handle multi-step form interaction', async () => {
@@ -216,31 +225,33 @@ describe('Agent E2E - Basic Workflow', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify all actions were executed
-    expect(history.length).toBeGreaterThanOrEqual(4);
+    expect(result.length).toBeGreaterThanOrEqual(4);
     
     // Check navigation
-    const navStep = history.find(
-      (step) => step.action?.name === 'navigate_to_url'
+    const navStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'navigate_to_url')
     );
     expect(navStep).toBeDefined();
 
     // Check form filling
-    const typeSteps = history.filter(
-      (step) => step.action?.name === 'type_text'
+    const typeSteps = result.history.filter(
+      (step) => step.model_output?.action?.some(a => a.name === 'type_text')
     );
     expect(typeSteps.length).toBe(2);
 
     // Check form submission
-    const clickStep = history.find(
-      (step) => step.action?.name === 'click_element'
+    const clickStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'click_element')
     );
     expect(clickStep).toBeDefined();
 
     // Check completion
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'done')
+    );
     expect(doneStep).toBeDefined();
   }, 30000);
 
@@ -279,17 +290,17 @@ describe('Agent E2E - Basic Workflow', () => {
       includeScreenshot: true,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify screenshot action was executed
-    const screenshotStep = history.find(
-      (step) => step.action?.name === 'screenshot'
+    const screenshotStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'screenshot')
     );
     expect(screenshotStep).toBeDefined();
 
     // At least one step should have a screenshot
-    const stepsWithScreenshot = history.filter(
-      (step) => step.screenshot !== undefined
+    const stepsWithScreenshot = result.history.filter(
+      (step) => step.state?.screenshot_path !== null
     );
     expect(stepsWithScreenshot.length).toBeGreaterThan(0);
   }, 30000);

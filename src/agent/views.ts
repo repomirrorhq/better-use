@@ -552,6 +552,10 @@ export class AgentHistoryListHelper implements AgentHistoryList {
   numberOfSteps(): number {
     return this.history.length;
   }
+
+  find(predicate: (step: AgentHistory) => boolean): AgentHistory | undefined {
+    return this.history.find(predicate);
+  }
 }
 
 // Agent Error utility class
