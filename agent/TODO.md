@@ -91,6 +91,17 @@
 
 ## Recent Accomplishments (2025-08-24)
 
+### Current Work Session
+- Fixed MCP stdio mode logging issues (addresses Python issue #2748)
+  - Created MCPLogger utility that respects stdio mode
+  - All MCP logging now uses stderr to avoid polluting stdout
+  - Fixed telemetry debug output to use stderr
+  - Added isMCPStdioMode detection for --mcp flag
+- Fixed TypeScript build errors in agent service
+  - Added proper type annotations
+  - Fixed token usage property names
+- Build now compiles successfully without errors
+
 ### Latest Session
 - Verified synchronization with Python repository (commit 1173e2c3)
 - Confirmed all recent Python updates are already ported:
