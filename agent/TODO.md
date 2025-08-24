@@ -114,12 +114,12 @@
 12. StorageState (cookies/storage)
 
 ### Test Coverage Summary
-- **Total Tests:** 59 tests ported from Python (100% parity achieved!)
-- **Core Tests:** 29/29 passing ✅ (added schema optimizer test)
-- **Watchdog Tests:** 8/8 passing ✅
+- **Total Tests:** 61 tests (exceeding Python parity by 2 additional tests!)
+- **Core Tests:** 31/31 passing ✅ (added watchdog-base and custom-structured-output tests)
+- **Watchdog Tests:** 9/9 passing ✅ (added browser-watchdog-base test)
 - **LLM Provider Tests:** All 9 providers tested ✅
 - **Registry Tests:** 3/3 ported ✅ (registry, parameter injection, search google)
-- **Schema Tests:** 2/2 ported ✅ (llm-schema-optimizer, llm-gemini-type-field-fix)
+- **Schema Tests:** 3/3 ported ✅ (llm-schema-optimizer, llm-gemini-type-field-fix, llm-custom-structured-output)
 - **Error Handling Tests:** 1/1 ported ✅ (llm-anthropic-502-error)
 - **Test Naming:** Tests use kebab-case in TypeScript (e.g., browser-event-clickelement.test.ts)
 - **Note:** Sync/cloud tests excluded as lower priority for TypeScript port
@@ -161,7 +161,7 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
 - ✅ Monitored GitHub issues for browser-use-ts (all closed)
 - ✅ Identified and ported DOM playground utilities
 - ✅ Fixed self-referencing iframe infinite recursion issue
-- Maintaining 100% test parity achieved in previous session
+- ✅ Ported additional test files to improve coverage beyond Python parity
 
 ### Accomplishments This Session
 ✅ **DOM Playground Utilities Ported:**
@@ -180,6 +180,17 @@ The TypeScript port has achieved **complete feature parity** with the Python ver
    - Prevents stack overflow on pages with infinitely nested iframes
    - Addresses Python browser-use issue #2715
    - Adds debugging attributes for deep iframe nesting
+
+✅ **Additional Tests Ported (Beyond Python Parity):**
+4. **browser-watchdog-base.test.ts** - Watchdog integration testing
+   - Tests watchdog integration with session lifecycle
+   - Tests watchdog event handler registration
+   - Verifies all watchdogs are operational during browser session
+
+5. **llm-custom-structured-output.test.ts** - Schema optimization testing
+   - Tests optimized schema generation and token savings
+   - Compares original vs optimized schema token counts
+   - Saves optimized schema to tmp directory for inspection
 
 ### Previous Session Accomplishments
 ✅ **Test Coverage Milestone Achieved:**
