@@ -7,3 +7,5 @@
 
 export { DOMPlayground, runDOMPlayground } from './extraction';
 export type { PlaygroundConfig, WebsiteTestResult, ViewportSize } from './extraction';
+export { main as runTreePlayground } from './tree';
+export { main as runMultiActPlayground } from './multi_act';
