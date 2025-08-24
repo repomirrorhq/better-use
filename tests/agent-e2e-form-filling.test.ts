@@ -117,31 +117,34 @@ describe('Agent E2E - Form Filling and Submission', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify form filling steps
-    const typeSteps = history.filter(
-      (step) => step.action?.name === 'type_text'
+    const typeSteps = result.result.filter(
+      (step) => step.model_output?.action?.some(a => a.name === 'type_text')
     );
     expect(typeSteps.length).toBe(3);
-    expect(typeSteps[0].action?.parameters?.text).toBe('John Doe');
-    expect(typeSteps[1].action?.parameters?.text).toBe('john.doe@example.com');
-    expect(typeSteps[2].action?.parameters?.text).toContain('test message');
+    const typeActions = typeSteps.map(s => s.model_output?.action?.find(a => a.name === 'type_text'));
+    expect(typeActions[0]?.parameters?.text).toBe('John Doe');
+    expect(typeActions[1]?.parameters?.text).toBe('john.doe@example.com');
+    expect(typeActions[2]?.parameters?.text).toContain('test message');
 
     // Verify form submission
-    const clickStep = history.find(
-      (step) => step.action?.name === 'click_element'
+    const clickStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'click_element')
     );
     expect(clickStep).toBeDefined();
 
     // Verify success extraction
-    const extractStep = history.find(
-      (step) => step.action?.name === 'extract_page_info'
+    const extractStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'extract_page_info')
     );
     expect(extractStep).toBeDefined();
 
     // Check completion
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'done')
+    );
     expect(doneStep).toBeDefined();
   }, 30000);
 
@@ -241,27 +244,27 @@ describe('Agent E2E - Form Filling and Submission', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify dropdown interactions
-    const getOptionsSteps = history.filter(
+    const getOptionsSteps = result.filter(
       (step) => step.action?.name === 'get_dropdown_options'
     );
     expect(getOptionsSteps.length).toBe(2);
 
-    const selectSteps = history.filter(
+    const selectSteps = result.filter(
       (step) => step.action?.name === 'select_dropdown_option'
     );
     expect(selectSteps.length).toBe(2);
 
     // Verify form submission
-    const clickStep = history.find(
+    const clickStep = result.find(
       (step) => step.action?.name === 'click_element'
     );
     expect(clickStep).toBeDefined();
 
     // Check completion
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find((step) => step.action?.name === 'done');
     expect(doneStep).toBeDefined();
   }, 30000);
 
@@ -346,16 +349,18 @@ describe('Agent E2E - Form Filling and Submission', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify all clicks were executed
-    const clickSteps = history.filter(
-      (step) => step.action?.name === 'click_element'
+    const clickSteps = result.history.filter(
+      (step) => step.model_output?.action?.some(a => a.name === 'click_element')
     );
     expect(clickSteps.length).toBe(4);
 
     // Check completion
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'done')
+    );
     expect(doneStep).toBeDefined();
   }, 30000);
 
@@ -509,10 +514,10 @@ describe('Agent E2E - Form Filling and Submission', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify validation error handling
-    const extractSteps = history.filter(
+    const extractSteps = result.filter(
       (step) => step.action?.name === 'extract_page_info'
     );
     expect(extractSteps.length).toBeGreaterThanOrEqual(2);
@@ -524,7 +529,7 @@ describe('Agent E2E - Form Filling and Submission', () => {
     expect(successExtract).toBeDefined();
 
     // Check completion
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find((step) => step.action?.name === 'done');
     expect(doneStep).toBeDefined();
   }, 30000);
 
@@ -596,29 +601,29 @@ describe('Agent E2E - Form Filling and Submission', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify title was filled
-    const typeStep = history.find(
+    const typeStep = result.find(
       (step) => step.action?.name === 'type_text'
     );
     expect(typeStep).toBeDefined();
     expect(typeStep?.action?.parameters?.text).toBe('Test Document');
 
     // Verify file upload action
-    const uploadStep = history.find(
+    const uploadStep = result.find(
       (step) => step.action?.name === 'upload_file'
     );
     expect(uploadStep).toBeDefined();
 
     // Verify form submission
-    const clickStep = history.find(
+    const clickStep = result.find(
       (step) => step.action?.name === 'click_element'
     );
     expect(clickStep).toBeDefined();
 
     // Check completion
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find((step) => step.action?.name === 'done');
     expect(doneStep).toBeDefined();
   }, 30000);
 });

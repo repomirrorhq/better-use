@@ -106,39 +106,42 @@ describe('Agent E2E - Multi-Tab Navigation', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify the agent completed all steps
-    expect(history).toBeDefined();
-    expect(history.length).toBeGreaterThanOrEqual(7);
+    expect(result).toBeDefined();
+    expect(result.length).toBeGreaterThanOrEqual(7);
 
     // Check that both navigations occurred
-    const navSteps = history.filter(
-      (step) => step.action?.name === 'navigate_to_url'
+    const navSteps = result.history.filter(
+      (step) => step.model_output?.action?.some(a => a.name === 'navigate_to_url')
     );
     expect(navSteps.length).toBe(2);
-    expect(navSteps[1].action?.parameters?.new_tab).toBe(true);
+    const secondNav = navSteps[1]?.model_output?.action?.find(a => a.name === 'navigate_to_url');
+    expect(secondNav?.parameters?.new_tab).toBe(true);
 
     // Check tab switching
-    const switchSteps = history.filter(
-      (step) => step.action?.name === 'switch_tab'
+    const switchSteps = result.history.filter(
+      (step) => step.model_output?.action?.some(a => a.name === 'switch_tab')
     );
     expect(switchSteps.length).toBeGreaterThanOrEqual(2);
 
     // Check extraction from both tabs
-    const extractSteps = history.filter(
-      (step) => step.action?.name === 'extract_page_info'
+    const extractSteps = result.history.filter(
+      (step) => step.model_output?.action?.some(a => a.name === 'extract_page_info')
     );
     expect(extractSteps.length).toBe(2);
 
     // Check tab closure
-    const closeStep = history.find(
-      (step) => step.action?.name === 'close_tab'
+    const closeStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'close_tab')
     );
     expect(closeStep).toBeDefined();
 
     // Check completion
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'done')
+    );
     expect(doneStep).toBeDefined();
   }, 30000);
 
@@ -197,16 +200,18 @@ describe('Agent E2E - Multi-Tab Navigation', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify clicks were executed
-    const clickSteps = history.filter(
-      (step) => step.action?.name === 'click_element'
+    const clickSteps = result.history.filter(
+      (step) => step.model_output?.action?.some(a => a.name === 'click_element')
     );
     expect(clickSteps.length).toBe(2);
 
     // Check completion
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'done')
+    );
     expect(doneStep).toBeDefined();
   }, 30000);
 
@@ -268,19 +273,22 @@ describe('Agent E2E - Multi-Tab Navigation', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify data was extracted from both tabs
-    const extractSteps = history.filter(
-      (step) => step.action?.name === 'extract_page_info'
+    const extractSteps = result.history.filter(
+      (step) => step.model_output?.action?.some(a => a.name === 'extract_page_info')
     );
     expect(extractSteps.length).toBe(2);
 
     // Check that agent maintained context
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'done')
+    );
     expect(doneStep).toBeDefined();
-    expect(doneStep?.action?.parameters?.summary).toContain('tab 1');
-    expect(doneStep?.action?.parameters?.summary).toContain('tab 2');
+    const doneAction = doneStep?.model_output?.action?.find(a => a.name === 'done');
+    expect(doneAction?.parameters?.summary).toContain('tab 1');
+    expect(doneAction?.parameters?.summary).toContain('tab 2');
   }, 30000);
 
   it('should handle tab limit gracefully', async () => {
@@ -325,21 +333,23 @@ describe('Agent E2E - Multi-Tab Navigation', () => {
       includeGif: false,
     });
 
-    const history = await agent.run();
+    const result = await agent.run();
 
     // Verify navigation attempts
-    const navSteps = history.filter(
-      (step) => step.action?.name === 'navigate_to_url'
+    const navSteps = result.history.filter(
+      (step) => step.model_output?.action?.some(a => a.name === 'navigate_to_url')
     );
     expect(navSteps.length).toBeGreaterThan(0);
 
     // Check completion without errors
-    const doneStep = history.find((step) => step.action?.name === 'done');
+    const doneStep = result.find(
+      (step) => step.model_output?.action?.some(a => a.name === 'done')
+    );
     expect(doneStep).toBeDefined();
     
     // Check no critical errors occurred
-    const criticalErrors = history.filter(
-      (step) => step.error && step.error.includes('crashed')
+    const criticalErrors = result.history.filter(
+      (step) => step.result?.some(r => r.error && r.error.includes('crashed'))
     );
     expect(criticalErrors.length).toBe(0);
   }, 30000);
