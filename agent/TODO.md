@@ -61,7 +61,7 @@
 ### Repository Health
 - **Python Repo:** Synced with commit 1173e2c3 (No new changes to port)
 - **TypeScript Repo:** ✅ Rebranded to Better-Use, production ready
-- **Test Coverage:** 65/75 tests ported (Python has 75 test files, TS has 65)
+- **Test Coverage:** 68/75 tests ported (Python has 75 test files, TS has 68 - 91% coverage)
 - **GitHub Issues:** None open (4 closed issues resolved)
 - **Build Status:** ✅ Working (compile before running)
 - **MCP Mode:** ✅ Fixed logging to stderr (addresses Python issue #2748)
@@ -75,18 +75,20 @@
 - ✅ Monitored GitHub issues - none open in TypeScript repo, all 4 issues remain closed
 - ✅ Reviewed Python repo issues - 10 open issues, MCP issue #2769 already fixed in our TypeScript port
 - ✅ Verified production readiness of Better-Use TypeScript port
+- ✅ Ported 3 additional tests to improve coverage:
+  - browser-session-storage-state.test.ts - Cookie and localStorage persistence
+  - browser-session-viewport-proxy.test.ts - Viewport and proxy configuration
+  - browser-watchdog-screenshots.test.ts - Screenshot capture functionality
+- ✅ Test coverage increased from 65 to 68 tests (91% of Python's 75 tests)
 
-### Remaining Tests to Port (10 tests)
+### Remaining Tests to Port (7 tests - down from 10)
 1. **Browser Session Tests** (high priority)
    - test_browser_session_element_cache.py (skipped in Python - uses removed method)
    - test_browser_session_file_uploads.py (skipped in Python)
    - test_browser_session_tab_management.py (skipped in Python - test timeouts)
-   - test_browser_session_storage_state.py
-   - test_browser_session_viewport_and_proxy.py
    
 2. **Watchdog Tests** (medium priority)
    - test_browser_watchdog_permissions.py
-   - test_browser_watchdog_screenshots.py
    - test_browser_watchdog_storage_state.py
    
 3. **Sync/Cloud Tests** (low priority - cloud features)
