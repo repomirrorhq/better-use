@@ -61,7 +61,7 @@
 ### Repository Health
 - **Python Repo:** Synced with commit 1173e2c3 (No new changes to port)
 - **TypeScript Repo:** ✅ Rebranded to Better-Use, production ready
-- **Test Coverage:** 71/75 tests ported (Python has 57 test files in ci/, TS has 71 tests - exceeding Python coverage!)
+- **Test Coverage:** 72/75 tests ported (Python has 57 test files in ci/, TS has 72 tests - exceeding Python coverage!)
 - **GitHub Issues:** None open (4 closed issues resolved)
 - **Build Status:** ✅ Working (compile before running)
 - **MCP Mode:** ✅ Fixed logging to stderr (addresses Python issue #2748)
@@ -75,9 +75,10 @@
 - ✅ Monitored GitHub issues - none open in TypeScript repo, all 4 issues remain closed
 - ✅ Reviewed Python repo issues - 20 open issues, MCP issue #2748 already fixed in our TypeScript port
 - ✅ Verified production readiness of Better-Use TypeScript port
-- ✅ Ported 1 additional test to improve coverage:
+- ✅ Ported 2 additional tests to improve coverage:
   - browser-watchdog-security.test.ts - Security watchdog URL enforcement and tab tracking
-- ✅ Test coverage increased from 70 to 71 tests (exceeding Python's 57 ci/ tests by 14 tests!)
+  - browser-watchdog-downloads-upload-circle.test.ts - Full download-upload cycle with hash verification
+- ✅ Test coverage increased from 70 to 72 tests (exceeding Python's 57 ci/ tests by 15 tests!)
 
 ### Remaining Tests to Port (5 tests - mostly skipped in Python)
 1. **Browser Session Tests** (mostly skipped in Python)
@@ -93,14 +94,14 @@
 2. **Watchdog Tests** (medium priority - already have good coverage)
    - test_browser_watchdog_storage_state.py (similar functionality in browser-session-storage-state.test.ts)
    - ✅ test_browser_watchdog_security.py (PORTED in Session 14)
-   - test_browser_watchdog_downloads_upload_full_circle.py
+   - ✅ test_browser_watchdog_downloads_upload_full_circle.py (PORTED in Session 14)
    
 3. **Sync/Cloud Tests** (low priority - cloud features)
    - test_sync_client.py
    - test_sync_client_auth.py
    - test_sync_agent_events.py
 
-Note: We have 71 tests in TypeScript vs 57 in Python's ci/ folder, so we're exceeding Python's test coverage by 14 tests!
+Note: We have 72 tests in TypeScript vs 57 in Python's ci/ folder, so we're exceeding Python's test coverage by 15 tests!
 
 **Current Synchronization Status:**
 - ✅ **System prompts:** All three prompts (main, flash, no_thinking) synchronized
