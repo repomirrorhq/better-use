@@ -283,6 +283,22 @@ export class BrowserSession extends EventEmitter {
       // Set up page event listeners
       this.setupPageEventListeners(page, pageId);
 
+      // Handle popup windows created with window.open()
+      this.context.on('page', async (newPage: Page) => {
+        const newPageId = this.generatePageId();
+        this.pages.set(newPageId, newPage);
+        this.setupPageEventListeners(newPage, newPageId);
+        
+        this.logger.debug(`New popup window detected: ${newPageId}, URL: ${newPage.url()}`);
+        
+        // Emit tab created event for watchdogs
+        this.emit('tabCreated', {
+          url: newPage.url(),
+          target_id: newPageId,
+          timestamp: Date.now()
+        });
+      });
+
       this.isStarted = true;
       this.emit('browserConnected', { cdp_url: 'playwright://session' });
       
