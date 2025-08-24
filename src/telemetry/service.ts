@@ -202,7 +202,8 @@ export class TelemetryService extends EventEmitter {
       // No endpoint configured - just store locally for debugging
       if (this.config.debug) {
         for (const event of events) {
-          console.log('Telemetry Event:', JSON.stringify(event, null, 2));
+          // Use stderr to avoid polluting stdout in MCP stdio mode
+          console.error('Telemetry Event:', JSON.stringify(event, null, 2));
         }
       }
       return;

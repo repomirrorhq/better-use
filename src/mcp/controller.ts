@@ -9,6 +9,7 @@ import { EventEmitter } from 'events';
 import { ZodSchema, z } from 'zod';
 import { Registry } from '../controller/registry/service';
 import { ActionResult } from '../agent/views';
+import { createMCPLogger } from './logger';
 
 // These types would be imported from the MCP SDK when available
 interface MCPTool {
@@ -66,6 +67,7 @@ export class MCPToolWrapper {
   private tools: Map<string, MCPTool> = new Map();
   private registeredActions: Set<string> = new Set();
   private shutdownEvent = new EventEmitter();
+  private logger = createMCPLogger('MCPToolWrapper');
 
   constructor(registry: Registry, mcpCommand: string, mcpArgs: string[] = []) {
     if (!MCP_AVAILABLE) {
@@ -82,7 +84,7 @@ export class MCPToolWrapper {
       return; // Already connected
     }
 
-    console.info(`🔌 Connecting to MCP server: ${this.mcpCommand} ${this.mcpArgs.join(' ')}`);
+    this.logger.info(`🔌 Connecting to MCP server: ${this.mcpCommand} ${this.mcpArgs.join(' ')}`);
 
     // Create server parameters
     const serverParams: MCPStdioServerParameters = {
@@ -103,7 +105,7 @@ export class MCPToolWrapper {
       // const toolsResponse = await this.session.listTools();
       // this.tools = new Map(toolsResponse.tools.map(tool => [tool.name, tool]));
 
-      // console.info(`📦 Discovered ${this.tools.size} MCP tools: ${Array.from(this.tools.keys())}`);
+      // this.logger.info(`📦 Discovered ${this.tools.size} MCP tools: ${Array.from(this.tools.keys())}`);
 
       // Register all discovered tools as actions
       // for (const [toolName, tool] of this.tools) {
@@ -241,7 +243,7 @@ export class MCPToolWrapper {
     );
 
     this.registeredActions.add(toolName);
-    console.info(`✅ Registered MCP tool as action: ${toolName}`);
+    this.logger.info(`✅ Registered MCP tool as action: ${toolName}`);
   }
 
   async disconnect(): Promise<void> {

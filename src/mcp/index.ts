@@ -8,6 +8,7 @@ export * from './client';
 export * from './server';
 export * from './controller';
 export * from './types';
+export * from './logger';
 
 import { BrowserUseMCPServer } from './server';
 import { TelemetryService } from '../telemetry';
