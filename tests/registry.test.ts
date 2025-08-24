@@ -34,22 +34,20 @@ class TestContext {
 }
 
 // Test parameter models
-class SimpleParams extends ActionModel {
+class SimpleParams implements ActionModel {
   value: string;
   
   constructor(data: { value: string }) {
-    super();
     this.value = data.value;
   }
 }
 
-class ComplexParams extends ActionModel {
+class ComplexParams implements ActionModel {
   text: string;
   number: number = 42;
   optional_flag: boolean = false;
   
   constructor(data: { text: string; number?: number; optional_flag?: boolean }) {
-    super();
     this.text = data.text;
     this.number = data.number ?? 42;
     this.optional_flag = data.optional_flag ?? false;

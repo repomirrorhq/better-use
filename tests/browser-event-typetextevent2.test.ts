@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import { BrowserSession } from '../src/browser/session';
-import { BrowserProfile } from '../src/browser/profiles';
+import { BrowserProfile } from '../src/browser/profile';
 import { Controller } from '../src/controller/controller';
 import { InputTextAction, GoToUrlAction } from '../src/controller/actions';
 import { TypeTextEvent } from '../src/browser/events';

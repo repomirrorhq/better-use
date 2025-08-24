@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { BrowserSession } from '../src/browser/session';
-import { BrowserProfile } from '../src/browser/profiles';
+import { BrowserProfile } from '../src/browser/profile';
 import * as http from 'http';
 import * as express from 'express';
 

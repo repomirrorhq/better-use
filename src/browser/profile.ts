@@ -114,7 +114,13 @@ export class BrowserProfile {
   private config: BrowserProfileConfig;
 
   constructor(config?: Partial<BrowserProfileConfig>) {
-    this.config = BrowserProfileSchema.parse(config || {});
+    // Check environment variable for headless mode if not explicitly set
+    const configWithEnv = {
+      ...config,
+      headless: config?.headless !== undefined ? config.headless : 
+                (process.env.HEADLESS === 'true' || false)
+    };
+    this.config = BrowserProfileSchema.parse(configWithEnv);
   }
 
   // Getters for configuration
@@ -267,6 +273,7 @@ export class BrowserProfile {
 
   // Create default profile
   static createDefault(): BrowserProfile {
+    // The constructor now handles the HEADLESS env var
     return new BrowserProfile();
   }
 
