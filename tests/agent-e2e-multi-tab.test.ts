@@ -101,7 +101,7 @@ describe('Agent E2E - Multi-Tab Navigation', () => {
     const agent = new Agent({
       task: 'Open example.com and iana.org in separate tabs, extract info from both, then close the second tab',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 10,
       includeGif: false,
     });
@@ -192,7 +192,7 @@ describe('Agent E2E - Multi-Tab Navigation', () => {
     const agent = new Agent({
       task: 'Click on links that open in new tabs',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 8,
       includeGif: false,
     });
@@ -263,7 +263,7 @@ describe('Agent E2E - Multi-Tab Navigation', () => {
     const agent = new Agent({
       task: 'Collect data from multiple tabs and compare',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 8,
       includeGif: false,
     });
@@ -320,7 +320,7 @@ describe('Agent E2E - Multi-Tab Navigation', () => {
     const agent = new Agent({
       task: 'Open multiple tabs to test tab management',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 10,
       includeGif: false,
     });

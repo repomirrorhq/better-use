@@ -112,7 +112,7 @@ describe('Agent E2E - Form Filling and Submission', () => {
     const agent = new Agent({
       task: 'Fill the contact form with name "John Doe", email "john.doe@example.com", and message "This is a test message for the contact form."',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 10,
       includeGif: false,
     });
@@ -236,7 +236,7 @@ describe('Agent E2E - Form Filling and Submission', () => {
     const agent = new Agent({
       task: 'Select United States as country and English as language in the form',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 10,
       includeGif: false,
     });
@@ -341,7 +341,7 @@ describe('Agent E2E - Form Filling and Submission', () => {
     const agent = new Agent({
       task: 'Accept terms, subscribe to newsletter, select premium plan, and submit',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 8,
       includeGif: false,
     });
@@ -504,7 +504,7 @@ describe('Agent E2E - Form Filling and Submission', () => {
     const agent = new Agent({
       task: 'Test form validation by submitting invalid data first, then correcting it',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 15,
       includeGif: false,
     });
@@ -591,7 +591,7 @@ describe('Agent E2E - Form Filling and Submission', () => {
     const agent = new Agent({
       task: 'Upload a test document with title "Test Document"',
       llm: mockLLM,
-      browser,
+      browserSession: browser,
       maxStepsPerRun: 8,
       includeGif: false,
     });
