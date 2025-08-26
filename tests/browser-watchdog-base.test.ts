@@ -102,7 +102,7 @@ describe('Browser Watchdog Integration', () => {
 
     } finally {
       // Clean up
-      await session.kill();
+      await session.stop();
     }
   });
 });

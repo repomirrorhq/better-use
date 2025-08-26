@@ -110,7 +110,7 @@ describe('DownloadsWatchdog Tests', () => {
 
       // The watchdog should have attached to at least one page
     } finally {
-      await session.kill();
+      await session.stop();
       cleanupDir(downloadsPath);
     }
   }, 15000);
@@ -131,7 +131,7 @@ describe('DownloadsWatchdog Tests', () => {
       expect(session.browserProfile.downloadsPath).toBeDefined();
       expect(fs.existsSync(session.browserProfile.downloadsPath!)).toBe(true);
     } finally {
-      await session.kill();
+      await session.stop();
     }
   }, 15000);
 
@@ -198,7 +198,7 @@ describe('DownloadsWatchdog Tests', () => {
     const resultText1 = await page1.locator('#result').textContent();
     expect(resultText1).toBe('Clicked!');
 
-    await browserWithDownloads.kill();
+    await browserWithDownloads.stop();
 
     // Test 2: With downloads_dir set to null (disables download detection)
     const browserNoDownloads = new BrowserSession({
@@ -225,7 +225,7 @@ describe('DownloadsWatchdog Tests', () => {
     const resultText2 = await page2.locator('#result').textContent();
     expect(resultText2).toBe('Clicked!');
 
-    await browserNoDownloads.kill();
+    await browserNoDownloads.stop();
 
     // Check timing differences
     console.log(`Click with downloads_dir: ${durationWithDownloads.toFixed(2)}s`);
@@ -261,7 +261,7 @@ describe('DownloadsWatchdog Tests', () => {
 
     // Find the download link element
     let downloadNode: any = null;
-    for (const elem of Object.values(state.selectorMap)) {
+    for (const elem of Object.values(state.dom_state?.selector_map)) {
       if ((elem as any).tagName === 'a' && 'download' in (elem as any).attributes) {
         downloadNode = elem;
         break;
@@ -323,7 +323,7 @@ describe('DownloadsWatchdog Tests', () => {
 
     console.log(`✅ Download successful: ${latestDownload} (${fileSize} bytes) with correct content`);
 
-    await browserSession.kill();
+    await browserSession.stop();
     cleanupDir(downloadsPath);
   }, 30000);
 
@@ -382,7 +382,7 @@ describe('DownloadsWatchdog Tests', () => {
 
       console.log(`✅ FileDownloadedEvent dispatched correctly for: ${latestDownloadEvent.path} (${fileSize} bytes)`);
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
       cleanupDir(downloadsPath);
     }
   }, 30000);

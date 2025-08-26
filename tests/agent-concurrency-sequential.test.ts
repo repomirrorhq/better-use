@@ -7,7 +7,7 @@ import { Agent } from '../src/agent';
 import { BrowserSession, BrowserProfile } from '../src/browser';
 import { createMockLLM } from './test-utils/mockLLM';
 import * as http from 'http';
-import * as express from 'express';
+import express from 'express';
 
 describe('TestSequentialAgentsSimple', () => {
 	let server: http.Server;
@@ -145,7 +145,7 @@ describe('TestSequentialAgentsSimple', () => {
 		}
 
 		// Clean up
-		await browserSession.kill();
+		await browserSession.stop();
 	}, 30000); // 30 second timeout
 
 	test('multiple tabs with sequential agents', async () => {
@@ -240,6 +240,6 @@ describe('TestSequentialAgentsSimple', () => {
 		const finalTabs = await browserSession.getTabs();
 		expect(finalTabs.length).toBe(2);
 
-		await browserSession.kill();
+		await browserSession.stop();
 	}, 30000); // 30 second timeout
 });

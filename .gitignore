@@ -54,5 +54,4 @@ test-output/
 
 # Cache
 .cache/
-
 .agent/claude_output.jsonl

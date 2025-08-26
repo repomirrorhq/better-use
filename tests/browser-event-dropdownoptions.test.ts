@@ -37,7 +37,7 @@ describe('GetDropdownOptionsEvent Tests', () => {
   
   afterEach(async () => {
     if (browserSession) {
-      await browserSession.kill();
+      await browserSession.stop();
     }
   });
   
@@ -445,7 +445,7 @@ describe('SelectDropdownOptionEvent Tests', () => {
   
   afterEach(async () => {
     if (browserSession) {
-      await browserSession.kill();
+      await browserSession.stop();
     }
   });
   

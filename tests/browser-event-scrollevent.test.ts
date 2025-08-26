@@ -163,7 +163,7 @@ describe('ScrollEvent Tests', () => {
 
   afterAll(async () => {
     if (browserSession) {
-      await browserSession.kill();
+      await browserSession.stop();
     }
     if (server) {
       await new Promise<void>((resolve) => {

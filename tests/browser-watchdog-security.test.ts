@@ -21,7 +21,7 @@ describe('SecurityWatchdog', () => {
   afterEach(async () => {
     if (session) {
       try {
-        await session.kill();
+        await session.stop();
       } catch (error) {
         // Ignore cleanup errors
       }

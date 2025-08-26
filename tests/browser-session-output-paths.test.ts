@@ -132,7 +132,7 @@ describe('Agent Recordings', () => {
         .filter(f => f.startsWith('conversation_') && f.endsWith('.txt'));
       expect(conversationFiles.length).toBeGreaterThan(0);
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
       cleanupDir(testDir);
     }
   }, 30000);
@@ -203,7 +203,7 @@ describe('Agent Recordings', () => {
         .filter(f => f.startsWith('conversation_') && f.endsWith('.txt'));
       expect(conversationFiles.length).toBeGreaterThan(0);
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
       cleanupDir(testDir);
     }
   }, 30000);
@@ -228,7 +228,7 @@ describe('BrowserProfile Recordings', () => {
       await browserSession.navigateToURL(serverUrl);
       await new Promise(resolve => setTimeout(resolve, 500));
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
     }
 
     // HAR file should be created
@@ -262,7 +262,7 @@ describe('BrowserProfile Recordings', () => {
       await browserSession.navigateToURL(serverUrl);
       await new Promise(resolve => setTimeout(resolve, 500));
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
     }
 
     // HAR file should be created
@@ -399,7 +399,7 @@ describe('Combined Recordings', () => {
       expect(harContent).toHaveProperty('log');
       expect(harContent.log).toHaveProperty('entries');
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
       cleanupDir(testDir);
     }
   }, 30000);

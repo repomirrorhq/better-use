@@ -1,5 +1,5 @@
 import * as http from 'http';
-import * as express from 'express';
+import express from 'express';
 
 /**
  * Test utility for creating HTTP servers for testing

@@ -5,7 +5,7 @@ import { Controller } from '../src/controller';
 import { GoToUrlAction } from '../src/controller/registry/views';
 import { NavigationCompleteEvent } from '../src/browser/events';
 import * as http from 'http';
-import * as express from 'express';
+import express from 'express';
 
 describe('ARIA Menu Dropdown Tests', () => {
   let server: http.Server;
@@ -133,7 +133,7 @@ describe('ARIA Menu Dropdown Tests', () => {
 
   afterAll(async () => {
     if (browserSession) {
-      await browserSession.kill();
+      await browserSession.stop();
     }
     if (server) {
       server.close();
@@ -381,11 +381,11 @@ describe('ARIA Menu Dropdown Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Get DOM state
-    const state = await browserSession.getBrowserStateWithRecovery();
+    const state = await browserSession.getBrowserState();
 
     // Find keyboard menu
     let keyboardMenuIndex: number | null = null;
-    for (const [idx, element] of Object.entries(state.selectorMap)) {
+    for (const [idx, element] of Object.entries(state.dom_state?.selector_map || {})) {
       const index = parseInt(idx);
       if (element.tagName?.toLowerCase() === 'ul' &&
           element.attributes?.id === 'keyboard-menu' &&
@@ -398,14 +398,14 @@ describe('ARIA Menu Dropdown Tests', () => {
     expect(keyboardMenuIndex).not.toBeNull();
 
     // Verify menu items can be found
-    const menuItems = Object.values(state.selectorMap).filter(element =>
+    const menuItems = Object.values(state.dom_state?.selector_map || {}).filter((element: any) =>
       element.attributes?.role === 'menuitem'
     );
 
     expect(menuItems.length).toBeGreaterThan(0);
-    expect(menuItems.some(item => item.innerText?.includes('Home'))).toBe(true);
-    expect(menuItems.some(item => item.innerText?.includes('About'))).toBe(true);
-    expect(menuItems.some(item => item.innerText?.includes('Contact'))).toBe(true);
+    expect(menuItems.some(item => item.text?.includes('Home'))).toBe(true);
+    expect(menuItems.some(item => item.text?.includes('About'))).toBe(true);
+    expect(menuItems.some(item => item.text?.includes('Contact'))).toBe(true);
   });
 
   it('should handle ARIA listbox as dropdown alternative', async () => {
@@ -475,11 +475,11 @@ describe('ARIA Menu Dropdown Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Get DOM state
-    const state = await browserSession.getBrowserStateWithRecovery();
+    const state = await browserSession.getBrowserState();
 
     // Find listbox element
     let listboxIndex: number | null = null;
-    for (const [idx, element] of Object.entries(state.selectorMap)) {
+    for (const [idx, element] of Object.entries(state.dom_state?.selector_map || {})) {
       const index = parseInt(idx);
       if (element.attributes?.role === 'listbox' &&
           element.attributes?.id === 'fruit-listbox') {
@@ -491,14 +491,14 @@ describe('ARIA Menu Dropdown Tests', () => {
     expect(listboxIndex).not.toBeNull();
 
     // Find all options
-    const options = Object.values(state.selectorMap).filter(element =>
+    const options = Object.values(state.dom_state?.selector_map).filter(element =>
       element.attributes?.role === 'option'
     );
 
     expect(options.length).toBe(5);
     
     // Verify option texts
-    const optionTexts = options.map(opt => opt.innerText?.trim()).filter(Boolean);
+    const optionTexts = options.map(opt => opt.text?.trim()).filter(Boolean);
     expect(optionTexts).toContain('Apple');
     expect(optionTexts).toContain('Banana');
     expect(optionTexts).toContain('Orange');

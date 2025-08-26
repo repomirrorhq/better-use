@@ -73,7 +73,7 @@ describe('Agent Concurrency and Multiprocessing Tests', () => {
       expect(agent1.browserSession).toBe(agent2.browserSession);
       expect(agent1.browserSession).toBe(browserSession);
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
     }
   });
 
@@ -119,7 +119,7 @@ describe('Agent Concurrency and Multiprocessing Tests', () => {
       expect(agent1.browserSession).toBe(agent2.browserSession);
       expect(agent1.browserSession).toBe(browserSession);
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
     }
   });
 
@@ -312,7 +312,7 @@ describe('Agent Concurrency and Multiprocessing Tests', () => {
       expect(agent1.browserSession).toBe(sharedSession);
     } finally {
       await new Promise(resolve => setTimeout(resolve, 100));
-      await sharedSession.kill();
+      await sharedSession.stop();
       await new Promise(resolve => setTimeout(resolve, 100));
     }
   });
@@ -356,7 +356,7 @@ describe('Agent Concurrency and Multiprocessing Tests', () => {
         }
       }
     } finally {
-      await session.kill();
+      await session.stop();
     }
   });
 });

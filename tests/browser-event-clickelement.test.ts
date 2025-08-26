@@ -69,7 +69,7 @@ class TestHTTPServer {
   
   async stop() {
     if (this.serverProcess) {
-      this.serverProcess.kill();
+      this.serverProcess.stop();
     }
   }
   
@@ -113,7 +113,7 @@ describe('ClickElementEvent Tests', () => {
   
   afterEach(async () => {
     if (browserSession) {
-      await browserSession.kill();
+      await browserSession.stop();
     }
   });
   

@@ -138,7 +138,7 @@ describe('TypeTextEvent Advanced Tests', () => {
 
   afterAll(async () => {
     if (browserSession) {
-      await browserSession.kill();
+      await browserSession.stop();
     }
     if (server) {
       server.close();

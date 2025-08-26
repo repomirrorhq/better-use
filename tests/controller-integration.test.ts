@@ -149,7 +149,7 @@ describe('Controller Integration Tests', () => {
   });
 
   afterAll(async () => {
-    await browserSession.kill();
+    await browserSession.stop();
     server.close();
     if (fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true, force: true });

@@ -127,7 +127,7 @@ describe('Agent Shutdown and Cleanup', () => {
     expect((browserSession as any).eventBus).not.toBeNull();
 
     // Now kill to clean up
-    await browserSession.kill();
+    await browserSession.stop();
 
     // After kill, browser should be disconnected
     expect((browserSession as any)._cdpClientRoot).toBeNull();
@@ -220,6 +220,6 @@ describe('Agent Shutdown and Cleanup', () => {
     expect(exitTime).toBeLessThan(15); // Should not hang
 
     // Clean up
-    await browserSession.kill();
+    await browserSession.stop();
   }, 20000);
 });

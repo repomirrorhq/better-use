@@ -131,7 +131,7 @@ describe('Agent GIF Generation with Navigation', () => {
 
       expect(hasRealScreenshot).toBe(true);
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
     }
   });
 
@@ -193,7 +193,7 @@ describe('Agent GIF Generation with Navigation', () => {
       );
       expect(validScreenshots.length).toBeGreaterThan(0);
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
     }
   });
 
@@ -228,7 +228,7 @@ describe('Agent GIF Generation with Navigation', () => {
       // GIF should NOT be created
       expect(fs.existsSync(gifPath)).toBe(false);
     } finally {
-      await browserSession.kill();
+      await browserSession.stop();
     }
   });
 });

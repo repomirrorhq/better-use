@@ -73,7 +73,7 @@ describe('CrashWatchdog', () => {
           await session.eventBus.expect(BrowserStoppedEvent, { timeout: 3000 });
         } catch (error) {
           // If graceful shutdown fails, force cleanup
-          await session.kill();
+          await session.stop();
         }
       }
     }, 30000);

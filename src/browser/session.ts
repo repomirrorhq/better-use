@@ -753,7 +753,7 @@ export class BrowserSession extends EventEmitter {
         let currentIndex = 1; // Start from index 1 as per Python version
         
         // Get all interactive elements (buttons, links, inputs, etc.) - same as getDOMState
-        const interactiveSelector = 'a, button, input, select, textarea, [onclick], [role="button"], [tabindex]:not([tabindex="-1"]), .clickable';
+        const interactiveSelector = 'a, button, input, select, textarea, [onclick], [role="button"], [role="menu"], [role="menuitem"], [role="listbox"], [role="option"], [tabindex]:not([tabindex="-1"]), .clickable, ul[role], li[role]';
         const allElements = Array.from(document.querySelectorAll(interactiveSelector));
         
         for (const element of allElements) {
@@ -1173,7 +1173,7 @@ export class BrowserSession extends EventEmitter {
         let index = 1; // Start from index 1 as per Python version
         
         // Get all interactive elements (buttons, links, inputs, etc.)
-        const interactiveSelector = 'a, button, input, select, textarea, [onclick], [role="button"], [tabindex]:not([tabindex="-1"]), .clickable';
+        const interactiveSelector = 'a, button, input, select, textarea, [onclick], [role="button"], [role="menu"], [role="menuitem"], [role="listbox"], [role="option"], [tabindex]:not([tabindex="-1"]), .clickable, ul[role], li[role]';
         const allElements = Array.from(document.querySelectorAll(interactiveSelector));
         
         allElements.forEach((element: Element) => {
@@ -1188,6 +1188,7 @@ export class BrowserSession extends EventEmitter {
                 id: htmlElement.id || '',
                 type: (htmlElement as any).type || null,
                 href: (htmlElement as any).href || null,
+                role: htmlElement.getAttribute('role') || null,
               },
               text: element.textContent ? element.textContent.trim() : '',
               rect: {

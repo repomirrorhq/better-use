@@ -125,7 +125,7 @@ describe('TestActionRegistryParameterPatterns', () => {
     expect(result.extractedContent).toContain('Text: hello, URL:');
     expect(result.extractedContent).toContain(baseUrl);
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
   
   test('pydantic model parameters', async () => {
@@ -155,7 +155,7 @@ describe('TestActionRegistryParameterPatterns', () => {
     expect(result.extractedContent).toContain('Text: test, Number: 100, Flag: true');
     expect(result.extractedContent).toContain(baseUrl);
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
   
   test('mixed special parameters', async () => {
@@ -197,7 +197,7 @@ describe('TestActionRegistryParameterPatterns', () => {
     expect(result.extractedContent).toContain('"Task completed successfully"');
     expect(result.extractedContent).toContain('Files: 2');
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
   
   test('no params action', async () => {
@@ -222,7 +222,7 @@ describe('TestActionRegistryParameterPatterns', () => {
     expect(result.extractedContent).toContain('No params action executed on');
     expect(result.extractedContent).toContain('/test');
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
 });
 
@@ -262,7 +262,7 @@ describe('TestActionToActionCalling', () => {
     expect(result.extractedContent).toContain('Called result: First: Helper processed: test on');
     expect(result.extractedContent).toContain('/test');
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
   
   test('complex action chain', async () => {
@@ -305,7 +305,7 @@ describe('TestActionToActionCalling', () => {
     expect(result.extractedContent).toContain('Top: Middle: Base: processed-enhanced-test on');
     expect(result.extractedContent).toContain('/test');
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
 });
 
@@ -341,7 +341,7 @@ describe('TestRegistryEdgeCases', () => {
       registry.executeAction('requires_llm', { text: 'test' }, browserSession)
     ).rejects.toThrow('requires page_extraction_llm but none provided');
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
   
   test('nonexistent action', async () => {
@@ -352,7 +352,7 @@ describe('TestRegistryEdgeCases', () => {
       registry.executeAction('nonexistent_action', { param: 'value' }, browserSession)
     ).rejects.toThrow('Action nonexistent_action not found');
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
   
   test('excluded actions', async () => {
@@ -382,7 +382,7 @@ describe('TestRegistryEdgeCases', () => {
     expect(result.extractedContent).toBeTruthy();
     expect(result.extractedContent).toContain('Should execute: test');
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
 });
 
@@ -421,6 +421,6 @@ describe('TestExistingControllerActions', () => {
     expect(result3.extractedContent).toBeTruthy();
     expect(result3.extractedContent).toContain('Input text: test input at index: 5');
     
-    await browserSession.kill();
+    await browserSession.stop();
   });
 });

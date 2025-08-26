@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { BrowserSession } from '../src/browser/session';
 import { BrowserProfile } from '../src/browser/profile';
 import * as http from 'http';
-import * as express from 'express';
+import express from 'express';
 
 describe('TypeTextEvent Fallback Tests', () => {
   let server: http.Server;
@@ -47,7 +47,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
   afterAll(async () => {
     if (browserSession) {
-      await browserSession.kill();
+      await browserSession.stop();
     }
     if (server) {
       server.close();
@@ -63,14 +63,14 @@ describe('TypeTextEvent Fallback Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Get the DOM state
-    const state = await browserSession.getBrowserStateWithRecovery();
+    const state = await browserSession.getBrowserState();
 
     // Find elements by their IDs
     let standardInputIndex: number | null = null;
     let contenteditableIndex: number | null = null;
     let customElementIndex: number | null = null;
 
-    for (const [index, element] of Object.entries(state.selectorMap)) {
+    for (const [index, element] of Object.entries(state.dom_state?.selector_map || {})) {
       const elementIndex = parseInt(index);
       if (element.attributes?.id === 'standard-input') {
         standardInputIndex = elementIndex;
@@ -83,7 +83,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test standard input (should work normally)
     if (standardInputIndex !== null) {
-      const element = state.selectorMap[standardInputIndex];
+      const element = state.dom_state?.selector_map[standardInputIndex];
       await browserSession.inputTextElementNode(element, 'Test text for input');
 
       // Verify the text was entered
@@ -93,7 +93,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test contenteditable div (should use fallback)
     if (contenteditableIndex !== null) {
-      const element = state.selectorMap[contenteditableIndex];
+      const element = state.dom_state?.selector_map[contenteditableIndex];
       await browserSession.inputTextElementNode(element, 'Test text for contenteditable');
 
       // Verify the text was entered
@@ -103,7 +103,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test custom element (might use fallback)
     if (customElementIndex !== null) {
-      const element = state.selectorMap[customElementIndex];
+      const element = state.dom_state?.selector_map[customElementIndex];
       // This might fail for truly custom elements, but should at least not crash
       try {
         await browserSession.inputTextElementNode(element, 'Test text for custom');
@@ -139,11 +139,11 @@ describe('TypeTextEvent Fallback Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Get the DOM state
-    const state = await browserSession.getBrowserStateWithRecovery();
+    const state = await browserSession.getBrowserState();
 
     // Find contenteditable element
     let contenteditableIndex: number | null = null;
-    for (const [index, element] of Object.entries(state.selectorMap)) {
+    for (const [index, element] of Object.entries(state.dom_state?.selector_map || {})) {
       if (element.attributes?.id === 'contenteditable-with-text') {
         contenteditableIndex = parseInt(index);
         break;
@@ -151,7 +151,7 @@ describe('TypeTextEvent Fallback Tests', () => {
     }
 
     if (contenteditableIndex !== null) {
-      const element = state.selectorMap[contenteditableIndex];
+      const element = state.dom_state?.selector_map[contenteditableIndex];
       
       // Clear and type new text
       await browserSession.inputTextElementNode(element, 'Replaced content', true);
@@ -188,13 +188,13 @@ describe('TypeTextEvent Fallback Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Get the DOM state
-    const state = await browserSession.getBrowserStateWithRecovery();
+    const state = await browserSession.getBrowserState();
 
     // Find both contenteditable elements
     let parentIndex: number | null = null;
     let childIndex: number | null = null;
     
-    for (const [index, element] of Object.entries(state.selectorMap)) {
+    for (const [index, element] of Object.entries(state.dom_state?.selector_map || {})) {
       const elementIndex = parseInt(index);
       if (element.attributes?.id === 'parent-editable') {
         parentIndex = elementIndex;
@@ -205,7 +205,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test typing into child element
     if (childIndex !== null) {
-      const element = state.selectorMap[childIndex];
+      const element = state.dom_state?.selector_map[childIndex];
       await browserSession.inputTextElementNode(element, 'New child text', true);
 
       // Verify the child text was changed
@@ -216,7 +216,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test typing into parent element
     if (parentIndex !== null) {
-      const element = state.selectorMap[parentIndex];
+      const element = state.dom_state?.selector_map[parentIndex];
       
       // This is tricky - typing into parent shouldn't affect child
       // We'll append text instead of replacing
@@ -253,13 +253,13 @@ describe('TypeTextEvent Fallback Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Get the DOM state
-    const state = await browserSession.getBrowserStateWithRecovery();
+    const state = await browserSession.getBrowserState();
 
     // Find input elements
     let limitedIndex: number | null = null;
     let unlimitedIndex: number | null = null;
     
-    for (const [index, element] of Object.entries(state.selectorMap)) {
+    for (const [index, element] of Object.entries(state.dom_state?.selector_map || {})) {
       const elementIndex = parseInt(index);
       if (element.attributes?.id === 'limited-input') {
         limitedIndex = elementIndex;
@@ -270,7 +270,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test limited input
     if (limitedIndex !== null) {
-      const element = state.selectorMap[limitedIndex];
+      const element = state.dom_state?.selector_map[limitedIndex];
       // Try to type more than 10 characters
       await browserSession.inputTextElementNode(element, 'This is a very long text that exceeds the limit');
 
@@ -281,7 +281,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test unlimited input
     if (unlimitedIndex !== null) {
-      const element = state.selectorMap[unlimitedIndex];
+      const element = state.dom_state?.selector_map[unlimitedIndex];
       const longText = 'This is a very long text that has no limit';
       await browserSession.inputTextElementNode(element, longText);
 
@@ -313,14 +313,14 @@ describe('TypeTextEvent Fallback Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Get the DOM state
-    const state = await browserSession.getBrowserStateWithRecovery();
+    const state = await browserSession.getBrowserState();
 
     // Find all input elements
     let normalIndex: number | null = null;
     let disabledIndex: number | null = null;
     let readonlyIndex: number | null = null;
     
-    for (const [index, element] of Object.entries(state.selectorMap)) {
+    for (const [index, element] of Object.entries(state.dom_state?.selector_map || {})) {
       const elementIndex = parseInt(index);
       if (element.attributes?.id === 'normal-input') {
         normalIndex = elementIndex;
@@ -333,7 +333,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test normal input (should work)
     if (normalIndex !== null) {
-      const element = state.selectorMap[normalIndex];
+      const element = state.dom_state?.selector_map[normalIndex];
       await browserSession.inputTextElementNode(element, 'Normal text');
       
       const value = await page.locator('#normal-input').inputValue();
@@ -342,7 +342,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test disabled input (should fail or be ignored)
     if (disabledIndex !== null) {
-      const element = state.selectorMap[disabledIndex];
+      const element = state.dom_state?.selector_map[disabledIndex];
       try {
         await browserSession.inputTextElementNode(element, 'Should not work');
         // If it doesn't throw, verify the value is still empty
@@ -356,7 +356,7 @@ describe('TypeTextEvent Fallback Tests', () => {
 
     // Test readonly input (might work but value shouldn't change)
     if (readonlyIndex !== null) {
-      const element = state.selectorMap[readonlyIndex];
+      const element = state.dom_state?.selector_map[readonlyIndex];
       try {
         await browserSession.inputTextElementNode(element, 'New value');
         // Value should remain unchanged

@@ -22,7 +22,7 @@ describe('NavigateToUrlEvent Tests', () => {
   
   afterEach(async () => {
     if (browserSession) {
-      await browserSession.kill();
+      await browserSession.stop();
     }
   });
   
