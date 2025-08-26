@@ -30,9 +30,15 @@
 
 ## Recent Commits
 - `72d38b0` - fix: Fix test infrastructure issues
+- `9d7b479` - fix: Replace deprecated test methods with proper API calls
+
+## Latest Fixes
+- Replaced `_cdpNavigate()` with `navigateToUrl()` using `createNavigateToUrlEvent`
+- Replaced `inputTextElementNode()` with `eventBus.dispatch` using `TypeTextEvent`
+- Updated test imports to use proper event creation functions
 
 ## Remaining Work
-- Fix missing methods (cdpNavigate, inputTextElementNode)
-- Address linting warnings
+- Address 609 linting warnings (mostly nullish coalescing)
+- Fix remaining test failures (ActionModel issues)
 - Run full test suite
 - Some browser tests still hanging/timing out
