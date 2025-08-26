@@ -32,7 +32,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'https://example.com', 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -53,7 +53,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'https://www.nonexistentdndbeyond.com/', 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     // Execute the action - should return soft error instead of throwing
@@ -92,7 +92,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'https://example.com', 
         newTab: true 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -118,7 +118,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'https://example.com', 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     await controller.act(baseAction, browserSession);
@@ -128,7 +128,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: '/test', 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(relativeAction, browserSession);
@@ -148,7 +148,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'https://example.com', 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     await controller.act(normalAction, browserSession);
@@ -158,7 +158,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'javascript:alert("test")', 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(jsAction, browserSession);
@@ -175,7 +175,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: dataUrl, 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -216,7 +216,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: `${baseUrl}#section1`, 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -257,7 +257,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: `${baseUrl}?q=test+query&page=1`, 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -284,7 +284,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'https://example.com/page1', 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     await controller.act(action1, browserSession);
@@ -294,7 +294,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'https://example.com/page2', 
         newTab: true 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     await controller.act(action2, browserSession);
@@ -304,7 +304,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'https://example.com', 
         newTab: true 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     await controller.act(action3, browserSession);
@@ -327,7 +327,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: timeoutUrl, 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     // This should complete without hanging indefinitely
@@ -343,7 +343,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'http://google.com', // This redirects to https://www.google.com
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -367,7 +367,7 @@ describe('NavigateToUrlEvent Tests', () => {
       new NavigateToUrlEvent({ 
         url: 'https://example.com/page2', 
         newTab: true 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     );
     await navEvent;
     
@@ -394,7 +394,7 @@ describe('NavigateToUrlEvent Tests', () => {
       new NavigateToUrlEvent({ 
         url: 'https://example.com', 
         newTab: true 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     );
     await navEvent;
     
@@ -421,7 +421,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'https://httpbin.org/cookies', 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(actionModel, browserSession);
@@ -441,7 +441,7 @@ describe('NavigateToUrlEvent Tests', () => {
       goToUrl: { 
         url: 'about:blank', 
         newTab: false 
-      } as GoToUrlAction)
+      } as GoToUrlAction
     });
     
     const result = await controller.act(actionModel, browserSession);

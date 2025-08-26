@@ -1,6 +1,6 @@
 import { BrowserSession } from '../src/browser/session';
 import { BrowserProfile } from '../src/browser/profile';
-import { getTestServer } from 'pytest-httpserver';
+import { HTTPServer } from './test-utils/http-server';
 
 describe('Browser Watchdog Screenshots', () => {
   let testServer: any;

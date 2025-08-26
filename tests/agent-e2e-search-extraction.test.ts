@@ -12,7 +12,7 @@ import { Agent } from '../src/agent';
 import { BrowserSession } from '../src/browser/session';
 import { BrowserProfile } from '../src/browser/profile';
 import { BaseLLM } from '../src/llm/base';
-import { HTTPServer } from '../test-utils/http-server';
+import { HTTPServer } from './test-utils/http-server';
 
 // Mock LLM for controlled testing
 class MockSearchLLM extends BaseLLM {

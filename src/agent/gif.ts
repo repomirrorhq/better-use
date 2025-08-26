@@ -96,7 +96,7 @@ export function decodeUnicodeEscapesToUTF8(text: string): string {
     return text.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
       return String.fromCharCode(parseInt(hex, 16));
     });
-  } catch (error) {
+  } catch {
     logger.debug(`Failed to decode unicode escape sequences: ${text}`);
     return text;
   }
@@ -171,7 +171,6 @@ function loadFonts(): {
 
       if (fontPath && fs.existsSync(fontPath)) {
         registerFont(fontPath, { family: fontName });
-        fontLoaded = true;
         logger.debug(`Loaded font: ${fontName} from ${fontPath}`);
         return {
           regular: fontName,

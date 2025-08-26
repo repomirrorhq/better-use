@@ -1,7 +1,7 @@
 import { BrowserSession } from '../src/browser/session';
 import { BrowserProfile } from '../src/browser/profile';
 import { SaveStorageStateEvent } from '../src/browser/events';
-import { getTestServer } from 'pytest-httpserver';
+import { HTTPServer } from './test-utils/http-server';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';

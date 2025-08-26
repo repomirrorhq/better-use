@@ -9,7 +9,7 @@ import { BrowserSession } from '../src/browser/session';
 import { BrowserProfile } from '../src/browser/profile';
 import { DOMService } from '../src/dom/service';
 import { DOMSerializer } from '../src/dom/serializer/serializer';
-import { HTTPServer } from '../test-utils/http-server';
+import { HTTPServer } from './test-utils/http-server';
 
 describe('DOM Serialization', () => {
   let server: HTTPServer;
