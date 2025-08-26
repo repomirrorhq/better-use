@@ -1,7 +1,8 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { DomService } from '../src/dom/service';
 import { BrowserSession } from '../src/browser/session';
-import { DOMNode, NodeType } from '../src/dom/types';
+import { NodeType } from '../src/dom/views';
+import { DOMNode } from './test-utils/domTypes';
 import { createMockLogger } from './test-utils/mockLogger';
 
 describe('DomService - Self-Referencing Iframe Protection', () => {

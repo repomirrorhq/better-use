@@ -4,9 +4,9 @@ import { BrowserProfile } from '../src/browser/profile';
 import { Controller } from '../src/controller';
 import { InputTextAction, GoToUrlAction } from '../src/controller/registry/views';
 import { TypeTextEvent } from '../src/browser/events';
-import { EnhancedDOMTreeNode, NodeType } from '../src/dom/types';
+import { EnhancedDOMTreeNode, NodeType } from '../src/dom/views';
 import * as http from 'http';
-import * as express from 'express';
+import express from 'express';
 
 describe('TypeTextEvent Advanced Tests', () => {
   let server: http.Server;
