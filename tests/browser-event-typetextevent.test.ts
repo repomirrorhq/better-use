@@ -3,7 +3,7 @@ import { BrowserSession } from '../src/browser/session';
 import { BrowserProfile } from '../src/browser/profile';
 import { Controller } from '../src/controller/service';
 import { GoToUrlAction, InputTextAction } from '../src/controller/views';
-import { TypeTextEvent } from '../src/browser/events';
+import { TypeTextEvent, createNavigateToUrlEvent } from '../src/browser/events';
 import { EnhancedDOMTreeNode, NodeType } from '../src/dom/views';
 import * as http from 'http';
 import express from 'express';
@@ -199,7 +199,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_event_directly', async () => {
       // Navigate to a page with input fields
-      await browserSession._cdpNavigate(`${baseUrl}/form`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/form`));
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get the DOM state to find input elements
@@ -237,7 +237,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_clear_existing', async () => {
       // Navigate to form page
-      await browserSession._cdpNavigate(`${baseUrl}/form`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/form`));
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get DOM state
@@ -286,7 +286,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_textarea', async () => {
       // Navigate to form page
-      await browserSession._cdpNavigate(`${baseUrl}/form`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/form`));
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get DOM state
@@ -327,7 +327,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_password_field', async () => {
       // Navigate to form page
-      await browserSession._cdpNavigate(`${baseUrl}/form`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/form`));
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get DOM state
@@ -368,7 +368,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_readonly_field', async () => {
       // Navigate to page
-      await browserSession._cdpNavigate(`${baseUrl}/readonly`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/readonly`));
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get DOM state
@@ -411,7 +411,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_special_characters', async () => {
       // Navigate to form page
-      await browserSession._cdpNavigate(`${baseUrl}/form`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/form`));
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get DOM state
@@ -452,7 +452,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_empty_string', async () => {
       // Navigate to form page
-      await browserSession._cdpNavigate(`${baseUrl}/form`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/form`));
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get DOM state
@@ -501,7 +501,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_index_zero_whole_page', async () => {
       // Navigate to page with autofocus
-      await browserSession._cdpNavigate(`${baseUrl}/autofocus-form`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/autofocus-form`));
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Get DOM state
@@ -570,7 +570,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_nonexistent_element', async () => {
       // Navigate to form page
-      await browserSession._cdpNavigate(`${baseUrl}/form`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/form`));
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Focus the first input manually to have a known focused element
@@ -637,7 +637,7 @@ describe('TypeTextEvent Tests', () => {
 
     test('test_type_text_iframe_input', async () => {
       // Navigate to page with iframe
-      await browserSession._cdpNavigate(`${baseUrl}/page-with-form-iframe`);
+      await browserSession.navigateToUrl(createNavigateToUrlEvent(`${baseUrl}/page-with-form-iframe`));
       await new Promise(resolve => setTimeout(resolve, 1000)); // Give iframe time to load
 
       // Get DOM state to find the iframe input

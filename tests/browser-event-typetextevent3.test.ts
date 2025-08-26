@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { BrowserSession } from '../src/browser/session';
 import { BrowserProfile } from '../src/browser/profile';
+import { TypeTextEvent } from '../src/browser/events';
 import * as http from 'http';
 import express from 'express';
 
@@ -84,7 +85,8 @@ describe('TypeTextEvent Fallback Tests', () => {
     // Test standard input (should work normally)
     if (standardInputIndex !== null) {
       const element = state.dom_state?.selector_map[standardInputIndex];
-      await browserSession.inputTextElementNode(element, 'Test text for input');
+      const event = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: 'Test text for input', clearExisting: true }));
+      await event.eventResult();
 
       // Verify the text was entered
       const value = await page.locator('#standard-input').inputValue();
@@ -94,7 +96,8 @@ describe('TypeTextEvent Fallback Tests', () => {
     // Test contenteditable div (should use fallback)
     if (contenteditableIndex !== null) {
       const element = state.dom_state?.selector_map[contenteditableIndex];
-      await browserSession.inputTextElementNode(element, 'Test text for contenteditable');
+      const event2 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: 'Test text for contenteditable', clearExisting: true }));
+      await event2.eventResult();
 
       // Verify the text was entered
       const text = await page.locator('#contenteditable').textContent();
@@ -106,7 +109,8 @@ describe('TypeTextEvent Fallback Tests', () => {
       const element = state.dom_state?.selector_map[customElementIndex];
       // This might fail for truly custom elements, but should at least not crash
       try {
-        await browserSession.inputTextElementNode(element, 'Test text for custom');
+        const event3 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: 'Test text for custom', clearExisting: true }));
+        await event3.eventResult();
         // If it succeeds, verify the text
         const text = await page.locator('#custom').textContent();
         expect(text).toBeDefined();
@@ -154,7 +158,8 @@ describe('TypeTextEvent Fallback Tests', () => {
       const element = state.dom_state?.selector_map[contenteditableIndex];
       
       // Clear and type new text
-      await browserSession.inputTextElementNode(element, 'Replaced content', true);
+      const event4 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: 'Replaced content', clearExisting: true }));
+      await event4.eventResult();
 
       // Verify the text was replaced
       const text = await page.locator('#contenteditable-with-text').textContent();
@@ -206,7 +211,8 @@ describe('TypeTextEvent Fallback Tests', () => {
     // Test typing into child element
     if (childIndex !== null) {
       const element = state.dom_state?.selector_map[childIndex];
-      await browserSession.inputTextElementNode(element, 'New child text', true);
+      const event5 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: 'New child text', clearExisting: true }));
+      await event5.eventResult();
 
       // Verify the child text was changed
       const childText = await page.locator('#child-editable').textContent();
@@ -220,7 +226,8 @@ describe('TypeTextEvent Fallback Tests', () => {
       
       // This is tricky - typing into parent shouldn't affect child
       // We'll append text instead of replacing
-      await browserSession.inputTextElementNode(element, ' Added to parent', false);
+      const event6 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: ' Added to parent', clearExisting: false }));
+      await event6.eventResult();
 
       // Verify parent has new text but child is unchanged
       const parentText = await page.locator('#parent-editable').textContent();
@@ -272,7 +279,8 @@ describe('TypeTextEvent Fallback Tests', () => {
     if (limitedIndex !== null) {
       const element = state.dom_state?.selector_map[limitedIndex];
       // Try to type more than 10 characters
-      await browserSession.inputTextElementNode(element, 'This is a very long text that exceeds the limit');
+      const event7 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: 'This is a very long text that exceeds the limit', clearExisting: true }));
+      await event7.eventResult();
 
       // Verify only 10 characters were entered
       const value = await page.locator('#limited-input').inputValue();
@@ -283,7 +291,8 @@ describe('TypeTextEvent Fallback Tests', () => {
     if (unlimitedIndex !== null) {
       const element = state.dom_state?.selector_map[unlimitedIndex];
       const longText = 'This is a very long text that has no limit';
-      await browserSession.inputTextElementNode(element, longText);
+      const event8 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: longText, clearExisting: true }));
+      await event8.eventResult();
 
       // Verify all text was entered
       const value = await page.locator('#unlimited-input').inputValue();
@@ -334,7 +343,8 @@ describe('TypeTextEvent Fallback Tests', () => {
     // Test normal input (should work)
     if (normalIndex !== null) {
       const element = state.dom_state?.selector_map[normalIndex];
-      await browserSession.inputTextElementNode(element, 'Normal text');
+      const event9 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: 'Normal text', clearExisting: true }));
+      await event9.eventResult();
       
       const value = await page.locator('#normal-input').inputValue();
       expect(value).toBe('Normal text');
@@ -344,7 +354,8 @@ describe('TypeTextEvent Fallback Tests', () => {
     if (disabledIndex !== null) {
       const element = state.dom_state?.selector_map[disabledIndex];
       try {
-        await browserSession.inputTextElementNode(element, 'Should not work');
+        const event10 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: 'Should not work', clearExisting: true }));
+        await event10.eventResult();
         // If it doesn't throw, verify the value is still empty
         const value = await page.locator('#disabled-input').inputValue();
         expect(value).toBe('');
@@ -358,7 +369,8 @@ describe('TypeTextEvent Fallback Tests', () => {
     if (readonlyIndex !== null) {
       const element = state.dom_state?.selector_map[readonlyIndex];
       try {
-        await browserSession.inputTextElementNode(element, 'New value');
+        const event11 = browserSession.eventBus.dispatch(new TypeTextEvent({ node: element, text: 'New value', clearExisting: true }));
+        await event11.eventResult();
         // Value should remain unchanged
         const value = await page.locator('#readonly-input').inputValue();
         expect(value).toBe('Readonly value');
