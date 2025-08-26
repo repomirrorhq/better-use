@@ -805,8 +805,8 @@ export class BrowserSession extends EventEmitter {
     }
     
     // Fallback: check if it's an INPUT element with type="file"
-    if (node && node.node_name && node.node_name.toUpperCase() === 'INPUT') {
-      if (node.attributes && node.attributes.type) {
+    if (node?.node_name && node.node_name.toUpperCase() === 'INPUT') {
+      if (node.attributes?.type) {
         return node.attributes.type.toLowerCase() === 'file';
       }
     }
@@ -982,7 +982,7 @@ export class BrowserSession extends EventEmitter {
 
     // Try to get from DOM watchdog
     const domWatchdog = this.watchdogs.find(w => w.constructor.name === 'DOMWatchdog');
-    if (domWatchdog && domWatchdog.selectorMap) {
+    if (domWatchdog?.selectorMap) {
       this.cachedSelectorMap = domWatchdog.selectorMap;
       return domWatchdog.selectorMap;
     }

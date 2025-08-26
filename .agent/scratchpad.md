@@ -30,5 +30,10 @@ npm run typecheck
 3. **Multiple test failures** - Due to browser not being installed
 
 ## Working Notes
-- Starting with .agent directory setup
-- Next: Run test suite to identify issues
+- ✅ .agent directory setup completed
+- ✅ Fixed import issues in test files
+- ✅ Installed Playwright browser
+- ✅ Created test utility files (mockLogger, domTypes)
+- ✅ Type checking passes
+- Some tests are passing (basic.test.ts, tokens.test.ts)
+- Need to investigate remaining test failures

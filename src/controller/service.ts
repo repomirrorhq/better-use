@@ -722,7 +722,7 @@ export class Controller<Context = any> {
       
       // Get tab URL for display purposes before closing
       const cdpSession = await browserSession.getOrCreateCdpSession();
-      if (!cdpSession || !cdpSession.cdpClient) {
+      if (!cdpSession?.cdpClient) {
         throw new Error('CDP client not available - no active browser page');
       }
       const targetInfo = await cdpSession.cdpClient.send.Target.getTargetInfo({
@@ -1319,7 +1319,7 @@ If you called extract_structured_data in the last step and the result was not go
     try {
       const cdpSession = await browserSession.getOrCreateCdpSession();
       
-      if (!cdpSession || !cdpSession.cdpClient) {
+      if (!cdpSession?.cdpClient) {
         throw new Error('CDP client not available - no active browser page');
       }
 
@@ -1614,7 +1614,7 @@ Provide the extracted information in a clear, structured format.`;
     let currentScrollY = 0;
     try {
       const cdpSession = await browserSession.getOrCreateCdpSession();
-      if (cdpSession && cdpSession.cdpClient) {
+      if (cdpSession?.cdpClient) {
         const scrollInfo = await cdpSession.cdpClient.send.Runtime.evaluate({
           expression: 'window.scrollY || window.pageYOffset || 0'
         }, cdpSession.sessionId);
